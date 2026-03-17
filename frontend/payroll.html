@@ -7,81 +7,96 @@
   </head>
 
   <body class="bg-gray-100">
+    <!-- HEADER -->
+    <header
+      class="fixed top-0 left-0 w-full bg-blue-900 text-white p-4 flex justify-between items-center z-50 shadow"
+    >
+      <div class="flex items-center gap-3">
+        <img src="./EMSlogo.jpg" class="h-10" />
+        <!-- <h1 class="text-lg font-bold">Payroll Management</h1> -->
+      </div>
+
+      <img
+        src="./back.png"
+        onclick="history.back()"
+        class="h-8 w-8 cursor-pointer hover:scale-110 transition"
+        title="Go Back"
+      />
+    </header>
+
     <!-- Sidebar -->
-    <div class="fixed left-0 top-0 h-screen w-56 bg-[#1f2937] text-white p-5">
+    <div
+      class="fixed left-0 top-16 h-[calc(100%-4rem)] w-56 bg-[#1f2937] text-white p-5"
+    >
       <h2 class="text-xl font-bold mb-6">EMS Menu</h2>
 
       <ul class="flex flex-col gap-3">
-            <li>
-              <a
-                href="index.html"
-                class="block px-4 py-2 hover:bg-blue-600 rounded"
-                >Dashboard</a
-              >
-            </li>
-            <li>
-              <a
-                href="employee.html"
-                class="block px-4 py-2 hover:bg-blue-600 rounded"
-                >Employees</a
-              >
-            </li>
-            <li>
-              <a
-                href="projects.html"
-                class="block px-4 py-2 hover:bg-blue-600 rounded"
-                >Projects</a
-              >
-            </li>
-            <li>
-              <a
-                href="leaves.html"
-                class="block px-4 py-2 hover:bg-blue-600 rounded"
-                >Leaves</a
-              >
-            </li>
-            <li>
-              <a
-                href="documents.html"
-                class="block px-4 py-2 hover:bg-blue-600 rounded"
-                >Document</a
-              >
-            </li>
-            <li>
-              <a
-                href="profile.html"
-                class="block px-4 py-2 hover:bg-blue-600 rounded"
-                >Profile</a
-              >
-            </li>
-            <li>
-              <a
-                href="payroll.html"
-                class="block px-4 py-2 hover:bg-blue-600 rounded"
-                >Payroll</a
-              >
-            </li>
-            <li>
-              <a
-                href="clients.html"
-                class="block px-4 py-2 hover:bg-blue-600 rounded"
-                >Clients</a
-              >
-            </li>
-            <li>
-              <a
-                href="reports.html"
-                class="block px-4 py-2 hover:bg-blue-600 rounded"
-                >Reports</a
-              >
-            </li>
-          </ul>
-        </div>
+        <li>
+          <a href="index.html" class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Dashboard</a
+          >
+        </li>
+        <li>
+          <a
+            href="employee.html"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Employees</a
+          >
+        </li>
+        <li>
+          <a
+            href="projects.html"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Projects</a
+          >
+        </li>
+        <li>
+          <a
+            href="leaves.html"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Leaves</a
+          >
+        </li>
+        <li>
+          <a
+            href="documents.html"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Document</a
+          >
+        </li>
+        <li>
+          <a
+            href="profile.html"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Profile</a
+          >
+        </li>
+        <li>
+          <a
+            href="payroll.html"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Payroll</a
+          >
+        </li>
+        <li>
+          <a
+            href="clients.html"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Clients</a
+          >
+        </li>
+        <li>
+          <a
+            href="reports.html"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Reports</a
+          >
+        </li>
       </ul>
     </div>
 
     <!-- Main -->
-    <div class="ml-56 p-6">
+    <div class="ml-56 mt-20 p-6">
       <!-- Header -->
       <div class="bg-white p-4 rounded shadow flex justify-between mb-6">
         <h1 class="text-xl font-semibold">Payroll System</h1>
@@ -151,7 +166,6 @@
             class="p-2 border rounded"
           />
 
-          <!-- Date Range -->
           <input id="fromDate" type="date" class="p-2 border rounded" />
           <input id="toDate" type="date" class="p-2 border rounded" />
         </div>
@@ -188,7 +202,6 @@
     <script>
       let payroll = [];
 
-      // Dummy employee base salary database
       const employeeDB = {
         EMP001: { name: "Rahul", base: 30000 },
         EMP002: { name: "Priya", base: 35000 },
@@ -198,7 +211,6 @@
         document.getElementById("formBox").classList.toggle("hidden");
       }
 
-      // Auto fetch base salary
       document.getElementById("empId").addEventListener("input", function () {
         let id = this.value;
         if (employeeDB[id]) {
@@ -210,7 +222,6 @@
       function addPayroll() {
         let id = empId.value;
 
-        // Prevent duplicate
         if (payroll.some((e) => e.id === id)) {
           alert("Duplicate Employee ID!");
           return;
@@ -237,21 +248,20 @@
         let html = "";
         list.forEach((e) => {
           html += `
-      <tr class="border-b">
-        <td>${e.id}</td>
-        <td>${e.name}</td>
-        <td>₹${e.base}</td>
-        <td>₹${e.allow}</td>
-        <td>₹${e.deduct}</td>
-        <td>₹${e.bonus}</td>
-        <td class="text-green-600">₹${e.net}</td>
-        <td>${e.from} → ${e.to}</td>
-      </tr>`;
+          <tr class="border-b">
+            <td>${e.id}</td>
+            <td>${e.name}</td>
+            <td>₹${e.base}</td>
+            <td>₹${e.allow}</td>
+            <td>₹${e.deduct}</td>
+            <td>₹${e.bonus}</td>
+            <td class="text-green-600">₹${e.net}</td>
+            <td>${e.from} → ${e.to}</td>
+          </tr>`;
         });
         document.getElementById("table").innerHTML = html;
       }
 
-      // Search
       function searchEmployee() {
         let val = search.value.toLowerCase();
         let filtered = payroll.filter(
@@ -262,7 +272,6 @@
         render(filtered);
       }
 
-      // Sort
       function sortSalary(type) {
         if (type === "high") payroll.sort((a, b) => b.net - a.net);
         if (type === "low") payroll.sort((a, b) => a.net - b.net);

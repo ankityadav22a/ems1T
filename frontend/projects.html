@@ -8,39 +8,48 @@
   </head>
 
   <body class="bg-gray-100">
-    <!-- Sidebar -->
+    <!-- HEADER -->
+    <header
+      class="fixed top-0 left-0 w-full bg-blue-900 text-white p-4 flex justify-between items-center z-50 shadow"
+    >
+      <!-- LEFT -->
+      <div class="flex items-center gap-3">
+        <img src="./EMSlogo.jpg" class="h-10" />
+      </div>
 
-    <div class="fixed left-0 top-0 h-screen w-56 bg-[#1f2937] text-white p-5">
-      <h2 class="text-xl font-bold mb-6">EMS Menu</h2>
+      <!-- RIGHT -->
+      <img
+        src="./back.png"
+        onclick="history.back()"
+        class="h-8 w-8 cursor-pointer hover:scale-110 transition"
+        title="Go Back"
+      />
+    </header>
+
+    <!-- SIDEBAR -->
+    <div
+      class="fixed left-0 top-16 h-[calc(100%-4rem)] w-56 bg-[#1f2937] text-white p-5"
+    >
+      <h2 class="text-xl font-bold mb-6">Menu</h2>
 
       <ul class="flex flex-col gap-3">
         <li>
-          <a
-            href="index.html"
-            class="block px-4 py-2 bg-[#1f2937] text-white rounded hover:bg-blue-600"
+          <a href="index.html" class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Dashboard</a
           >
-            Dashboard
-          </a>
         </li>
-
         <li>
           <a
             href="employee.html"
-            class="block px-4 py-2 bg-[#1f2937] text-white rounded hover:bg-blue-600"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Employees</a
           >
-            Employees
-          </a>
         </li>
-
         <li>
-          <a
-            href="projects.html"
-            class="block px-4 py-2 bg-blue-600 text-white rounded"
+          <a href="projects.html" class="block px-4 py-2 bg-blue-600 rounded"
+            >Projects</a
           >
-            Projects
-          </a>
         </li>
-
         <li>
           <a
             href="leaves.html"
@@ -65,7 +74,7 @@
         <li>
           <a
             href="payroll.html"
-            class="block px-4 py-2 bg-[ #1f2937] text-white rounded hover:bg-blue-600"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
             >Payroll</a
           >
         </li>
@@ -86,14 +95,11 @@
       </ul>
     </div>
 
-    <!-- Main Content -->
-
-    <div class="ml-60 p-8">
+    <!-- MAIN CONTENT -->
+    <div class="ml-0 md:ml-56 mt-20 p-8">
       <h1 class="text-3xl font-bold mb-6">Projects</h1>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Project Card -->
-
         <div
           onclick="openProject('Website Development')"
           class="bg-white p-6 rounded shadow cursor-pointer hover:shadow-lg"
@@ -120,13 +126,12 @@
       </div>
     </div>
 
-    <!-- Popup Modal -->
-
+    <!-- MODAL -->
     <div
       id="projectModal"
-      class="relative inset-y-1/2 bg-opacity-100 hidden items-center justify-center"
+      class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center"
     >
-      <div class="bg-white p-6 rounded shadow m-auto w-96">
+      <div class="bg-white p-6 rounded shadow w-96">
         <h2 id="projectTitle" class="text-xl font-bold mb-4"></h2>
 
         <ul id="employeeList" class="space-y-2"></ul>
@@ -147,12 +152,10 @@
           "Jane Smith - UI Designer",
           "Mike Brown - Backend Developer",
         ],
-
         "Mobile App": [
           "David Lee - Android Developer",
           "Sara Khan - Flutter Developer",
         ],
-
         "ERP System": [
           "Robert King - System Architect",
           "Emma Watson - Database Engineer",
@@ -170,10 +173,12 @@
         });
 
         document.getElementById("projectModal").classList.remove("hidden");
+        document.getElementById("projectModal").classList.add("flex");
       }
 
       function closeModal() {
         document.getElementById("projectModal").classList.add("hidden");
+        document.getElementById("projectModal").classList.remove("flex");
       }
     </script>
   </body>

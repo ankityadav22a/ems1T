@@ -8,103 +8,102 @@
   </head>
 
   <body class="bg-gray-100">
-    <!-- Sidebar -->
+    <!-- HEADER -->
+    <header
+      class="fixed top-0 left-0 w-full bg-blue-900 text-white p-4 flex justify-between items-center z-50 shadow"
+    >
+      <!-- LEFT -->
+      <div class="flex items-center gap-3">
+        <img src="./EMSlogo.jpg" class="h-10" />
+      </div>
 
-    <div class="fixed left-0 top-0 h-screen w-56 bg-[#1f2937] text-white p-5">
+      <!-- RIGHT -->
+      <img
+        src="./back.png"
+        onclick="history.back()"
+        class="h-8 w-8 cursor-pointer hover:scale-110 transition"
+        title="Go Back"
+      />
+    </header>
+
+    <!-- SIDEBAR -->
+    <div
+      class="fixed left-0 top-16 h-[calc(100%-4rem)] w-56 bg-[#1f2937] text-white p-5"
+    >
       <h2 class="text-xl font-bold mb-6">EMS Menu</h2>
 
       <ul class="flex flex-col gap-3">
         <li>
-          <a
-            href="index.html"
-            class="block px-4 py-2 bg-[#1f2937] rounded hover:bg-blue-600"
+          <a href="index.html" class="block px-4 py-2 hover:bg-blue-600 rounded"
             >Dashboard</a
           >
         </li>
-
         <li>
           <a
             href="employee.html"
-            class="block px-4 py-2 bg-[#1f2937] rounded hover:bg-blue-600"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
             >Employees</a
           >
         </li>
-
         <li>
           <a
             href="projects.html"
-            class="block px-4 py-2 bg-[#1f2937] rounded hover:bg-blue-600"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
             >Projects</a
           >
         </li>
-
         <li>
           <a
             href="leaves.html"
-            class="block px-4 py-2 bg-[#1f2937] rounded hover:bg-blue-600"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
             >Leaves</a
           >
         </li>
-
         <li>
           <a href="document.html" class="block px-4 py-2 bg-blue-600 rounded"
             >Document</a
           >
         </li>
-
         <li>
           <a
             href="profile.html"
-            class="block px-4 py-2 bg-[#1f2937] rounded hover:bg-blue-600"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
             >Profile</a
           >
         </li>
         <li>
           <a
             href="payroll.html"
-            class="block px-4 py-2 bg-[ #1f2937] text-white rounded hover:bg-blue-600"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
             >Payroll</a
           >
         </li>
-
         <li>
           <a
             href="clients.html"
-            class="block px-4 py-2 bg-[#1f2937] rounded hover:bg-blue-600"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
             >Clients</a
           >
         </li>
-
         <li>
           <a
             href="reports.html"
-            class="block px-4 py-2 bg-[#1f2937] rounded hover:bg-blue-600"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
             >Reports</a
           >
         </li>
       </ul>
     </div>
 
-    <!-- Back Button -->
-
-    <button
-      onclick="history.back()"
-      class="fixed top-5 right-5 bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600"
-    >
-      Back
-    </button>
-
-    <!-- Main Content -->
-
-    <div class="ml-60 p-8">
+    <!-- MAIN CONTENT -->
+    <div class="ml-0 md:ml-56 mt-20 p-8">
       <h1 class="text-3xl font-bold mb-6">Document Management</h1>
 
-      <!-- Document Upload Form -->
-
+      <!-- FORM -->
       <div class="bg-white p-6 rounded shadow mb-6">
         <h2 class="text-xl font-semibold mb-4">Upload Document</h2>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input
             id="docName"
             type="text"
@@ -124,7 +123,6 @@
             placeholder="Employee Name"
             class="border p-2 rounded"
           />
-
           <input id="file" type="file" class="border p-2 rounded" />
         </div>
 
@@ -136,8 +134,7 @@
         </button>
       </div>
 
-      <!-- Document Table -->
-
+      <!-- TABLE -->
       <div class="bg-white rounded shadow overflow-hidden">
         <table class="w-full text-left">
           <thead class="bg-gray-200">
@@ -149,7 +146,6 @@
               <th class="p-3">File</th>
             </tr>
           </thead>
-
           <tbody id="documentTable"></tbody>
         </table>
       </div>
@@ -164,6 +160,11 @@
         let employee = document.getElementById("employee").value;
         let file = document.getElementById("file").files[0];
 
+        if (!name || !employee) {
+          alert("Please fill required fields");
+          return;
+        }
+
         let doc = {
           id: documents.length + 1,
           name,
@@ -173,13 +174,11 @@
         };
 
         documents.push(doc);
-
         renderDocuments();
       }
 
       function renderDocuments() {
         let table = document.getElementById("documentTable");
-
         table.innerHTML = "";
 
         documents.forEach((d) => {
@@ -190,8 +189,7 @@
 <td class="p-3">${d.category}</td>
 <td class="p-3">${d.employee}</td>
 <td class="p-3">${d.file}</td>
-</tr>
-`;
+</tr>`;
         });
       }
     </script>
