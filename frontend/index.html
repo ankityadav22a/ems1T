@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body class="bg-gray-100">
+    <!-- HEADER -->
+    <header
+      class="fixed top-0 left-0 w-full bg-blue-900 text-white p-4 flex items-center justify-between z-50 shadow"
+    >
+      <div class="flex items-center gap-3">
+        <img
+          src="./EMSlogo.jpg"
+          alt="TEAM IQ Logo"
+          class="h-10 w-auto object-contain"
+        />
+        <!-- <h1 class="text-lg md:text-xl font-bold">Employee Management System</h1> -->
+      </div>
+      <button onclick="toggleSidebar()" class="md:hidden text-2xl">☰</button>
+    </header>
+
+    <!-- SIDEBAR -->
+    <div
+      id="sidebar"
+      class="fixed top-16 left-0 h-[calc(100%-4rem)] w-64 bg-gray-800 text-white p-5 transform -translate-x-full md:translate-x-0 transition-transform duration-300 z-40 overflow-y-auto"
+    >
+      <h2 class="text-xl font-bold mb-6 border-b pb-2">Menu</h2>
+
+      <ul class="flex flex-col gap-3 text-sm">
+        <li>
+          <a href="index.html" class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Dashboard</a
+          >
+        </li>
+        <li>
+          <a
+            href="employee.html"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Employees</a
+          >
+        </li>
+        <li>
+          <a
+            href="projects.html"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Projects</a
+          >
+        </li>
+        <li>
+          <a
+            href="leaves.html"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Leaves</a
+          >
+        </li>
+        <li>
+          <a
+            href="documents.html"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Document</a
+          >
+        </li>
+        <li>
+          <a
+            href="profile.html"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Profile</a
+          >
+        </li>
+        <li>
+          <a
+            href="payroll.html"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Payroll</a
+          >
+        </li>
+        <li>
+          <a
+            href="clients.html"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Clients</a
+          >
+        </li>
+        <li>
+          <a
+            href="reports.html"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Reports</a
+          >
+        </li>
+      </ul>
+    </div>
+
+    <!-- OVERLAY -->
+    <div
+      id="overlay"
+      onclick="toggleSidebar()"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden z-30 md:hidden"
+    ></div>
+
+    <!-- MAIN CONTENT -->
+    <div class="ml-0 md:ml-64 mt-20 p-4">
+      <!-- DASHBOARD -->
+      <section class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">Dashboard</h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white p-4 rounded shadow">
+            <h3>Total Employees</h3>
+            <p class="text-xl font-bold">150</p>
+          </div>
+          <div class="bg-white p-4 rounded shadow">
+            <h3>Active Projects</h3>
+            <p class="text-xl font-bold">12</p>
+          </div>
+          <div class="bg-white p-4 rounded shadow">
+            <h3>Departments</h3>
+            <p class="text-xl font-bold">8</p>
+          </div>
+          <div class="bg-white p-4 rounded shadow">
+            <h3>Pending Tasks</h3>
+            <p class="text-xl font-bold">23</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- EMPLOYEES -->
+      <section class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">Employees</h2>
+
+        <div class="overflow-x-auto bg-white rounded shadow">
+          <table class="w-full text-left">
+            <thead class="bg-gray-700 text-white">
+              <tr>
+                <th class="p-2">ID</th>
+                <th class="p-2">Name</th>
+                <th class="p-2">Department</th>
+                <th class="p-2">Position</th>
+                <th class="p-2">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b hover:bg-gray-100">
+                <td class="p-2">001</td>
+                <td class="p-2">John Doe</td>
+                <td class="p-2">IT</td>
+                <td class="p-2">Software Engineer</td>
+                <td class="p-2 text-green-600">Active</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- DEPARTMENTS -->
+      <section class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">Departments</h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div class="bg-white p-3 rounded shadow">IT</div>
+          <div class="bg-white p-3 rounded shadow">HR</div>
+          <div class="bg-white p-3 rounded shadow">Finance</div>
+          <div class="bg-white p-3 rounded shadow">Marketing</div>
+          <div class="bg-white p-3 rounded shadow">Sales</div>
+        </div>
+      </section>
+
+      <!-- REPORTS -->
+      <section>
+        <h2 class="text-xl font-semibold mb-4">Reports</h2>
+
+        <div class="flex flex-wrap gap-3">
+          <button class="bg-blue-600 text-white px-4 py-2 rounded">
+            Employee Report
+          </button>
+          <button class="bg-green-600 text-white px-4 py-2 rounded">
+            Department Report
+          </button>
+          <button class="bg-gray-700 text-white px-4 py-2 rounded">EMS</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-gray-800 text-white text-center p-3 mt-6">
+      © 2024 Employee Management System
+    </footer>
+
+    <!-- SCRIPT -->
+    <script>
+      function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        const overlay = document.getElementById("overlay");
+
+        sidebar.classList.toggle("-translate-x-full");
+        overlay.classList.toggle("hidden");
+      }
+    </script>
+  </body>
+</html>

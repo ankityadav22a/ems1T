@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Advanced Payroll</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body class="bg-gray-100">
+    <!-- Sidebar -->
+    <div class="fixed left-0 top-0 h-screen w-56 bg-[#1f2937] text-white p-5">
+      <h2 class="text-xl font-bold mb-6">EMS Menu</h2>
+
+      <ul class="flex flex-col gap-3">
+            <li>
+              <a
+                href="index.html"
+                class="block px-4 py-2 hover:bg-blue-600 rounded"
+                >Dashboard</a
+              >
+            </li>
+            <li>
+              <a
+                href="employee.html"
+                class="block px-4 py-2 hover:bg-blue-600 rounded"
+                >Employees</a
+              >
+            </li>
+            <li>
+              <a
+                href="projects.html"
+                class="block px-4 py-2 hover:bg-blue-600 rounded"
+                >Projects</a
+              >
+            </li>
+            <li>
+              <a
+                href="leaves.html"
+                class="block px-4 py-2 hover:bg-blue-600 rounded"
+                >Leaves</a
+              >
+            </li>
+            <li>
+              <a
+                href="documents.html"
+                class="block px-4 py-2 hover:bg-blue-600 rounded"
+                >Document</a
+              >
+            </li>
+            <li>
+              <a
+                href="profile.html"
+                class="block px-4 py-2 hover:bg-blue-600 rounded"
+                >Profile</a
+              >
+            </li>
+            <li>
+              <a
+                href="payroll.html"
+                class="block px-4 py-2 hover:bg-blue-600 rounded"
+                >Payroll</a
+              >
+            </li>
+            <li>
+              <a
+                href="clients.html"
+                class="block px-4 py-2 hover:bg-blue-600 rounded"
+                >Clients</a
+              >
+            </li>
+            <li>
+              <a
+                href="reports.html"
+                class="block px-4 py-2 hover:bg-blue-600 rounded"
+                >Reports</a
+              >
+            </li>
+          </ul>
+        </div>
+      </ul>
+    </div>
+
+    <!-- Main -->
+    <div class="ml-56 p-6">
+      <!-- Header -->
+      <div class="bg-white p-4 rounded shadow flex justify-between mb-6">
+        <h1 class="text-xl font-semibold">Payroll System</h1>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex flex-wrap gap-4 mb-6">
+        <input
+          id="search"
+          type="text"
+          placeholder="Search by Name or ID"
+          onkeyup="searchEmployee()"
+          class="p-2 border rounded w-60"
+        />
+
+        <select onchange="sortSalary(this.value)" class="p-2 border rounded">
+          <option value="">Sort Salary</option>
+          <option value="high">High to Low</option>
+          <option value="low">Low to High</option>
+        </select>
+
+        <button
+          onclick="toggleForm()"
+          class="bg-blue-600 text-white px-4 py-2 rounded"
+        >
+          + Add Payroll
+        </button>
+      </div>
+
+      <!-- Form -->
+      <div id="formBox" class="hidden bg-white p-4 rounded shadow mb-6">
+        <div class="grid grid-cols-2 gap-4">
+          <input
+            id="empId"
+            placeholder="Employee ID"
+            class="p-2 border rounded"
+          />
+          <input
+            id="name"
+            placeholder="Employee Name"
+            class="p-2 border rounded"
+          />
+
+          <input
+            id="basic"
+            placeholder="Base Salary (auto)"
+            class="p-2 border rounded bg-gray-100"
+            readonly
+          />
+
+          <input
+            id="allow"
+            placeholder="Allowances"
+            type="number"
+            class="p-2 border rounded"
+          />
+          <input
+            id="deduct"
+            placeholder="Deductions"
+            type="number"
+            class="p-2 border rounded"
+          />
+          <input
+            id="bonus"
+            placeholder="Bonus"
+            type="number"
+            class="p-2 border rounded"
+          />
+
+          <!-- Date Range -->
+          <input id="fromDate" type="date" class="p-2 border rounded" />
+          <input id="toDate" type="date" class="p-2 border rounded" />
+        </div>
+
+        <button
+          onclick="addPayroll()"
+          class="mt-4 bg-green-600 text-white px-4 py-2 rounded"
+        >
+          Save
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="bg-white shadow rounded overflow-x-auto">
+        <table class="w-full text-center">
+          <thead class="bg-gray-700 text-white">
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Base</th>
+              <th>Allow</th>
+              <th>Deduct</th>
+              <th>Bonus</th>
+              <th>Net</th>
+              <th>Period</th>
+            </tr>
+          </thead>
+
+          <tbody id="table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      let payroll = [];
+
+      // Dummy employee base salary database
+      const employeeDB = {
+        EMP001: { name: "Rahul", base: 30000 },
+        EMP002: { name: "Priya", base: 35000 },
+      };
+
+      function toggleForm() {
+        document.getElementById("formBox").classList.toggle("hidden");
+      }
+
+      // Auto fetch base salary
+      document.getElementById("empId").addEventListener("input", function () {
+        let id = this.value;
+        if (employeeDB[id]) {
+          document.getElementById("name").value = employeeDB[id].name;
+          document.getElementById("basic").value = employeeDB[id].base;
+        }
+      });
+
+      function addPayroll() {
+        let id = empId.value;
+
+        // Prevent duplicate
+        if (payroll.some((e) => e.id === id)) {
+          alert("Duplicate Employee ID!");
+          return;
+        }
+
+        let data = {
+          id,
+          name: name.value,
+          base: +basic.value,
+          allow: +allow.value,
+          deduct: +deduct.value,
+          bonus: +bonus.value,
+          from: fromDate.value,
+          to: toDate.value,
+        };
+
+        data.net = data.base + data.allow + data.bonus - data.deduct;
+
+        payroll.push(data);
+        render();
+      }
+
+      function render(list = payroll) {
+        let html = "";
+        list.forEach((e) => {
+          html += `
+      <tr class="border-b">
+        <td>${e.id}</td>
+        <td>${e.name}</td>
+        <td>₹${e.base}</td>
+        <td>₹${e.allow}</td>
+        <td>₹${e.deduct}</td>
+        <td>₹${e.bonus}</td>
+        <td class="text-green-600">₹${e.net}</td>
+        <td>${e.from} → ${e.to}</td>
+      </tr>`;
+        });
+        document.getElementById("table").innerHTML = html;
+      }
+
+      // Search
+      function searchEmployee() {
+        let val = search.value.toLowerCase();
+        let filtered = payroll.filter(
+          (e) =>
+            e.name.toLowerCase().includes(val) ||
+            e.id.toLowerCase().includes(val),
+        );
+        render(filtered);
+      }
+
+      // Sort
+      function sortSalary(type) {
+        if (type === "high") payroll.sort((a, b) => b.net - a.net);
+        if (type === "low") payroll.sort((a, b) => a.net - b.net);
+        render();
+      }
+    </script>
+  </body>
+</html>

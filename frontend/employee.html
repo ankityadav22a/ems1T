@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body class="bg-gray-100">
+    <!-- Sidebar -->
+
+    <div class="fixed left-0 top-0 h-screen w-56 bg-[#1f2937] text-white p-5">
+      <h2 class="text-xl font-bold mb-6">EMS Menu</h2>
+
+      <ul class="flex flex-col gap-3">
+        <li>
+          <a
+            href="index.html"
+            class="block px-4 py-2 bg-[#1f2937] text-white rounded hover:bg-blue-600"
+          >
+            Dashboard
+          </a>
+        </li>
+
+        <li>
+          <a
+            href="employee.html"
+            class="block px-4 py-2 bg-blue-600 text-white rounded"
+          >
+            Employees
+          </a>
+        </li>
+
+        <li>
+          <a
+            href="projects.html"
+            class="block px-4 py-2 bg-[#1f2937] text-white rounded hover:bg-blue-600"
+          >
+            Projects
+          </a>
+        </li>
+
+        <li>
+          <a
+            href="leaves.html"
+            class="block px-4 py-2 bg-[#1f2937] text-white rounded hover:bg-blue-600"
+          >
+            Leaves
+          </a>
+        </li>
+
+        <li>
+          <a
+            href="document.html"
+            class="block px-4 py-2 bg-[#1f2937] text-white rounded hover:bg-blue-600"
+          >
+            Document
+          </a>
+        </li>
+
+        <li>
+          <a
+            href="profile.html"
+            class="block px-4 py-2 bg-[#1f2937] text-white rounded hover:bg-blue-600"
+          >
+            Profile
+          </a>
+        </li>
+        <li>
+          <a
+            href="payroll.html"
+            class="block px-4 py-2 bg-[ #1f2937] text-white rounded hover:bg-blue-600"
+            >Payroll</a
+          >
+        </li>
+
+        <li>
+          <a
+            href="clients.html"
+            class="block px-4 py-2 bg-[#1f2937] text-white rounded hover:bg-blue-600"
+          >
+            Clients
+          </a>
+        </li>
+
+        <li>
+          <a
+            href="reports.html"
+            class="block px-4 py-2 bg-[#1f2937] text-white rounded hover:bg-blue-600"
+          >
+            Reports
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Back Button -->
+
+    <button
+      onclick="window.location.href = 'index.html'"
+      class="fixed top-5 right-5 bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600"
+    >
+      Back
+    </button>
+
+    <!-- Main Content -->
+
+    <div class="ml-60 p-8">
+      <h1 class="text-3xl font-bold mb-6 text-center">
+        Employee Management System
+      </h1>
+
+      <!-- Add Employee Form -->
+
+      <div class="bg-white p-6 rounded shadow mb-6">
+        <h2 class="text-xl font-semibold mb-4">Add Employee</h2>
+
+        <div class="grid grid-cols-2 gap-4">
+          <input
+            id="name"
+            type="text"
+            placeholder="Employee Name"
+            class="border p-2 rounded"
+          />
+
+          <input
+            id="department"
+            type="text"
+            placeholder="Department"
+            class="border p-2 rounded"
+          />
+
+          <input
+            id="project"
+            type="text"
+            placeholder="Project"
+            class="border p-2 rounded"
+          />
+
+          <input id="joinDate" type="date" class="border p-2 rounded" />
+        </div>
+
+        <button
+          onclick="addEmployee()"
+          class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Add Employee
+        </button>
+      </div>
+
+      <!-- Search -->
+
+      <div class="mb-4">
+        <input
+          id="search"
+          onkeyup="searchEmployee()"
+          type="text"
+          placeholder="Search Employee..."
+          class="border p-2 rounded w-full"
+        />
+      </div>
+
+      <!-- Employee Table -->
+
+      <div class="bg-white rounded shadow overflow-hidden">
+        <table class="w-full text-left">
+          <thead class="bg-gray-200">
+            <tr>
+              <th class="p-3">ID</th>
+              <th class="p-3">Name</th>
+              <th class="p-3">Department</th>
+              <th class="p-3">Project</th>
+              <th class="p-3">Join Date</th>
+            </tr>
+          </thead>
+
+          <tbody id="employeeTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      let employees = [
+        {
+          id: 1,
+          name: "John Doe",
+          department: "IT",
+          project: "Website",
+          joinDate: "2024-01-10",
+        },
+        {
+          id: 2,
+          name: "Jane Smith",
+          department: "HR",
+          project: "Recruitment",
+          joinDate: "2024-02-15",
+        },
+      ];
+
+      function renderTable(list = employees) {
+        let table = document.getElementById("employeeTable");
+        table.innerHTML = "";
+
+        list.forEach((emp) => {
+          table.innerHTML += `
+<tr class="border-b hover:bg-gray-50">
+<td class="p-3">${emp.id}</td>
+<td class="p-3">${emp.name}</td>
+<td class="p-3">${emp.department}</td>
+<td class="p-3">${emp.project}</td>
+<td class="p-3">${emp.joinDate}</td>
+</tr>
+`;
+        });
+      }
+
+      renderTable();
+
+      function addEmployee() {
+        let name = document.getElementById("name").value;
+        let department = document.getElementById("department").value;
+        let project = document.getElementById("project").value;
+        let joinDate = document.getElementById("joinDate").value;
+
+        let newEmployee = {
+          id: employees.length + 1,
+          name,
+          department,
+          project,
+          joinDate,
+        };
+
+        employees.push(newEmployee);
+
+        renderTable();
+
+        document.getElementById("name").value = "";
+        document.getElementById("department").value = "";
+        document.getElementById("project").value = "";
+        document.getElementById("joinDate").value = "";
+      }
+
+      function searchEmployee() {
+        let keyword = document.getElementById("search").value.toLowerCase();
+
+        let filtered = employees.filter(
+          (emp) =>
+            emp.name.toLowerCase().includes(keyword) ||
+            emp.department.toLowerCase().includes(keyword) ||
+            emp.project.toLowerCase().includes(keyword),
+        );
+
+        renderTable(filtered);
+      }
+    </script>
+  </body>
+</html>

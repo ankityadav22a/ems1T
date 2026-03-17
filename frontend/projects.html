@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Projects</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body class="bg-gray-100">
+    <!-- Sidebar -->
+
+    <div class="fixed left-0 top-0 h-screen w-56 bg-[#1f2937] text-white p-5">
+      <h2 class="text-xl font-bold mb-6">EMS Menu</h2>
+
+      <ul class="flex flex-col gap-3">
+        <li>
+          <a
+            href="index.html"
+            class="block px-4 py-2 bg-[#1f2937] text-white rounded hover:bg-blue-600"
+          >
+            Dashboard
+          </a>
+        </li>
+
+        <li>
+          <a
+            href="employee.html"
+            class="block px-4 py-2 bg-[#1f2937] text-white rounded hover:bg-blue-600"
+          >
+            Employees
+          </a>
+        </li>
+
+        <li>
+          <a
+            href="projects.html"
+            class="block px-4 py-2 bg-blue-600 text-white rounded"
+          >
+            Projects
+          </a>
+        </li>
+
+        <li>
+          <a
+            href="leaves.html"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Leaves</a
+          >
+        </li>
+        <li>
+          <a
+            href="document.html"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Document</a
+          >
+        </li>
+        <li>
+          <a
+            href="profile.html"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Profile</a
+          >
+        </li>
+        <li>
+          <a
+            href="payroll.html"
+            class="block px-4 py-2 bg-[ #1f2937] text-white rounded hover:bg-blue-600"
+            >Payroll</a
+          >
+        </li>
+        <li>
+          <a
+            href="clients.html"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Clients</a
+          >
+        </li>
+        <li>
+          <a
+            href="reports.html"
+            class="block px-4 py-2 hover:bg-blue-600 rounded"
+            >Reports</a
+          >
+        </li>
+      </ul>
+    </div>
+
+    <!-- Main Content -->
+
+    <div class="ml-60 p-8">
+      <h1 class="text-3xl font-bold mb-6">Projects</h1>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Project Card -->
+
+        <div
+          onclick="openProject('Website Development')"
+          class="bg-white p-6 rounded shadow cursor-pointer hover:shadow-lg"
+        >
+          <h3 class="text-xl font-semibold">Website Development</h3>
+          <p class="text-gray-500">Click to see employees</p>
+        </div>
+
+        <div
+          onclick="openProject('Mobile App')"
+          class="bg-white p-6 rounded shadow cursor-pointer hover:shadow-lg"
+        >
+          <h3 class="text-xl font-semibold">Mobile App</h3>
+          <p class="text-gray-500">Click to see employees</p>
+        </div>
+
+        <div
+          onclick="openProject('ERP System')"
+          class="bg-white p-6 rounded shadow cursor-pointer hover:shadow-lg"
+        >
+          <h3 class="text-xl font-semibold">ERP System</h3>
+          <p class="text-gray-500">Click to see employees</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Popup Modal -->
+
+    <div
+      id="projectModal"
+      class="relative inset-y-1/2 bg-opacity-100 hidden items-center justify-center"
+    >
+      <div class="bg-white p-6 rounded shadow m-auto w-96">
+        <h2 id="projectTitle" class="text-xl font-bold mb-4"></h2>
+
+        <ul id="employeeList" class="space-y-2"></ul>
+
+        <button
+          onclick="closeModal()"
+          class="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const projectEmployees = {
+        "Website Development": [
+          "John Doe - Frontend Developer",
+          "Jane Smith - UI Designer",
+          "Mike Brown - Backend Developer",
+        ],
+
+        "Mobile App": [
+          "David Lee - Android Developer",
+          "Sara Khan - Flutter Developer",
+        ],
+
+        "ERP System": [
+          "Robert King - System Architect",
+          "Emma Watson - Database Engineer",
+        ],
+      };
+
+      function openProject(project) {
+        document.getElementById("projectTitle").innerText = project;
+
+        let list = document.getElementById("employeeList");
+        list.innerHTML = "";
+
+        projectEmployees[project].forEach((emp) => {
+          list.innerHTML += `<li class="border p-2 rounded">${emp}</li>`;
+        });
+
+        document.getElementById("projectModal").classList.remove("hidden");
+      }
+
+      function closeModal() {
+        document.getElementById("projectModal").classList.add("hidden");
+      }
+    </script>
+  </body>
+</html>

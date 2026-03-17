@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clients</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body class="bg-gray-100">
+    <!-- Sidebar -->
+
+    <div class="fixed left-0 top-0 h-screen w-56 bg-[#1f2937] text-white p-5">
+      <h2 class="text-xl font-bold mb-6">EMS Menu</h2>
+
+      <ul class="flex flex-col gap-3">
+        <li>
+          <a
+            href="index.html"
+            class="block px-4 py-2 bg-[#1f2937] rounded hover:bg-blue-600"
+            >Dashboard</a
+          >
+        </li>
+
+        <li>
+          <a
+            href="employee.html"
+            class="block px-4 py-2 bg-[#1f2937] rounded hover:bg-blue-600"
+            >Employees</a
+          >
+        </li>
+
+        <li>
+          <a
+            href="projects.html"
+            class="block px-4 py-2 bg-[#1f2937] rounded hover:bg-blue-600"
+            >Projects</a
+          >
+        </li>
+
+        <li>
+          <a
+            href="leaves.html"
+            class="block px-4 py-2 bg-[#1f2937] rounded hover:bg-blue-600"
+            >Leaves</a
+          >
+        </li>
+
+        <li>
+          <a
+            href="document.html"
+            class="block px-4 py-2 bg-[#1f2937] rounded hover:bg-blue-600"
+            >Document</a
+          >
+        </li>
+
+        <li>
+          <a
+            href="profile.html"
+            class="block px-4 py-2 bg-[#1f2937] rounded hover:bg-blue-600"
+            >Profile</a
+          >
+        </li>
+        <li>
+          <a
+            href="payroll.html"
+            class="block px-4 py-2 bg-[ #1f2937] text-white rounded hover:bg-blue-600"
+            >Payroll</a
+          >
+        </li>
+
+        <li>
+          <a href="clients.html" class="block px-4 py-2 bg-blue-600 rounded"
+            >Clients</a
+          >
+        </li>
+
+        <li>
+          <a
+            href="reports.html"
+            class="block px-4 py-2 bg-[#1f2937] rounded hover:bg-blue-600"
+            >Reports</a
+          >
+        </li>
+      </ul>
+    </div>
+
+    <!-- Back Button -->
+
+    <button
+      onclick="history.back()"
+      class="fixed top-5 right-5 bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600"
+    >
+      Back
+    </button>
+
+    <!-- Main Content -->
+
+    <div class="ml-60 p-8">
+      <h1 class="text-3xl font-bold mb-6">Client Management</h1>
+
+      <!-- Add Client Form -->
+
+      <div class="bg-white p-6 rounded shadow mb-6">
+        <h2 class="text-xl font-semibold mb-4">Add Client Project</h2>
+
+        <div class="grid grid-cols-2 gap-4">
+          <input
+            id="clientName"
+            type="text"
+            placeholder="Client Name"
+            class="border p-2 rounded"
+          />
+
+          <input
+            id="company"
+            type="text"
+            placeholder="Company Name"
+            class="border p-2 rounded"
+          />
+
+          <input
+            id="project"
+            type="text"
+            placeholder="Project Name"
+            class="border p-2 rounded"
+          />
+
+          <select id="status" class="border p-2 rounded">
+            <option>Ongoing</option>
+            <option>Completed</option>
+            <option>Pending</option>
+          </select>
+
+          <input id="deadline" type="date" class="border p-2 rounded" />
+
+          <input
+            id="budget"
+            type="number"
+            placeholder="Project Budget $"
+            class="border p-2 rounded"
+          />
+        </div>
+
+        <button
+          onclick="addClient()"
+          class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Add Client
+        </button>
+      </div>
+
+      <!-- Client Project Table -->
+
+      <div class="bg-white rounded shadow overflow-hidden">
+        <table class="w-full text-left">
+          <thead class="bg-gray-200">
+            <tr>
+              <th class="p-3">ID</th>
+              <th class="p-3">Client</th>
+              <th class="p-3">Company</th>
+              <th class="p-3">Project</th>
+              <th class="p-3">Status</th>
+              <th class="p-3">Deadline</th>
+              <th class="p-3">Budget</th>
+            </tr>
+          </thead>
+
+          <tbody id="clientTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      let clients = [
+        {
+          id: 1,
+          client: "Michael Brown",
+          company: "Tech Solutions",
+          project: "Website Development",
+          status: "Ongoing",
+          deadline: "2026-05-10",
+          budget: "$5000",
+        },
+
+        {
+          id: 2,
+          client: "Emma Watson",
+          company: "Creative Studio",
+          project: "Mobile App",
+          status: "Completed",
+          deadline: "2026-02-20",
+          budget: "$8000",
+        },
+      ];
+
+      function renderClients() {
+        let table = document.getElementById("clientTable");
+
+        table.innerHTML = "";
+
+        clients.forEach((c) => {
+          table.innerHTML += `
+<tr class="border-b hover:bg-gray-50">
+<td class="p-3">${c.id}</td>
+<td class="p-3">${c.client}</td>
+<td class="p-3">${c.company}</td>
+<td class="p-3">${c.project}</td>
+<td class="p-3">${c.status}</td>
+<td class="p-3">${c.deadline}</td>
+<td class="p-3">${c.budget}</td>
+</tr>
+`;
+        });
+      }
+
+      renderClients();
+
+      function addClient() {
+        let clientName = document.getElementById("clientName").value;
+        let company = document.getElementById("company").value;
+        let project = document.getElementById("project").value;
+        let status = document.getElementById("status").value;
+        let deadline = document.getElementById("deadline").value;
+        let budget = document.getElementById("budget").value;
+
+        let newClient = {
+          id: clients.length + 1,
+          client: clientName,
+          company,
+          project,
+          status,
+          deadline,
+          budget,
+        };
+
+        clients.push(newClient);
+
+        renderClients();
+      }
+    </script>
+  </body>
+</html>
