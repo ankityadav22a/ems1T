@@ -1,197 +1,220 @@
 <!doctype html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
-  </head>
+</head>
 
-  <body class="bg-gray-100">
+<body class="bg-gray-100">
+
     <!-- HEADER -->
-    <header
-      class="fixed top-0 left-0 w-full bg-blue-900 text-white p-4 flex justify-between items-center z-50 shadow"
-    >
-      <!-- LEFT -->
-      <div class="flex items-center gap-3">
+    <header class="fixed top-0 left-0 w-full bg-blue-900 text-white p-4 flex justify-between items-center shadow z-50">
         <img src="./EMSlogo.jpg" class="h-10" />
-      </div>
-
-      <!-- RIGHT -->
-      <img
-        src="./back.png"
-        onclick="history.back()"
-        class="h-8 w-8 cursor-pointer hover:scale-110 transition"
-        title="Go Back"
-      />
+        <img src="./back.png" onclick="history.back()" class="h-8 w-8 cursor-pointer" />
     </header>
 
     <!-- SIDEBAR -->
-    <div
-      class="fixed left-0 top-16 h-[calc(100%-4rem)] w-56 bg-[#1f2937] text-white p-5"
-    >
-      <h2 class="text-xl font-bold mb-6">EMS Menu</h2>
+    <div class="fixed left-0 top-16 h-[calc(100%-4rem)] w-56 bg-[#1f2937] text-white p-5 overflow-y-auto">
+        <h2 class="text-xl font-bold mb-6">EMS Menu</h2>
 
-      <ul class="flex flex-col gap-3">
-        <li>
-          <a href="index.html" class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Dashboard</a
-          >
-        </li>
-        <li>
-          <a
-            href="employee.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Employees</a
-          >
-        </li>
-        <li>
-          <a
-            href="projects.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Projects</a
-          >
-        </li>
-        <li>
-          <a
-            href="leaves.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Leaves</a
-          >
-        </li>
-        <li>
-          <a href="document.html" class="block px-4 py-2 bg-blue-600 rounded"
-            >Document</a
-          >
-        </li>
-        <li>
-          <a
-            href="profile.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Profile</a
-          >
-        </li>
-        <li>
-          <a
-            href="payroll.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Payroll</a
-          >
-        </li>
-        <li>
-          <a
-            href="clients.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Clients</a
-          >
-        </li>
-        <li>
-          <a
-            href="reports.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Reports</a
-          >
-        </li>
-      </ul>
+        <ul class="flex flex-col gap-3">
+            <li><a href="index.html" class="block px-4 py-2 hover:bg-blue-600 rounded">Dashboard</a></li>
+            <li><a href="employee.html" class="block px-4 py-2 hover:bg-blue-600 rounded">Employees</a></li>
+            <li><a href="projects.html" class="block px-4 py-2 hover:bg-blue-600 rounded">Projects</a></li>
+            <li><a href="leaves.html" class="block px-4 py-2 hover:bg-blue-600 rounded">Leaves</a></li>
+            <li><a href="document.html" class="block px-4 py-2 bg-blue-600 rounded">Document</a></li>
+            <li><a href="profile.html" class="block px-4 py-2 hover:bg-blue-600 rounded">Profile</a></li>
+            <li><a href="payroll.html" class="block px-4 py-2 hover:bg-blue-600 rounded">Payroll</a></li>
+            <li><a href="clients.html" class="block px-4 py-2 hover:bg-blue-600 rounded">Clients</a></li>
+            <li><a href="reports.html" class="block px-4 py-2 hover:bg-blue-600 rounded">Reports</a></li>
+        </ul>
     </div>
 
-    <!-- MAIN CONTENT -->
+    <!-- MAIN -->
     <div class="ml-0 md:ml-56 mt-20 p-8">
-      <h1 class="text-3xl font-bold mb-6">Document Management</h1>
 
-      <!-- FORM -->
-      <div class="bg-white p-6 rounded shadow mb-6">
-        <h2 class="text-xl font-semibold mb-4">Upload Document</h2>
+        <h1 class="text-3xl font-bold mb-6">Document Management</h1>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            id="docName"
-            type="text"
-            placeholder="Document Name"
-            class="border p-2 rounded"
-          />
+        <!-- FORM -->
+        <div class="bg-white p-6 rounded shadow mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-          <select id="category" class="border p-2 rounded">
-            <option value="Ongoing Project">Ongoing Project</option>
-            <option value="Finished Project">Finished Project</option>
-            <option value="Office Employee">Office Employee</option>
+                <input id="docName" type="text" placeholder="Document Name" class="border p-2 rounded" />
+
+                <div class="relative">
+                    <select id="category" class="border p-2 rounded w-full" onchange="checkOtherCategory()">
+             <option>New Project</option>         
+            <option>Ongoing Project</option>
+            <option>Finished Project</option>
+            <option>Office</option>
+            <option>Other</option>
           </select>
+                    <input id="otherCategory" type="text" placeholder="Enter Document Type" class="border p-2 rounded mt-2 w-full hidden" />
+                </div>
 
-          <input
-            id="employee"
-            type="text"
-            placeholder="Employee Name"
-            class="border p-2 rounded"
-          />
-          <input id="file" type="file" class="border p-2 rounded" />
+                <input id="employee" type="text" placeholder="Employee Name" class="border p-2 rounded" />
+                <input id="fileUrl" type="url" placeholder="Enter file URL (cloud link)" class="border p-2 rounded" />
+            </div>
+
+            <button onclick="addDocument()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">
+        Upload Document
+      </button>
         </div>
 
-        <button
-          onclick="addDocument()"
-          class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Upload Document
-        </button>
-      </div>
+        <!-- SEARCH -->
+        <input type="text" id="searchInput" onkeyup="searchDocument()" placeholder="Search by Document Name or ID..." class="mb-4 w-full p-2 border rounded" />
 
-      <!-- TABLE -->
-      <div class="bg-white rounded shadow overflow-hidden">
-        <table class="w-full text-left">
-          <thead class="bg-gray-200">
-            <tr>
-              <th class="p-3">ID</th>
-              <th class="p-3">Document</th>
-              <th class="p-3">Category</th>
-              <th class="p-3">Employee</th>
-              <th class="p-3">File</th>
-            </tr>
-          </thead>
-          <tbody id="documentTable"></tbody>
-        </table>
-      </div>
+        <!-- TABLE -->
+        <div class="bg-white rounded shadow overflow-hidden">
+            <table class="w-full text-left">
+                <thead class="bg-gray-200">
+                    <tr>
+                        <th class="p-3">ID</th>
+                        <th class="p-3">Document</th>
+                        <th class="p-3">Type</th>
+                        <th class="p-3">Employee</th>
+                        <th class="p-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="documentTable"></tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- MODAL POPUP -->
+    <div id="popupModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white w-[90%] md:w-[400px] rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-bold text-red-600 mb-4">⚠️ Document Already Exists</h2>
+            <div id="popupContent" class="text-gray-700 mb-4"></div>
+            <button onclick="closePopup()" class="bg-blue-500 text-white px-4 py-2 rounded w-full">Close</button>
+        </div>
     </div>
 
     <script>
-      let documents = [];
+        let documents = [];
+        let currentId = 1;
 
-      function addDocument() {
-        let name = document.getElementById("docName").value;
-        let category = document.getElementById("category").value;
-        let employee = document.getElementById("employee").value;
-        let file = document.getElementById("file").files[0];
-
-        if (!name || !employee) {
-          alert("Please fill required fields");
-          return;
+        function checkOtherCategory() {
+            let category = document.getElementById("category").value;
+            let otherInput = document.getElementById("otherCategory");
+            otherInput.style.display = category === "Other" ? "block" : "none";
         }
 
-        let doc = {
-          id: documents.length + 1,
-          name,
-          category,
-          employee,
-          file: file ? file.name : "No File",
-        };
+        function addDocument() {
+            let name = document.getElementById("docName").value.trim();
+            let employee = document.getElementById("employee").value.trim();
+            let fileUrl = document.getElementById("fileUrl").value.trim();
 
-        documents.push(doc);
-        renderDocuments();
-      }
+            // Determine type
+            let categorySelect = document.getElementById("category");
+            let type = categorySelect.value;
+            if (type === "Other") {
+                type = document.getElementById("otherCategory").value.trim();
+                if (!type) {
+                    alert("Please enter document type for 'Other'");
+                    return;
+                }
+            }
 
-      function renderDocuments() {
-        let table = document.getElementById("documentTable");
-        table.innerHTML = "";
+            if (!name || !employee || !fileUrl) {
+                alert("Please fill all fields");
+                return;
+            }
 
-        documents.forEach((d) => {
-          table.innerHTML += `
-<tr class="border-b hover:bg-gray-50">
-<td class="p-3">${d.id}</td>
-<td class="p-3">${d.name}</td>
-<td class="p-3">${d.category}</td>
-<td class="p-3">${d.employee}</td>
-<td class="p-3">${d.file}</td>
-</tr>`;
+            let cleanUrl = fileUrl.toLowerCase();
+
+            // Check for duplicate URL
+            let existingDoc = documents.find(doc => doc.file.toLowerCase() === cleanUrl);
+            if (existingDoc) {
+                showPopup(existingDoc);
+                return;
+            }
+
+            let doc = {
+                id: currentId++,
+                name,
+                type,
+                employee,
+                file: fileUrl
+            };
+
+            documents.push(doc);
+            renderDocuments(documents);
+
+            // Clear form
+            document.getElementById("docName").value = "";
+            document.getElementById("employee").value = "";
+            document.getElementById("fileUrl").value = "";
+            document.getElementById("category").value = "Ongoing Project";
+            document.getElementById("otherCategory").value = "";
+            document.getElementById("otherCategory").style.display = "none";
+        }
+
+        function renderDocuments(data) {
+            let table = document.getElementById("documentTable");
+            table.innerHTML = "";
+
+            data.forEach(d => {
+                table.innerHTML += `
+          <tr class="border-b hover:bg-gray-50">
+            <td class="p-3">${d.id}</td>
+            <td class="p-3">${d.name}</td>
+            <td class="p-3">${d.type}</td>
+            <td class="p-3">${d.employee}</td>
+            <td class="p-3 flex gap-2">
+              <button onclick="openFile('${d.file}')" class="bg-green-500 text-white px-3 py-1 rounded">Open</button>
+              <button onclick="deleteDocument(${d.id})" class="bg-red-500 text-white px-3 py-1 rounded">Delete</button>
+            </td>
+          </tr>
+        `;
+            });
+        }
+
+        function openFile(url) {
+            window.open(url, "_blank");
+        }
+
+        function deleteDocument(id) {
+            documents = documents.filter(doc => doc.id !== id);
+            renderDocuments(documents);
+        }
+
+        function searchDocument() {
+            let input = document.getElementById("searchInput").value.toLowerCase();
+            let filtered = documents.filter(doc =>
+                doc.name.toLowerCase().includes(input) || doc.id.toString().includes(input)
+            );
+            renderDocuments(filtered);
+        }
+
+        // Modal functions
+        function showPopup(doc) {
+            const modal = document.getElementById("popupModal");
+            const content = document.getElementById("popupContent");
+            content.innerHTML = `
+        <p><strong>ID:</strong> ${doc.id}</p>
+        <p><strong>Name:</strong> ${doc.name}</p>
+        <p><strong>Type:</strong> ${doc.type}</p>
+        <p><strong>Employee:</strong> ${doc.employee}</p>
+        <p><strong>URL:</strong> <a href="${doc.file}" target="_blank" class="text-blue-600 underline">${doc.file}</a></p>
+      `;
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+        }
+
+        function closePopup() {
+            document.getElementById("popupModal").classList.add("hidden");
+        }
+
+        document.getElementById("popupModal").addEventListener("click", function(e) {
+            if (e.target === this) closePopup();
         });
-      }
     </script>
-  </body>
+
+</body>
+
 </html>
