@@ -5,115 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Leave Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+      #main-content {
+        opacity: 0;
+        transition: opacity 0.4s ease;
+      }
+      #main-content.ready {
+        opacity: 1;
+      }
+      .skeleton {
+        background: linear-gradient(
+          90deg,
+          #f0f0f0 25%,
+          #e0e0e0 50%,
+          #f0f0f0 75%
+        );
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+      }
+      @keyframes loading {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+    </style>
   </head>
 
   <body class="bg-gray-100">
-    <!-- HEADER -->
-    <header
-      class="fixed top-0 left-0 w-full bg-blue-900 text-white p-4 flex justify-between items-center z-50 shadow"
-    >
-      <!-- LEFT -->
-      <div class="flex items-center gap-3">
-        <img src="./EMSlogo.jpg" class="h-10" />
-      </div>
+    <div id="nav-placeholder"></div>
 
-      <!-- RIGHT -->
-      <div class="flex items-center gap-4">
-        <!-- BACK BUTTON IMAGE -->
-        <img
-          src="./back.png"
-          onclick="history.back()"
-          class="h-8 w-8 cursor-pointer hover:scale-110 transition"
-          title="Go Back"
-        />
+    <div id="main-content" class="md:ml-56 mt-20 p-4">
+      <h1 class="text-3xl font-bold mb-6">Leave Management</h1>
 
-        <!-- MENU BUTTON -->
-        <button onclick="toggleSidebar()" class="md:hidden text-2xl">☰</button>
-      </div>
-    </header>
+      <button
+        onclick="openLeaveModal()"
+        class="mb-4 bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700"
+      >
+        + Apply Leave
+      </button>
 
-    <!-- SIDEBAR -->
-    <div
-      id="sidebar"
-      class="fixed top-16 left-0 h-[calc(100%-4rem)] w-56 bg-gray-800 text-white p-5 transform -translate-x-full md:translate-x-0 transition duration-300 z-40"
-    >
-      <h2 class="text-xl font-bold mb-6">EMS Menu</h2>
-
-      <ul class="flex flex-col gap-3 text-sm">
-        <li>
-          <a href="index.html" class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Dashboard</a
-          >
-        </li>
-        <li>
-          <a
-            href="employee.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Employees</a
-          >
-        </li>
-        <li>
-          <a
-            href="projects.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Projects</a
-          >
-        </li>
-        <li>
-          <a href="leaves.html" class="block px-4 py-2 bg-blue-600 rounded"
-            >Leaves</a
-          >
-        </li>
-        <li>
-          <a
-            href="document.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Documents</a
-          >
-        </li>
-        <li>
-          <a
-            href="profile.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Profile</a
-          >
-        </li>
-        <li>
-          <a
-            href="payroll.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Payroll</a
-          >
-        </li>
-        <li>
-          <a
-            href="clients.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Clients</a
-          >
-        </li>
-        <li>
-          <a
-            href="reports.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Reports</a
-          >
-        </li>
-      </ul>
-    </div>
-
-    <!-- OVERLAY -->
-    <div
-      id="overlay"
-      class="fixed inset-0 bg-black bg-opacity-50 hidden z-30 md:hidden"
-      onclick="toggleSidebar()"
-    ></div>
-
-    <!-- MAIN -->
-    <div class="ml-0 md:ml-56 mt-20 p-4">
-      <h1 class="text-2xl md:text-3xl font-bold mb-6">Leave Management</h1>
-
-      <!-- SEARCH -->
       <input
         id="searchBox"
         onkeyup="searchLeave()"
@@ -121,9 +55,38 @@
         class="mb-4 w-full md:w-1/3 border p-2 rounded shadow"
       />
 
-      <!-- FORM -->
-      <div class="bg-white p-4 md:p-6 rounded shadow mb-6">
-        <h2 class="text-lg font-semibold mb-4">Apply for Leave</h2>
+      <div class="bg-white rounded shadow overflow-x-auto">
+        <table class="w-full text-left">
+          <thead class="bg-gray-200">
+            <tr>
+              <th class="p-3">Emp ID</th>
+              <th class="p-3">Name</th>
+              <th class="p-3">Type</th>
+              <th class="p-3">From</th>
+              <th class="p-3">To</th>
+              <th class="p-3">Days</th>
+              <th class="p-3">Status</th>
+              <th class="p-3">Action</th>
+            </tr>
+          </thead>
+          <tbody id="leaveTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div
+      id="leaveModal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50"
+    >
+      <div class="bg-white p-6 rounded shadow w-[90%] max-w-lg relative">
+        <button
+          onclick="closeLeaveModal()"
+          class="absolute top-2 right-3 text-xl"
+        >
+          ✖
+        </button>
+
+        <h2 class="text-lg font-bold mb-4">Apply for Leave</h2>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input
@@ -138,9 +101,17 @@
           />
 
           <select id="type" class="border p-2 rounded">
-            <option>Sick Leave</option>
-            <option>Casual Leave</option>
-            <option>Annual Leave</option>
+            <option>Adoption Leave</option>
+            <option>Bereavement Leave</option>
+            <option>Casual Leave (CL)</option>
+            <option>Compensatory Off (Comp-off)</option>
+            <option>Earned Leave (EL / PL / AL)</option>
+            <option>Marriage / Special Leave</option>
+            <option>Maternity Leave</option>
+            <option>Paternity Leave</option>
+            <option>Sabbatical Leave</option>
+            <option>Sick Leave (SL)</option>
+            <option>Other</option>
           </select>
 
           <input id="fromDate" type="date" class="border p-2 rounded" />
@@ -148,101 +119,215 @@
         </div>
 
         <button
-          onclick="addLeave()"
-          class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full md:w-auto"
+          onclick="
+            addLeave();
+            closeLeaveModal();
+          "
+          class="mt-4 bg-blue-600 text-white px-5 py-2 rounded"
         >
           Submit Leave
         </button>
       </div>
+    </div>
 
-      <!-- TABLE -->
-      <div class="bg-white rounded shadow overflow-x-auto">
-        <table class="w-full text-left min-w-175">
+    <div
+      id="historyModal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50"
+    >
+      <div class="bg-white p-6 rounded shadow w-[90%] max-w-2xl relative">
+        <button onclick="closeHistory()" class="absolute top-2 right-3 text-xl">
+          ✖
+        </button>
+
+        <h2 class="text-lg font-bold mb-4">Employee Leave History</h2>
+
+        <table class="w-full border">
           <thead class="bg-gray-200">
             <tr>
-              <th class="p-3">Emp ID</th>
-              <th class="p-3">Name</th>
-              <th class="p-3">Type</th>
-              <th class="p-3">From</th>
-              <th class="p-3">To</th>
-              <th class="p-3">Status</th>
-              <th class="p-3">Action</th>
+              <th class="p-2">Type</th>
+              <th class="p-2">From</th>
+              <th class="p-2">To</th>
+              <th class="p-2">Days</th>
+              <th class="p-2">Status</th>
+              <th class="p-2">Action</th>
             </tr>
           </thead>
-          <tbody id="leaveTable"></tbody>
+          <tbody id="historyTable"></tbody>
         </table>
       </div>
     </div>
 
-    <!-- SCRIPT -->
+    <script src="load-layout.js"></script>
+
     <script>
       let leaves = JSON.parse(localStorage.getItem("leaves")) || [];
 
-      renderLeaves();
+      // Helper to calculate duration
+      function calculateDays(from, to) {
+        if (!from || !to) return 0;
+        const start = new Date(from);
+        const end = new Date(to);
+        const diffTime = end - start;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        return diffDays > 0 ? diffDays : 0;
+      }
 
-      function toggleSidebar() {
-        document
-          .getElementById("sidebar")
-          .classList.toggle("-translate-x-full");
-        document.getElementById("overlay").classList.toggle("hidden");
+      function openLeaveModal() {
+        leaveModal.classList.remove("hidden");
+        leaveModal.classList.add("flex");
+      }
+
+      function closeLeaveModal() {
+        leaveModal.classList.add("hidden");
+      }
+
+      function closeHistory() {
+        historyModal.classList.add("hidden");
       }
 
       function addLeave() {
-        let empId = document.getElementById("empId").value.trim();
-        let name = document.getElementById("name").value.trim();
-        let type = document.getElementById("type").value;
-        let from = document.getElementById("fromDate").value;
-        let to = document.getElementById("toDate").value;
+        let empId = empIdInput.value.trim();
+        let name = nameInput.value.trim();
+        let type = typeInput.value;
+        let from = fromDateInput.value;
+        let to = toDateInput.value;
 
-        if (!empId || !name || !from || !to) return alert("Fill all fields");
+        if (!empId || !name || !from || !to) {
+          alert("Fill all fields");
+          return;
+        }
 
-        if (leaves.some((l) => l.empId.toLowerCase() === empId.toLowerCase()))
-          return alert("ID must be unique");
+        leaves.push({
+          empId,
+          name,
+          type,
+          from,
+          to,
+          status: "Pending",
+          appliedAt: new Date().toISOString(),
+        });
 
-        leaves.push({ empId, name, type, from, to, status: "Pending" });
         localStorage.setItem("leaves", JSON.stringify(leaves));
-
         renderLeaves();
-      }
-
-      function updateStatus(i, status) {
-        leaves[i].status = status;
-        localStorage.setItem("leaves", JSON.stringify(leaves));
-        renderLeaves();
+        clearForm();
       }
 
       function renderLeaves(data = leaves) {
-        let table = document.getElementById("leaveTable");
-        table.innerHTML = "";
-
-        data.forEach((l, i) => {
-          table.innerHTML += `
-<tr class="border-b hover:bg-gray-50">
-<td class="p-3">${l.empId}</td>
-<td class="p-3">${l.name}</td>
-<td class="p-3">${l.type}</td>
-<td class="p-3">${l.from}</td>
-<td class="p-3">${l.to}</td>
-<td class="p-3 ${l.status == "Approved" ? "text-green-600" : l.status == "Rejected" ? "text-red-600" : "text-yellow-600"}">${l.status}</td>
-<td class="p-3">
-  <button onclick="updateStatus(${i},'Approved')" class="bg-green-500 text-white px-2 py-1 rounded text-xs">Approve</button>
-  <button onclick="updateStatus(${i},'Rejected')" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Reject</button>
-</td>
-</tr>`;
+        let map = {};
+        leaves.forEach((l, index) => {
+          map[l.empId] = { ...l, originalIndex: index };
         });
-      }
 
-      function searchLeave() {
-        let val = document.getElementById("searchBox").value.toLowerCase();
-
-        let filtered = leaves.filter(
+        let val =
+          typeof searchBox !== "undefined" ? searchBox.value.toLowerCase() : "";
+        let latest = Object.values(map).filter(
           (l) =>
             l.empId.toLowerCase().includes(val) ||
             l.name.toLowerCase().includes(val),
         );
 
-        renderLeaves(filtered);
+        leaveTable.innerHTML = latest
+          .map(
+            (l) => `
+          <tr class="border-b hover:bg-gray-50">
+            <td class="p-3">${l.empId}</td>
+            <td class="p-3">
+              <button onclick="openHistory('${l.empId}')"
+                class="text-blue-600 hover:underline font-medium">
+                ${l.name}
+              </button>
+            </td>
+            <td class="p-3">${l.type}</td>
+            <td class="p-3">${l.from}</td>
+            <td class="p-3">${l.to}</td>
+            <td class="p-3 font-semibold">${calculateDays(l.from, l.to)}</td>
+            <td class="p-3 ${
+              l.status === "Approved"
+                ? "text-green-600"
+                : l.status === "Rejected"
+                  ? "text-red-600"
+                  : "text-yellow-600"
+            }">${l.status}</td>
+            <td class="p-3">
+              <button onclick="updateStatus(${l.originalIndex}, 'Approved')"
+                class="bg-green-500 text-white px-2 py-1 text-xs rounded">Approve</button>
+              <button onclick="updateStatus(${l.originalIndex}, 'Rejected')"
+                class="bg-red-500 text-white px-2 py-1 text-xs rounded ml-1">Reject</button>
+            </td>
+          </tr>
+        `,
+          )
+          .join("");
       }
+
+      function openHistory(empId) {
+        let empLeavesWithIndex = leaves
+          .map((l, index) => ({ ...l, index }))
+          .filter((l) => l.empId === empId);
+
+        let reversedHistory = empLeavesWithIndex.reverse();
+
+        historyTable.innerHTML = reversedHistory
+          .map(
+            (l) => `
+          <tr class="border-b">
+            <td class="p-2">${l.type}</td>
+            <td class="p-2">${l.from}</td>
+            <td class="p-2">${l.to}</td>
+            <td class="p-2">${calculateDays(l.from, l.to)}</td>
+            <td class="p-2 ${
+              l.status === "Approved"
+                ? "text-green-600"
+                : l.status === "Rejected"
+                  ? "text-red-600"
+                  : "text-yellow-600"
+            }">${l.status}</td>
+            <td class="p-2">
+              <button onclick="updateStatus(${l.index}, 'Approved', '${empId}')"
+                class="bg-green-500 text-white px-2 py-1 text-xs rounded">Approve</button>
+              <button onclick="updateStatus(${l.index}, 'Rejected', '${empId}')"
+                class="bg-red-500 text-white px-2 py-1 text-xs rounded ml-1">Reject</button>
+            </td>
+          </tr>
+        `,
+          )
+          .join("");
+
+        historyModal.classList.remove("hidden");
+        historyModal.classList.add("flex");
+      }
+
+      function updateStatus(index, status, empId = null) {
+        leaves[index].status = status;
+        localStorage.setItem("leaves", JSON.stringify(leaves));
+        renderLeaves();
+        if (empId) openHistory(empId);
+      }
+
+      function searchLeave() {
+        renderLeaves();
+      }
+
+      function clearForm() {
+        empIdInput.value = "";
+        nameInput.value = "";
+        fromDateInput.value = "";
+        toDateInput.value = "";
+      }
+
+      function initializePage() {
+        renderLeaves();
+        document.getElementById("main-content").classList.add("ready");
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        window.empIdInput = document.getElementById("empId");
+        window.nameInput = document.getElementById("name");
+        window.typeInput = document.getElementById("type");
+        window.fromDateInput = document.getElementById("fromDate");
+        window.toDateInput = document.getElementById("toDate");
+        setTimeout(initializePage, 300);
+      });
     </script>
   </body>
 </html>

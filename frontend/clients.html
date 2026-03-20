@@ -1,243 +1,620 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Clients</title>
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Anti-FOUC / flash prevention (exact same as Notice page) -->
+    <style>
+      #main-content {
+        opacity: 0;
+        transition: opacity 0.4s ease;
+      }
+      #main-content.ready {
+        opacity: 1;
+      }
+      .skeleton {
+        background: linear-gradient(
+          90deg,
+          #f0f0f0 25%,
+          #e0e0e0 50%,
+          #f0f0f0 75%
+        );
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+      }
+      @keyframes loading {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+    </style>
   </head>
 
-  <body class="bg-gray-100">
-    <!-- HEADER -->
-    <header
-      class="fixed top-0 left-0 w-full bg-blue-900 text-white p-4 flex justify-between items-center z-50 shadow"
-    >
-      <!-- LEFT -->
-      <div class="flex items-center gap-3">
-        <img src="./EMSlogo.jpg" class="h-10" />
-        <!-- <h1 class="text-lg font-bold">Client Management</h1> -->
-      </div>
+  <body class="bg-gray-100 font-sans">
+    <!-- Layout injection point -->
+    <div id="nav-placeholder"></div>
 
-      <!-- RIGHT -->
-      <img
-        src="./back.png"
-        onclick="history.back()"
-        class="h-8 w-8 cursor-pointer hover:scale-110 transition"
-        title="Go Back"
-      />
-    </header>
-
-    <!-- Sidebar -->
-
+    <!-- Main content – hidden until ready -->
     <div
-      class="fixed left-0 top-16 h-[calc(100%-4rem)] w-56 bg-[#1f2937] text-white p-5"
+      id="main-content"
+      class="md:ml-56 pt-20 p-6 transition-all duration-300"
     >
-      <h2 class="text-xl font-bold mb-6">Menu</h2>
-
-      <ul class="flex flex-col gap-3">
-        <li>
-          <a
-            href="index.html"
-            class="block px-4 py-2 bg-[#1f2937] rounded hover:bg-blue-600"
-            >Dashboard</a
-          >
-        </li>
-        <li>
-          <a
-            href="employee.html"
-            class="block px-4 py-2 bg-[#1f2937] rounded hover:bg-blue-600"
-            >Employees</a
-          >
-        </li>
-        <li>
-          <a
-            href="projects.html"
-            class="block px-4 py-2 bg-[#1f2937] rounded hover:bg-blue-600"
-            >Projects</a
-          >
-        </li>
-        <li>
-          <a
-            href="leaves.html"
-            class="block px-4 py-2 bg-[#1f2937] rounded hover:bg-blue-600"
-            >Leaves</a
-          >
-        </li>
-        <li>
-          <a
-            href="document.html"
-            class="block px-4 py-2 bg-[#1f2937] rounded hover:bg-blue-600"
-            >Document</a
-          >
-        </li>
-        <li>
-          <a
-            href="profile.html"
-            class="block px-4 py-2 bg-[#1f2937] rounded hover:bg-blue-600"
-            >Profile</a
-          >
-        </li>
-        <li>
-          <a
-            href="payroll.html"
-            class="block px-4 py-2 bg-[#1f2937] text-white rounded hover:bg-blue-600"
-            >Payroll</a
-          >
-        </li>
-        <li>
-          <a href="clients.html" class="block px-4 py-2 bg-blue-600 rounded"
-            >Clients</a
-          >
-        </li>
-        <li>
-          <a
-            href="reports.html"
-            class="block px-4 py-2 bg-[#1f2937] rounded hover:bg-blue-600"
-            >Reports</a
-          >
-        </li>
-      </ul>
-    </div>
-
-    <!-- (Old Back Button removed, now in header) -->
-
-    <!-- Main Content -->
-
-    <div class="ml-60 mt-20 p-8">
-      <h1 class="text-3xl font-bold mb-6">Client Management</h1>
-
-      <!-- Add Client Form -->
-
-      <div class="bg-white p-6 rounded shadow mb-6">
-        <h2 class="text-xl font-semibold mb-4">Add Client Project</h2>
-
-        <div class="grid grid-cols-2 gap-4">
-          <input
-            id="clientName"
-            type="text"
-            placeholder="Client Name"
-            class="border p-2 rounded"
-          />
-          <input
-            id="company"
-            type="text"
-            placeholder="Company Name"
-            class="border p-2 rounded"
-          />
-          <input
-            id="project"
-            type="text"
-            placeholder="Project Name"
-            class="border p-2 rounded"
-          />
-
-          <select id="status" class="border p-2 rounded">
-            <option>Ongoing</option>
-            <option>Completed</option>
-            <option>Pending</option>
-          </select>
-
-          <input id="deadline" type="date" class="border p-2 rounded" />
-          <input
-            id="budget"
-            type="number"
-            placeholder="Project Budget $"
-            class="border p-2 rounded"
-          />
+      <div
+        class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8"
+      >
+        <div>
+          <h1 class="text-3xl font-extrabold text-gray-900">Clients</h1>
+          <p class="text-gray-500 text-sm mt-1">
+            Manage client relationships and project history
+          </p>
         </div>
-
         <button
-          onclick="addClient()"
-          class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          onclick="openNewClientForm()"
+          class="bg-blue-600 text-white px-6 py-3 rounded-xl shadow-md hover:bg-blue-700 transition-all font-semibold whitespace-nowrap"
         >
-          Add Client
+          + Register New Client
         </button>
       </div>
 
-      <!-- Client Project Table -->
+      <div class="mb-8">
+        <input
+          id="search"
+          onkeyup="renderCards()"
+          placeholder="Search by ID, Name, Company or Location..."
+          class="p-3.5 rounded-xl border border-gray-300 w-full max-w-md outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+        />
+      </div>
 
-      <div class="bg-white rounded shadow overflow-hidden">
-        <table class="w-full text-left">
-          <thead class="bg-gray-200">
-            <tr>
-              <th class="p-3">ID</th>
-              <th class="p-3">Client</th>
-              <th class="p-3">Company</th>
-              <th class="p-3">Project</th>
-              <th class="p-3">Status</th>
-              <th class="p-3">Deadline</th>
-              <th class="p-3">Budget</th>
-            </tr>
-          </thead>
-
-          <tbody id="clientTable"></tbody>
-        </table>
+      <!-- Card grid with immediate skeletons -->
+      <div
+        id="cardContainer"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
+      >
+        <!-- Skeleton placeholders (shown instantly) -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+          <div class="flex items-start gap-5 animate-pulse">
+            <div class="bg-gray-200 w-20 h-20 rounded-2xl"></div>
+            <div class="flex-1 space-y-3">
+              <div class="skeleton h-7 w-4/5 rounded"></div>
+              <div class="skeleton h-5 w-3/5 rounded"></div>
+              <div class="skeleton h-4 w-2/3 rounded"></div>
+            </div>
+          </div>
+          <div class="mt-6 border-t pt-4">
+            <div class="skeleton h-12 w-full rounded-xl"></div>
+          </div>
+        </div>
+        <!-- Repeat skeleton 2 more times -->
+        <div
+          class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 hidden sm:block"
+        >
+          <div class="flex items-start gap-5 animate-pulse">
+            <div class="bg-gray-200 w-20 h-20 rounded-2xl"></div>
+            <div class="flex-1 space-y-3">
+              <div class="skeleton h-7 w-4/5 rounded"></div>
+              <div class="skeleton h-5 w-3/5 rounded"></div>
+              <div class="skeleton h-4 w-2/3 rounded"></div>
+            </div>
+          </div>
+          <div class="mt-6 border-t pt-4">
+            <div class="skeleton h-12 w-full rounded-xl"></div>
+          </div>
+        </div>
+        <div
+          class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 hidden lg:block"
+        >
+          <div class="flex items-start gap-5 animate-pulse">
+            <div class="bg-gray-200 w-20 h-20 rounded-2xl"></div>
+            <div class="flex-1 space-y-3">
+              <div class="skeleton h-7 w-4/5 rounded"></div>
+              <div class="skeleton h-5 w-3/5 rounded"></div>
+              <div class="skeleton h-4 w-2/3 rounded"></div>
+            </div>
+          </div>
+          <div class="mt-6 border-t pt-4">
+            <div class="skeleton h-12 w-full rounded-xl"></div>
+          </div>
+        </div>
       </div>
     </div>
 
+    <!-- New Client / Add Project Modal -->
+    <div
+      id="formModal"
+      class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-[80] p-4 backdrop-blur-sm"
+    >
+      <div
+        class="bg-white p-7 sm:p-8 rounded-2xl w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto"
+      >
+        <h2
+          id="modalTitle"
+          class="text-xl font-bold mb-6 text-gray-800 border-b pb-4"
+        >
+          Client Registration
+        </h2>
+        <input id="targetClientId" type="hidden" />
+        <input id="editProjectIdx" type="hidden" />
+
+        <div class="space-y-5">
+          <div id="clientInfoFields" class="space-y-4">
+            <div class="flex gap-3">
+              <div class="w-1/3">
+                <label
+                  class="text-xs font-bold text-gray-500 uppercase tracking-tight"
+                  >System ID</label
+                >
+                <input
+                  id="clientId"
+                  type="text"
+                  readonly
+                  class="mt-1 border p-2.5 w-full rounded-lg bg-gray-50 text-gray-600 text-sm cursor-not-allowed"
+                />
+              </div>
+              <div class="flex-1">
+                <label
+                  class="text-xs font-bold text-gray-500 uppercase tracking-tight"
+                  >Client Name</label
+                >
+                <input
+                  id="clientName"
+                  type="text"
+                  class="mt-1 border p-2.5 w-full rounded-lg text-sm focus:border-blue-500 focus:ring-1 outline-none"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label
+                  class="text-xs font-bold text-gray-500 uppercase tracking-tight"
+                  >Company</label
+                >
+                <input
+                  id="company"
+                  type="text"
+                  class="mt-1 border p-2.5 w-full rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label
+                  class="text-xs font-bold text-gray-500 uppercase tracking-tight"
+                  >Location</label
+                >
+                <input
+                  id="location"
+                  type="text"
+                  class="mt-1 border p-2.5 w-full rounded-lg text-sm"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label
+                  class="text-xs font-bold text-gray-500 uppercase tracking-tight"
+                  >Email</label
+                >
+                <input
+                  id="email"
+                  type="email"
+                  placeholder="client@company.com"
+                  class="mt-1 border p-2.5 w-full rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label
+                  class="text-xs font-bold text-gray-500 uppercase tracking-tight"
+                  >Phone</label
+                >
+                <input
+                  id="phone"
+                  type="tel"
+                  placeholder="+91..."
+                  class="mt-1 border p-2.5 w-full rounded-lg text-sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="bg-blue-50/70 p-5 rounded-xl border border-blue-100 space-y-4"
+          >
+            <h3
+              class="text-xs font-bold text-blue-700 uppercase tracking-wider"
+            >
+              Initial Project Details
+            </h3>
+            <input
+              id="projectName"
+              type="text"
+              placeholder="Project Name"
+              class="border p-2.5 w-full rounded-lg text-sm bg-white"
+            />
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label
+                  class="text-xs font-bold text-gray-500 uppercase tracking-tight"
+                  >Start Date</label
+                >
+                <input
+                  id="startDate"
+                  type="date"
+                  class="mt-1 border p-2.5 w-full rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label
+                  class="text-xs font-bold text-gray-500 uppercase tracking-tight"
+                  >Deadline</label
+                >
+                <input
+                  id="deadline"
+                  type="date"
+                  class="mt-1 border p-2.5 w-full rounded-lg text-sm"
+                />
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <input
+                id="budget"
+                type="number"
+                placeholder="Budget (USD)"
+                class="border p-2.5 rounded-lg w-full text-sm"
+              />
+              <select
+                id="status"
+                class="border p-2.5 rounded-lg w-full text-sm bg-white"
+              >
+                <option>Not Started</option>
+                <option>Ongoing</option>
+                <option>Pending</option>
+                <option>Completed</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 flex justify-end gap-4">
+          <button
+            onclick="closeForm()"
+            class="px-6 py-2.5 text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition"
+          >
+            Cancel
+          </button>
+          <button
+            onclick="saveData()"
+            class="bg-blue-600 text-white px-8 py-2.5 rounded-lg shadow hover:bg-blue-700 font-semibold transition"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Client Modal -->
+    <div
+      id="viewModal"
+      class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-[70] p-4 backdrop-blur-sm"
+    >
+      <div
+        class="bg-white p-7 sm:p-8 rounded-2xl w-full max-w-3xl shadow-2xl flex flex-col max-h-[88vh]"
+      >
+        <div class="flex justify-between items-start border-b pb-5">
+          <div class="flex gap-5 items-center">
+            <div
+              id="v_projCount_big"
+              class="bg-blue-600 text-white w-16 h-16 rounded-xl flex flex-col items-center justify-center shadow-md"
+            >
+              <span class="text-2xl font-black" id="v_count">0</span>
+              <span class="text-[9px] uppercase font-bold mt-0.5"
+                >Projects</span
+              >
+            </div>
+            <div>
+              <h2
+                id="v_name"
+                class="text-2xl font-extrabold text-gray-900"
+              ></h2>
+              <p id="v_company" class="text-blue-600 font-semibold mt-0.5"></p>
+              <p id="v_contact" class="text-sm text-gray-500 mt-1"></p>
+            </div>
+          </div>
+          <button
+            onclick="closeView()"
+            class="text-gray-400 hover:text-gray-600 text-3xl leading-none"
+          >
+            &times;
+          </button>
+        </div>
+
+        <div class="flex justify-between items-center my-6">
+          <h3
+            class="text-sm font-extrabold text-gray-800 uppercase tracking-tight"
+          >
+            Projects
+          </h3>
+          <button
+            id="addProjBtn"
+            class="bg-gray-800 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-blue-600 transition"
+          >
+            + New Project
+          </button>
+        </div>
+
+        <div
+          id="projectList"
+          class="space-y-4 overflow-y-auto pr-2 custom-scrollbar flex-1"
+        ></div>
+      </div>
+    </div>
+
+    <script src="load-layout.js"></script>
     <script>
       let clients = [
         {
-          id: 1,
-          client: "Michael Brown",
-          company: "Tech Solutions",
-          project: "Website Development",
-          status: "Ongoing",
-          deadline: "2026-05-10",
-          budget: "$5000",
-        },
-        {
-          id: 2,
-          client: "Emma Watson",
-          company: "Creative Studio",
-          project: "Mobile App",
-          status: "Completed",
-          deadline: "2026-02-20",
-          budget: "$8000",
+          id: "CL-8291",
+          name: "Michael Brown",
+          company: "Tech Solutions Ltd",
+          location: "New York, USA",
+          email: "m.brown@techsol.com",
+          phone: "+1 202-555-0143",
+          projects: [
+            {
+              name: "Website Redesign",
+              start: "2026-01-10",
+              deadline: "2026-05-10",
+              budget: "4500",
+              status: "Ongoing",
+            },
+            {
+              name: "Cloud Integration",
+              start: "2026-03-01",
+              deadline: "2026-09-15",
+              budget: "12000",
+              status: "Not Started",
+            },
+          ],
         },
       ];
 
-      function renderClients() {
-        let table = document.getElementById("clientTable");
-        table.innerHTML = "";
+      function renderCards() {
+        const container = document.getElementById("cardContainer");
+        const q = document.getElementById("search").value.toLowerCase().trim();
 
-        clients.forEach((c) => {
-          table.innerHTML += `
-<tr class="border-b hover:bg-gray-50">
-<td class="p-3">${c.id}</td>
-<td class="p-3">${c.client}</td>
-<td class="p-3">${c.company}</td>
-<td class="p-3">${c.project}</td>
-<td class="p-3">${c.status}</td>
-<td class="p-3">${c.deadline}</td>
-<td class="p-3">${c.budget}</td>
-</tr>`;
-        });
+        const filtered = clients.filter(
+          (c) =>
+            c.id.toLowerCase().includes(q) ||
+            c.name.toLowerCase().includes(q) ||
+            c.company.toLowerCase().includes(q) ||
+            c.location.toLowerCase().includes(q),
+        );
+
+        container.innerHTML =
+          filtered.length === 0
+            ? `<div class="col-span-full py-16 text-center text-gray-500 italic">No clients found matching your search.</div>`
+            : filtered
+                .map(
+                  (c) => `
+            <div class="bg-white p-6 rounded-2xl shadow border border-gray-200 hover:shadow-xl hover:border-blue-200 transition-all duration-300 group">
+              <div class="flex justify-end mb-2">
+                <span class="text-xs bg-gray-100 text-gray-600 font-bold px-3 py-1 rounded-full uppercase tracking-tight">${c.id}</span>
+              </div>
+              <div class="flex items-start gap-5">
+                <div class="bg-blue-50 text-blue-700 w-20 h-20 rounded-2xl flex flex-col items-center justify-center border border-blue-100 flex-shrink-0">
+                  <span class="text-3xl font-black">${c.projects.length}</span>
+                  <span class="text-[10px] font-bold uppercase mt-1 tracking-wide">Projects</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h2 class="text-xl font-extrabold text-gray-900 truncate">${c.name}</h2>
+                  <p class="text-blue-600 font-semibold text-sm mt-0.5">${c.company}</p>
+                  <p class="text-xs text-gray-500 mt-2 flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    ${c.location}
+                  </p>
+                </div>
+              </div>
+              <div class="mt-6 pt-4 border-t border-gray-100">
+                <button onclick="viewClientProjects('${c.id}')" class="w-full bg-gray-50 text-gray-700 py-3 rounded-xl text-sm font-bold uppercase tracking-wide hover:bg-blue-600 hover:text-white transition">
+                  View Projects
+                </button>
+              </div>
+            </div>
+          `,
+                )
+                .join("");
       }
 
-      renderClients();
+      function generateClientID() {
+        return "CL-" + Math.floor(1000 + Math.random() * 9000);
+      }
 
-      function addClient() {
-        let clientName = document.getElementById("clientName").value;
-        let company = document.getElementById("company").value;
-        let project = document.getElementById("project").value;
-        let status = document.getElementById("status").value;
-        let deadline = document.getElementById("deadline").value;
-        let budget = document.getElementById("budget").value;
+      function viewClientProjects(clientId) {
+        const c = clients.find((cl) => cl.id === clientId);
+        if (!c) return;
 
-        let newClient = {
-          id: clients.length + 1,
-          client: clientName,
-          company,
-          project,
-          status,
-          deadline,
-          budget,
+        document.getElementById("v_name").textContent = c.name;
+        document.getElementById("v_company").textContent = c.company;
+        document.getElementById("v_count").textContent = c.projects.length;
+        document.getElementById("v_contact").textContent =
+          `${c.email} | ${c.phone} | ${c.location}`;
+
+        document.getElementById("addProjBtn").onclick = () =>
+          openAddProjectOnly(clientId);
+
+        const list = document.getElementById("projectList");
+        list.innerHTML =
+          c.projects
+            .map((p, idx) => {
+              const colors = {
+                Completed: "bg-green-100 text-green-700 border-green-200",
+                Ongoing: "bg-blue-100  text-blue-700 border-blue-200",
+                "Not Started": "bg-gray-100  text-gray-600 border-gray-200",
+                Pending: "bg-yellow-100 text-yellow-700 border-yellow-200",
+              };
+              return `
+            <div class="p-5 rounded-xl border ${colors[p.status] || "border-gray-200"} bg-white flex justify-between items-start gap-4 shadow-sm">
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2 flex-wrap">
+                  <h3 class="font-bold text-gray-800">${p.name}</h3>
+                  <span class="text-xs font-bold px-3 py-1 rounded-full ${colors[p.status]?.split(" ")[0] || "bg-gray-100"} uppercase">${p.status}</span>
+                </div>
+                <div class="text-sm text-gray-600 space-x-4">
+                  <span>Budget: <strong class="text-gray-800">$${p.budget}</strong></span>
+                  <span>Deadline: <strong class="text-gray-800">${p.deadline}</strong></span>
+                </div>
+              </div>
+              <div class="flex gap-2 flex-shrink-0">
+                <button onclick="editSingleProject('${clientId}', ${idx})" class="p-2.5 bg-gray-100 rounded-lg hover:bg-blue-100 text-gray-600 hover:text-blue-700 transition">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                </button>
+                <button onclick="removeProject('${clientId}', ${idx})" class="p-2.5 bg-gray-100 rounded-lg hover:bg-red-100 text-gray-600 hover:text-red-700 transition">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
+              </div>
+            </div>`;
+            })
+            .join("") ||
+          `<p class="text-center text-gray-500 py-10">No projects yet for this client.</p>`;
+
+        document.getElementById("viewModal").classList.remove("hidden");
+      }
+
+      function openNewClientForm() {
+        document.getElementById("modalTitle").textContent =
+          "Register New Client";
+        document.getElementById("targetClientId").value = "";
+        document.getElementById("clientInfoFields").classList.remove("hidden");
+        document.getElementById("clientId").value = generateClientID();
+        clearForm();
+        document.getElementById("formModal").classList.remove("hidden");
+      }
+
+      function openAddProjectOnly(clientId) {
+        document.getElementById("modalTitle").textContent =
+          `New Project – ${clientId}`;
+        document.getElementById("targetClientId").value = clientId;
+        document.getElementById("editProjectIdx").value = "";
+        document.getElementById("clientInfoFields").classList.add("hidden");
+        clearForm();
+        document.getElementById("formModal").classList.remove("hidden");
+      }
+
+      function editSingleProject(clientId, pIdx) {
+        const c = clients.find((cl) => cl.id === clientId);
+        const p = c.projects[pIdx];
+        document.getElementById("modalTitle").textContent = "Update Project";
+        document.getElementById("targetClientId").value = clientId;
+        document.getElementById("editProjectIdx").value = pIdx;
+        document.getElementById("clientInfoFields").classList.add("hidden");
+        document.getElementById("projectName").value = p.name;
+        document.getElementById("startDate").value = p.start;
+        document.getElementById("deadline").value = p.deadline;
+        document.getElementById("budget").value = p.budget;
+        document.getElementById("status").value = p.status;
+        document.getElementById("formModal").classList.remove("hidden");
+      }
+
+      function saveData() {
+        const targetId = document.getElementById("targetClientId").value;
+        const pIdx = document.getElementById("editProjectIdx").value;
+        const proj = {
+          name: document.getElementById("projectName").value.trim(),
+          start: document.getElementById("startDate").value,
+          deadline: document.getElementById("deadline").value,
+          budget: document.getElementById("budget").value,
+          status: document.getElementById("status").value,
         };
 
-        clients.push(newClient);
-        renderClients();
+        if (!proj.name || !proj.start || !proj.deadline) {
+          alert("Project name, start date and deadline are required.");
+          return;
+        }
+
+        if (targetId === "") {
+          clients.push({
+            id: document.getElementById("clientId").value,
+            name: document.getElementById("clientName").value.trim(),
+            company: document.getElementById("company").value.trim(),
+            location: document.getElementById("location").value.trim(),
+            email: document.getElementById("email").value.trim(),
+            phone: document.getElementById("phone").value.trim(),
+            projects: [proj],
+          });
+        } else {
+          const c = clients.find((cl) => cl.id === targetId);
+          if (pIdx === "") {
+            c.projects.push(proj);
+          } else {
+            c.projects[pIdx] = proj;
+          }
+        }
+
+        renderCards();
+        if (targetId) viewClientProjects(targetId);
+        closeForm();
       }
+
+      function removeProject(cid, idx) {
+        if (!confirm("Delete this project?")) return;
+        const c = clients.find((cl) => cl.id === cid);
+        c.projects.splice(idx, 1);
+        if (c.projects.length === 0) {
+          clients = clients.filter((cl) => cl.id !== cid);
+          closeView();
+        } else {
+          viewClientProjects(cid);
+        }
+        renderCards();
+      }
+
+      function clearForm() {
+        [
+          "clientName",
+          "company",
+          "location",
+          "email",
+          "phone",
+          "projectName",
+          "startDate",
+          "deadline",
+          "budget",
+        ].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.value = "";
+        });
+        document.getElementById("status").value = "Not Started";
+      }
+
+      function closeForm() {
+        document.getElementById("formModal").classList.add("hidden");
+      }
+      function closeView() {
+        document.getElementById("viewModal").classList.add("hidden");
+      }
+
+      // ── Exact same reveal logic as Notice page ─────────────────────────────
+      function initializePage() {
+        renderCards();
+        document.getElementById("main-content").classList.add("ready");
+
+        setTimeout(() => {
+          const link = document.querySelector('a[href="clients.html"]');
+          if (link) {
+            link.classList.add("bg-blue-700", "font-semibold");
+            link.classList.remove("hover:bg-blue-600");
+          }
+        }, 400);
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        setTimeout(initializePage, 300);
+      });
     </script>
   </body>
 </html>

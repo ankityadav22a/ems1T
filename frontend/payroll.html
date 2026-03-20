@@ -2,281 +2,346 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Advanced Payroll</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payroll Cards</title>
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Exact same anti-flash styles as Notice page -->
+    <style>
+      #main-content {
+        opacity: 0;
+        transition: opacity 0.4s ease;
+      }
+      #main-content.ready {
+        opacity: 1;
+      }
+      .skeleton {
+        background: linear-gradient(
+          90deg,
+          #f0f0f0 25%,
+          #e0e0e0 50%,
+          #f0f0f0 75%
+        );
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+      }
+      @keyframes loading {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+    </style>
   </head>
 
   <body class="bg-gray-100">
-    <!-- HEADER -->
-    <header
-      class="fixed top-0 left-0 w-full bg-blue-900 text-white p-4 flex justify-between items-center z-50 shadow"
-    >
-      <div class="flex items-center gap-3">
-        <img src="./EMSlogo.jpg" class="h-10" />
-        <!-- <h1 class="text-lg font-bold">Payroll Management</h1> -->
-      </div>
+    <div id="nav-placeholder"></div>
 
-      <img
-        src="./back.png"
-        onclick="history.back()"
-        class="h-8 w-8 cursor-pointer hover:scale-110 transition"
-        title="Go Back"
-      />
-    </header>
-
-    <!-- Sidebar -->
+    <!-- Wrapped in #main-content for fade-in -->
     <div
-      class="fixed left-0 top-16 h-[calc(100%-4rem)] w-56 bg-[#1f2937] text-white p-5"
+      id="main-content"
+      class="md:ml-56 pt-20 p-6 transition-all duration-300"
     >
-      <h2 class="text-xl font-bold mb-6">EMS Menu</h2>
+      <h1 class="text-4xl font-bold text-gray-800 mb-6">Payroll Management</h1>
 
-      <ul class="flex flex-col gap-3">
-        <li>
-          <a href="index.html" class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Dashboard</a
-          >
-        </li>
-        <li>
-          <a
-            href="employee.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Employees</a
-          >
-        </li>
-        <li>
-          <a
-            href="projects.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Projects</a
-          >
-        </li>
-        <li>
-          <a
-            href="leaves.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Leaves</a
-          >
-        </li>
-        <li>
-          <a
-            href="documents.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Document</a
-          >
-        </li>
-        <li>
-          <a
-            href="profile.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Profile</a
-          >
-        </li>
-        <li>
-          <a
-            href="payroll.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Payroll</a
-          >
-        </li>
-        <li>
-          <a
-            href="clients.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Clients</a
-          >
-        </li>
-        <li>
-          <a
-            href="reports.html"
-            class="block px-4 py-2 hover:bg-blue-600 rounded"
-            >Reports</a
-          >
-        </li>
-      </ul>
-    </div>
-
-    <!-- Main -->
-    <div class="ml-56 mt-20 p-6">
-      <!-- Header -->
-      <div class="bg-white p-4 rounded shadow flex justify-between mb-6">
-        <h1 class="text-xl font-semibold">Payroll System</h1>
-      </div>
-
-      <!-- Controls -->
       <div class="flex flex-wrap gap-4 mb-6">
         <input
           id="search"
-          type="text"
-          placeholder="Search by Name or ID"
-          onkeyup="searchEmployee()"
-          class="p-2 border rounded w-60"
+          onkeyup="searchEmp()"
+          placeholder="Search..."
+          class="p-2 rounded border w-full md:w-64"
         />
-
-        <select onchange="sortSalary(this.value)" class="p-2 border rounded">
-          <option value="">Sort Salary</option>
-          <option value="high">High to Low</option>
-          <option value="low">Low to High</option>
+        <select
+          onchange="filterByRange(this.value)"
+          class="p-2 rounded border w-full md:w-auto"
+        >
+          <option value="">Salary Range</option>
+          <option value="10000-50000">₹10,000 – ₹50,000</option>
+          <option value="50000-100000">₹50,000 – ₹1,00,000</option>
+          <option value="100000-300000">₹1 Lakh – ₹3 Lakhs</option>
+          <option value="300000-700000">₹3 Lakhs – ₹7 Lakhs</option>
+          <option value="700000-1500000">₹7 Lakhs – ₹15 Lakhs</option>
+          <option value="1500000-3000000">₹15 Lakhs – ₹30 Lakhs</option>
+          <option value="3000000-6000000">₹30 Lakhs – ₹60 Lakhs</option>
+          <option value="6000000-10000000">₹60 Lakhs – ₹1 Crore</option>
+          <option value="10000000-above">Above ₹1 Crore</option>
         </select>
-
-        <button
-          onclick="toggleForm()"
-          class="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          + Add Payroll
-        </button>
       </div>
 
-      <!-- Form -->
-      <div id="formBox" class="hidden bg-white p-4 rounded shadow mb-6">
-        <div class="grid grid-cols-2 gap-4">
-          <input
-            id="empId"
-            placeholder="Employee ID"
-            class="p-2 border rounded"
-          />
-          <input
-            id="name"
-            placeholder="Employee Name"
-            class="p-2 border rounded"
-          />
-
-          <input
-            id="basic"
-            placeholder="Base Salary (auto)"
-            class="p-2 border rounded bg-gray-100"
-            readonly
-          />
-
-          <input
-            id="allow"
-            placeholder="Allowances"
-            type="number"
-            class="p-2 border rounded"
-          />
-          <input
-            id="deduct"
-            placeholder="Deductions"
-            type="number"
-            class="p-2 border rounded"
-          />
-          <input
-            id="bonus"
-            placeholder="Bonus"
-            type="number"
-            class="p-2 border rounded"
-          />
-
-          <input id="fromDate" type="date" class="p-2 border rounded" />
-          <input id="toDate" type="date" class="p-2 border rounded" />
+      <div
+        id="cardContainer"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
+        <!-- Immediate skeleton cards (prevents empty flash) -->
+        <div
+          class="bg-white p-6 rounded shadow border border-gray-200 animate-pulse"
+        >
+          <div class="space-y-4">
+            <div class="skeleton h-8 w-3/5 rounded"></div>
+            <div class="skeleton h-5 w-4/5 rounded"></div>
+            <div class="skeleton h-5 w-2/3 rounded"></div>
+            <div class="mt-6 pt-4 border-t">
+              <div class="skeleton h-10 w-full rounded"></div>
+            </div>
+          </div>
         </div>
-
-        <button
-          onclick="addPayroll()"
-          class="mt-4 bg-green-600 text-white px-4 py-2 rounded"
+        <div
+          class="bg-white p-6 rounded shadow border border-gray-200 animate-pulse hidden sm:block"
         >
-          Save
-        </button>
-      </div>
-
-      <!-- Table -->
-      <div class="bg-white shadow rounded overflow-x-auto">
-        <table class="w-full text-center">
-          <thead class="bg-gray-700 text-white">
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Base</th>
-              <th>Allow</th>
-              <th>Deduct</th>
-              <th>Bonus</th>
-              <th>Net</th>
-              <th>Period</th>
-            </tr>
-          </thead>
-
-          <tbody id="table"></tbody>
-        </table>
+          <div class="space-y-4">
+            <div class="skeleton h-8 w-3/5 rounded"></div>
+            <div class="skeleton h-5 w-4/5 rounded"></div>
+            <div class="skeleton h-5 w-2/3 rounded"></div>
+            <div class="mt-6 pt-4 border-t">
+              <div class="skeleton h-10 w-full rounded"></div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="bg-white p-6 rounded shadow border border-gray-200 animate-pulse hidden lg:block"
+        >
+          <div class="space-y-4">
+            <div class="skeleton h-8 w-3/5 rounded"></div>
+            <div class="skeleton h-5 w-4/5 rounded"></div>
+            <div class="skeleton h-5 w-2/3 rounded"></div>
+            <div class="mt-6 pt-4 border-t">
+              <div class="skeleton h-10 w-full rounded"></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
+    <!-- formModal and viewModal remain completely unchanged -->
+    <div
+      id="formModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[60] p-4"
+    >
+      <div class="bg-white p-6 rounded w-full max-w-md">
+        <h2 class="text-lg font-bold mb-4">Add Payroll</h2>
+        <input id="empId" class="hidden" />
+        <div class="space-y-3">
+          <div>
+            <label class="text-sm">Base Salary</label>
+            <input id="basic" type="number" class="border p-2 w-full" />
+          </div>
+          <div>
+            <label class="text-sm">Allowance</label>
+            <input id="allow" type="number" class="border p-2 w-full" />
+          </div>
+          <div>
+            <label class="text-sm">Deduction</label>
+            <input id="deduct" type="number" class="border p-2 w-full" />
+          </div>
+          <div>
+            <label class="text-sm">Bonus</label>
+            <input id="bonus" type="number" class="border p-2 w-full" />
+          </div>
+          <div>
+            <label class="text-sm">From</label>
+            <input id="fromDate" type="date" class="border p-2 w-full" />
+          </div>
+          <div>
+            <label class="text-sm">To</label>
+            <input id="toDate" type="date" class="border p-2 w-full" />
+          </div>
+        </div>
+        <div class="mt-6 flex justify-end gap-3">
+          <button
+            onclick="closeForm()"
+            class="text-gray-500 hover:text-gray-700"
+          >
+            Cancel
+          </button>
+          <button
+            onclick="savePayroll()"
+            class="bg-green-600 text-white px-6 py-2 rounded shadow"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="viewModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[60] p-4"
+    >
+      <div class="bg-white p-6 rounded w-full max-w-3xl overflow-x-auto">
+        <h2 class="text-lg font-bold mb-4">Payroll History</h2>
+        <table class="w-full text-center border min-w-[500px]">
+          <thead class="bg-gray-700 text-white">
+            <tr>
+              <th class="p-2">Base</th>
+              <th class="p-2">Allow</th>
+              <th class="p-2">Deduct</th>
+              <th class="p-2">Bonus</th>
+              <th class="p-2">Net</th>
+              <th class="p-2">Period</th>
+            </tr>
+          </thead>
+          <tbody id="viewTable"></tbody>
+        </table>
+        <div class="mt-4 flex justify-end">
+          <button
+            onclick="closeView()"
+            class="text-red-500 font-bold px-4 py-2"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="load-layout.js"></script>
     <script>
       let payroll = [];
+      const employees = [
+        { id: "EMP001", name: "Rahul", dept: "IT", post: "Developer" },
+        { id: "EMP002", name: "Priya", dept: "HR", post: "Manager" },
+        { id: "EMP003", name: "Amit", dept: "Finance", post: "Analyst" },
+      ];
+      let filteredEmployees = [...employees];
 
-      const employeeDB = {
-        EMP001: { name: "Rahul", base: 30000 },
-        EMP002: { name: "Priya", base: 35000 },
-      };
-
-      function toggleForm() {
-        document.getElementById("formBox").classList.toggle("hidden");
+      function getLatestPayroll(id) {
+        return [...payroll].reverse().find((e) => e.id === id);
       }
 
-      document.getElementById("empId").addEventListener("input", function () {
-        let id = this.value;
-        if (employeeDB[id]) {
-          document.getElementById("name").value = employeeDB[id].name;
-          document.getElementById("basic").value = employeeDB[id].base;
+      function renderCards() {
+        const cardContainer = document.getElementById("cardContainer");
+        cardContainer.innerHTML = filteredEmployees
+          .map((emp) => {
+            let latest = getLatestPayroll(emp.id);
+            return `<div class="bg-white p-4 rounded shadow border border-gray-200">
+            <h2 class="text-xl font-bold">${emp.name}</h2>
+            <p class="text-sm text-gray-500">ID: ${emp.id} | ${emp.dept}</p>
+            <p class="text-sm text-gray-600">${emp.post}</p>
+            <div class="mt-4 p-2 bg-gray-50 rounded">
+                <p class="text-sm">Base: <span class="font-semibold text-blue-700">₹${latest ? latest.base : 0}</span></p>
+                <p class="text-lg font-bold text-green-600">Net: ₹${latest ? latest.net : 0}</p>
+            </div>
+            <div class="mt-4 flex gap-2">
+              <button onclick="openForm('${emp.id}')" class="flex-1 bg-blue-600 text-white px-3 py-1.5 rounded text-sm">Add</button>
+              <button onclick="openView('${emp.id}')" class="flex-1 bg-gray-700 text-white px-3 py-1.5 rounded text-sm">View</button>
+            </div>
+          </div>`;
+          })
+          .join("");
+      }
+
+      function searchEmp() {
+        let val = document.getElementById("search").value.toLowerCase();
+        filteredEmployees = employees.filter(
+          (e) =>
+            e.name.toLowerCase().includes(val) ||
+            e.id.toLowerCase().includes(val) ||
+            e.dept.toLowerCase().includes(val),
+        );
+        renderCards();
+      }
+
+      function filterByRange(range) {
+        if (!range) {
+          filteredEmployees = [...employees];
+          renderCards();
+          return;
         }
-      });
+        let [min, max] = range.split("-");
+        min = parseInt(min);
+        max = max === "above" ? Infinity : parseInt(max);
+        filteredEmployees = employees.filter((emp) => {
+          let net = getLatestPayroll(emp.id)?.net || 0;
+          return net >= min && (max === Infinity || net <= max);
+        });
+        renderCards();
+      }
 
-      function addPayroll() {
-        let id = empId.value;
+      function openForm(id) {
+        document.getElementById("empId").value = id;
+        let recent = getLatestPayroll(id);
+        if (recent) document.getElementById("basic").value = recent.base;
+        document.getElementById("formModal").classList.remove("hidden");
+      }
 
-        if (payroll.some((e) => e.id === id)) {
-          alert("Duplicate Employee ID!");
+      function closeForm() {
+        document.getElementById("formModal").classList.add("hidden");
+      }
+
+      function savePayroll() {
+        let id = document.getElementById("empId").value;
+        let fromDateVal = document.getElementById("fromDate").value;
+        let toDateVal = document.getElementById("toDate").value;
+
+        if (!fromDateVal || !toDateVal) {
+          alert("Please select dates");
+          return;
+        }
+
+        let from = new Date(fromDateVal);
+        let to = new Date(toDateVal);
+        let overlap = payroll.find(
+          (e) =>
+            e.id === id && new Date(e.from) <= to && new Date(e.to) >= from,
+        );
+
+        if (overlap) {
+          alert(`Overlap with ${overlap.from} → ${overlap.to}`);
           return;
         }
 
         let data = {
           id,
-          name: name.value,
-          base: +basic.value,
-          allow: +allow.value,
-          deduct: +deduct.value,
-          bonus: +bonus.value,
-          from: fromDate.value,
-          to: toDate.value,
+          base: +document.getElementById("basic").value || 0,
+          allow: +document.getElementById("allow").value || 0,
+          deduct: +document.getElementById("deduct").value || 0,
+          bonus: +document.getElementById("bonus").value || 0,
+          from: fromDateVal,
+          to: toDateVal,
         };
-
         data.net = data.base + data.allow + data.bonus - data.deduct;
-
         payroll.push(data);
-        render();
+        closeForm();
+        renderCards();
       }
 
-      function render(list = payroll) {
-        let html = "";
-        list.forEach((e) => {
-          html += `
-          <tr class="border-b">
-            <td>${e.id}</td>
-            <td>${e.name}</td>
-            <td>₹${e.base}</td>
-            <td>₹${e.allow}</td>
-            <td>₹${e.deduct}</td>
-            <td>₹${e.bonus}</td>
-            <td class="text-green-600">₹${e.net}</td>
-            <td>${e.from} → ${e.to}</td>
-          </tr>`;
-        });
-        document.getElementById("table").innerHTML = html;
+      function openView(id) {
+        let data = payroll.filter((e) => e.id === id);
+        document.getElementById("viewTable").innerHTML = data.length
+          ? data
+              .map(
+                (e) => `
+          <tr class="border-b"><td class="p-2">₹${e.base}</td><td class="p-2">₹${e.allow}</td><td class="p-2">₹${e.deduct}</td><td class="p-2">₹${e.bonus}</td><td class="p-2 text-green-600 font-bold">₹${e.net}</td><td class="p-2 text-xs">${e.from} to ${e.to}</td></tr>
+        `,
+              )
+              .join("")
+          : `<tr><td colspan="6" class="p-4 text-gray-400">No Records Found</td></tr>`;
+        document.getElementById("viewModal").classList.remove("hidden");
       }
 
-      function searchEmployee() {
-        let val = search.value.toLowerCase();
-        let filtered = payroll.filter(
-          (e) =>
-            e.name.toLowerCase().includes(val) ||
-            e.id.toLowerCase().includes(val),
-        );
-        render(filtered);
+      function closeView() {
+        document.getElementById("viewModal").classList.add("hidden");
       }
 
-      function sortSalary(type) {
-        if (type === "high") payroll.sort((a, b) => b.net - a.net);
-        if (type === "low") payroll.sort((a, b) => a.net - b.net);
-        render();
+      // ── Exact same reveal logic as Notice page ─────────────────────────────
+      function initializePage() {
+        renderCards();
+        document.getElementById("main-content").classList.add("ready");
+
+        // Optional: highlight active menu item
+        setTimeout(() => {
+          const link = document.querySelector('a[href="payroll.html"]');
+          if (link) {
+            link.classList.add("bg-blue-700", "font-semibold");
+            link.classList.remove("hover:bg-blue-600");
+          }
+        }, 400);
       }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        setTimeout(initializePage, 300);
+      });
     </script>
   </body>
 </html>
