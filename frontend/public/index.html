@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EMS • Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <!-- Anti-flash + loading + background styles -->
+    <style>
+      body {
+        background-image: url("https://thumbs.dreamstime.com/b/futuristic-grid-neon-blue-purple-lights-dark-background-showcasing-technological-ambiance-neon-grid-glowing-431085834.jpg");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        color: #e5e7eb;
+      }
+
+      .content-overlay {
+        background: rgba(0, 0, 0, 0.72);
+        min-height: 100vh;
+      }
+
+      #main-content {
+        opacity: 0;
+        transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      #main-content.ready {
+        opacity: 1;
+      }
+
+      .stat-card {
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        background: rgba(255, 255, 255, 0.06) !important;
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .stat-card:hover {
+        transform: translateY(-12px) scale(1.03);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
+      }
+
+      .progress-bar {
+        transition: width 2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      .table-row {
+        transition: all 0.3s ease;
+      }
+      .table-row:hover {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        transform: scale(1.01);
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(40px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-in {
+        animation: fadeInUp 0.8s backwards;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="content-overlay">
+      <!-- 🔥 HEADER IMAGE (TEAM IQ) -->
+      <div class="relative mx-auto w-full max-w-xl lg:max-w-3xl mt-6 mb-10">
+        <div
+          class="overflow-hidden rounded-3xl shadow-2xl ring-2 ring-white/20 transform transition-all duration-500 hover:scale-[1.04]"
+        >
+          <img
+            src="EMSlogo.jpg"
+            alt="TEAM IQ"
+            class="w-full h-auto object-cover"
+          />
+        </div>
+      </div>
+      <!-- Layout injection point -->
+      <div id="nav-placeholder"></div>
+
+      <!-- MAIN DASHBOARD -->
+      <div id="main-content" class="ml-0 md:ml-64 mt-20 p-6 md:p-10">
+        <!-- HERO BANNER -->
+        <div
+          class="bg-gradient-to-r from-blue-700 via-violet-700 to-fuchsia-700 rounded-3xl p-8 md:p-12 mb-12 shadow-2xl overflow-hidden relative"
+        >
+          <div
+            class="flex flex-col md:flex-row items-start md:items-center justify-between gap-8"
+          >
+            <div>
+              <h1 class="text-5xl font-bold tracking-tighter mb-2">welcome</h1>
+              <p class="text-blue-100 text-xl">
+                Here's what's happening in your organization
+              </p>
+            </div>
+
+            <div class="flex gap-4">
+              <button
+                onclick="quickAction('add-employee')"
+                class="bg-white text-gray-900 font-semibold px-8 py-4 rounded-2xl flex items-center gap-3 hover:scale-105 transition-all active:scale-95 shadow-lg"
+              >
+                <span class="text-2xl">👤</span> Add Employee
+              </button>
+              <button
+                onclick="quickAction('apply-leave')"
+                class="bg-white/15 backdrop-blur-md border border-white/40 font-semibold px-8 py-4 rounded-2xl flex items-center gap-3 hover:bg-white/25 transition-all"
+              >
+                <span class="text-2xl">📅</span> Apply Leave
+              </button>
+            </div>
+          </div>
+
+          <!-- Floating badge -->
+          <div class="absolute -bottom-6 right-12 hidden lg:flex gap-3">
+            <div
+              class="bg-white/10 backdrop-blur-xl px-6 py-3 rounded-3xl text-sm font-medium flex items-center gap-2"
+            >
+              <!-- <div
+                class="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"
+              ></div> -->
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI STATS -->
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-16"
+        >
+          <div class="stat-card rounded-3xl p-6 group">
+            <div class="flex justify-between items-start mb-4">
+              <div class="text-blue-400 text-4xl">👥</div>
+              <div
+                class="text-xs font-medium px-3 py-1 bg-emerald-500/30 text-emerald-300 rounded-2xl"
+              >
+                +12%
+              </div>
+            </div>
+            <div
+              id="total-employees"
+              class="text-5xl font-bold text-white mb-1"
+            >
+              248
+            </div>
+            <p class="text-gray-300 text-lg">Total Employees</p>
+            <div class="h-1.5 bg-white/10 rounded-full mt-6 overflow-hidden">
+              <div class="h-1.5 bg-blue-500 w-[92%] rounded-full"></div>
+            </div>
+          </div>
+
+          <div class="stat-card rounded-3xl p-6 group">
+            <div class="flex justify-between items-start mb-4">
+              <div class="text-violet-400 text-4xl">📦</div>
+              <div
+                class="text-xs font-medium px-3 py-1 bg-amber-500/30 text-amber-300 rounded-2xl"
+              >
+                -3%
+              </div>
+            </div>
+            <div
+              id="active-projects"
+              class="text-5xl font-bold text-white mb-1"
+            >
+              17
+            </div>
+            <p class="text-gray-300 text-lg">Active Projects</p>
+            <div
+              onclick="quickAction('project')"
+              class="mt-8 text-xs font-medium text-violet-400 flex items-center gap-2 cursor-pointer hover:text-violet-300"
+            >
+              View all projects →
+            </div>
+          </div>
+
+          <div class="stat-card rounded-3xl p-6 group">
+            <div class="flex justify-between items-start mb-4">
+              <div class="text-emerald-400 text-4xl">🏖️</div>
+              <div
+                class="text-xs font-medium px-3 py-1 bg-red-500/30 text-red-300 rounded-2xl"
+              >
+                8 pending
+              </div>
+            </div>
+            <div id="pending-leaves" class="text-5xl font-bold text-white mb-1">
+              8
+            </div>
+            <p class="text-gray-300 text-lg">Pending Leaves</p>
+          </div>
+
+          <div class="stat-card rounded-3xl p-6 group">
+            <div class="flex justify-between items-start mb-4">
+              <div class="text-amber-400 text-4xl">₹</div>
+              <div
+                class="text-xs font-medium px-3 py-1 bg-emerald-500/30 text-emerald-300 rounded-2xl"
+              >
+                +8%
+              </div>
+            </div>
+            <div
+              id="monthly-payroll"
+              class="text-5xl font-bold text-white mb-1"
+            >
+              4.82
+            </div>
+            <p class="text-gray-300 text-lg">Lakhs • This Month</p>
+          </div>
+
+          <div class="stat-card rounded-3xl p-6 group">
+            <div class="flex justify-between items-start mb-4">
+              <div class="text-fuchsia-400 text-4xl">📄</div>
+            </div>
+            <div id="documents" class="text-5xl font-bold text-white mb-1">
+              134
+            </div>
+            <p class="text-gray-300 text-lg">Documents Uploaded</p>
+          </div>
+
+          <div class="stat-card rounded-3xl p-6 group">
+            <div class="flex justify-between items-start mb-4">
+              <div class="text-cyan-400 text-4xl">👔</div>
+            </div>
+            <div id="clients" class="text-5xl font-bold text-white mb-1">
+              23
+            </div>
+            <p class="text-gray-300 text-lg">Active Clients</p>
+          </div>
+        </div>
+
+        <!-- CHARTS ROW -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-16">
+          <div
+            class="lg:col-span-5 bg-white/6 backdrop-blur-xl border border-white/10 rounded-3xl p-8"
+          >
+            <div class="flex items-center justify-between mb-8">
+              <h3 class="text-2xl font-semibold">Department Distribution</h3>
+              <div class="text-sm text-gray-400">248 employees</div>
+            </div>
+            <canvas id="deptPie" class="max-h-80"></canvas>
+          </div>
+
+          <div
+            class="lg:col-span-7 bg-white/6 backdrop-blur-xl border border-white/10 rounded-3xl p-8"
+          >
+            <div class="flex items-center justify-between mb-8">
+              <h3 class="text-2xl font-semibold">
+                Payroll Trend (Last 6 Months)
+              </h3>
+            </div>
+            <canvas id="payrollBar" class="max-h-80"></canvas>
+          </div>
+        </div>
+
+        <!-- Recent Employees + Active Projects -->
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-16">
+          <div
+            class="bg-white/6 backdrop-blur-xl border border-white/10 rounded-3xl p-8"
+          >
+            <div class="flex justify-between items-center mb-8">
+              <h3 class="text-2xl font-semibold">Recent Employees</h3>
+              <button
+                onclick="quickAction('employee')"
+                class="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center gap-2"
+              >
+                View all <span class="text-xl leading-none">→</span>
+              </button>
+            </div>
+            <div class="space-y-3">
+              <div
+                class="table-row flex items-center justify-between bg-white/5 hover:bg-white/10 px-6 py-4 rounded-2xl"
+              >
+                <div class="flex items-center gap-4">
+                  <div
+                    class="w-10 h-10 bg-orange-500 text-white flex items-center justify-center rounded-2xl font-bold"
+                  >
+                    RK
+                  </div>
+                  <div>
+                    <p class="font-semibold">Rahul Kumar</p>
+                    <p class="text-sm text-gray-400">Software Engineer • IT</p>
+                  </div>
+                </div>
+                <div class="text-emerald-400 text-sm font-medium">Active</div>
+              </div>
+              <!-- other employee rows ... -->
+              <!-- keep the rest as in your original -->
+            </div>
+          </div>
+
+          <!-- Active Projects section remains similar -->
+        </div>
+
+        <!-- Notices + Leave + Clients row remains similar -->
+
+        <!-- FINAL CTA BAR -->
+        <div
+          class="mt-20 bg-gradient-to-r from-fuchsia-600 to-cyan-600 rounded-3xl p-8 text-center"
+        >
+          <p class="text-3xl font-bold mb-3">
+            Ready to manage your team like a pro?
+          </p>
+          <div class="flex flex-wrap justify-center gap-4">
+            <button
+              onclick="quickAction('payroll')"
+              class="bg-white text-gray-900 px-10 py-4 rounded-2xl font-bold text-lg"
+            >
+              View Payroll
+            </button>
+            <button
+              onclick="quickAction('document')"
+              class="bg-white/20 backdrop-blur-md border border-white px-10 py-4 rounded-2xl font-bold text-lg"
+            >
+              Upload Documents
+            </button>
+            <button
+              onclick="quickAction('profile')"
+              class="bg-white/20 backdrop-blur-md border border-white px-10 py-4 rounded-2xl font-bold text-lg"
+            >
+              My Profile
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <footer
+        class="bg-black/80 text-white/70 text-center py-6 text-sm backdrop-blur-md"
+      >
+        © 2026 Employee Management System • Built with ❤️ for Yadav
+      </footer>
+    </div>
+
+    <script src="load-layout.js"></script>
+    <script>
+      // ── Your existing JavaScript ────────────────────────────────────────────────
+      function animateCounter(
+        el,
+        target,
+        duration = 1800,
+        prefix = "",
+        suffix = "",
+      ) {
+        let start = 0;
+        const increment = target / (duration / 16);
+        const timer = setInterval(() => {
+          start += increment;
+          if (start >= target) {
+            el.textContent = prefix + Math.floor(target) + suffix;
+            clearInterval(timer);
+          } else {
+            el.textContent = prefix + Math.floor(start) + suffix;
+          }
+        }, 16);
+      }
+
+      function initCharts() {
+        new Chart(document.getElementById("deptPie"), {
+          type: "doughnut",
+          data: {
+            labels: ["IT", "HR", "Sales", "Finance", "Marketing", "Operations"],
+            datasets: [
+              {
+                data: [92, 34, 45, 28, 19, 30],
+                backgroundColor: [
+                  "#22d3ee",
+                  "#a78bfa",
+                  "#f472b6",
+                  "#fbbf24",
+                  "#4ade80",
+                  "#60a5fa",
+                ],
+                borderColor: "#111827",
+                borderWidth: 6,
+              },
+            ],
+          },
+          options: {
+            cutout: "72%",
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: { color: "#e5e7eb", padding: 18, font: { size: 13 } },
+              },
+            },
+          },
+        });
+
+        new Chart(document.getElementById("payrollBar"), {
+          type: "bar",
+          data: {
+            labels: ["Oct", "Nov", "Dec", "Jan", "Feb", "Mar"],
+            datasets: [
+              {
+                label: "Payroll (₹ Lakhs)",
+                data: [3.2, 3.8, 4.1, 4.3, 4.6, 4.82],
+                backgroundColor: "#22d3ee",
+                borderRadius: 12,
+                barThickness: 28,
+              },
+            ],
+          },
+          options: {
+            scales: {
+              y: { grid: { color: "#374151" }, ticks: { color: "#9ca3af" } },
+              x: { grid: { color: "#374151" }, ticks: { color: "#9ca3af" } },
+            },
+            plugins: { legend: { display: false } },
+          },
+        });
+      }
+
+      function quickAction(module) {
+        const messages = {
+          "add-employee": "Opening Employee Module → Adding new member...",
+          "apply-leave": "Opening Leave Module → New leave request created",
+          project: "Navigating to Projects → Mobile Banking App opened",
+          employee: "Loading full Employee Directory...",
+          leave: "Leave calendar opened",
+          notice: "Notice board expanded",
+          payroll: "Payroll dashboard launched",
+          document: "Document vault opened",
+          profile: "Your profile is loading...",
+        };
+        alert(messages[module] || "Module opened!");
+      }
+
+      function initializeDashboard() {
+        document.getElementById("main-content").classList.add("ready");
+
+        setTimeout(() => {
+          animateCounter(document.getElementById("total-employees"), 248);
+          animateCounter(document.getElementById("active-projects"), 17);
+          animateCounter(document.getElementById("pending-leaves"), 8);
+          animateCounter(
+            document.getElementById("monthly-payroll"),
+            4.82,
+            1200,
+            "₹",
+            "",
+          );
+          animateCounter(document.getElementById("documents"), 134);
+          animateCounter(document.getElementById("clients"), 23);
+        }, 800);
+
+        initCharts();
+
+        setTimeout(() => {
+          const link = document.querySelector('a[href="index.html"]');
+          if (link) link.classList.add("bg-blue-700", "font-semibold");
+        }, 600);
+
+        document.querySelectorAll(".stat-card").forEach((card, i) => {
+          card.style.animationDelay = i * 80 + "ms";
+          card.classList.add("animate-in");
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        setTimeout(initializeDashboard, 400);
+      });
+    </script>
+  </body>
+</html>

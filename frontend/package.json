@@ -4,13 +4,18 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "live-server --port=3000"
+    "start": "live-server --port=3000",
+    "server": "nodemon server.js"
   },
   "author": "ankit",
   "license": "ISC",
   "description": "",
   "dependencies": {
     "@tailwindcss/cli": "^4.2.1",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "nodemon": "^3.1.14",
+    "pg": "^8.20.0",
     "tailwindcss": "^4.2.1"
   }
 }

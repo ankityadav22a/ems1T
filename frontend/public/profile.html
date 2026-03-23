@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+      #main-content {
+        opacity: 0;
+        transition: 0.4s ease;
+      }
+      #main-content.ready {
+        opacity: 1;
+      }
+
+      .skeleton {
+        background: linear-gradient(
+          90deg,
+          #f0f0f0 25%,
+          #e0e0e0 50%,
+          #f0f0f0 75%
+        );
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+      }
+      @keyframes loading {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="bg-gray-100">
+    <div id="nav-placeholder"></div>
+    <div id="main-content" class="ml-60 mt-20 p-8">
+      <!-- HEADER -->
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold">Employee Profile</h1>
+        <button
+          onclick="openEditModal()"
+          class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
+        >
+          Edit Profile
+        </button>
+      </div>
+
+      <!-- PROFILE -->
+      <div class="bg-white p-6 rounded shadow flex items-center gap-6 mb-6">
+        <div class="relative">
+          <img
+            id="empImg"
+            src="https://i.pravatar.cc/120"
+            class="w-28 h-28 rounded-full border object-cover"
+          />
+          <input
+            type="file"
+            id="imgInput"
+            class="hidden"
+            onchange="changeImage(event)"
+          />
+          <button
+            onclick="document.getElementById('imgInput').click()"
+            class="absolute bottom-0 right-0 bg-blue-600 text-white text-xs px-2 py-1 rounded"
+          >
+            Edit
+          </button>
+        </div>
+
+        <div>
+          <h2 id="empName" class="text-2xl font-bold"></h2>
+          <p id="empRole" class="text-gray-600"></p>
+          <p id="empId"></p>
+          <p id="empDept"></p>
+          <p id="empRank"></p>
+        </div>
+      </div>
+
+      <!-- CONTACT -->
+      <div class="bg-white p-6 rounded shadow mb-6">
+        <h2 class="text-xl font-semibold mb-4">Contact Information</h2>
+        <div class="grid grid-cols-2 gap-4">
+          <p><b>Email:</b> <span id="empEmail"></span></p>
+          <p><b>Phone:</b> <span id="empPhone"></span></p>
+          <p><b>Address:</b> <span id="empAddress"></span></p>
+          <p><b>Joining Date:</b> <span id="empJoin"></span></p>
+        </div>
+      </div>
+
+      <!-- PROJECTS -->
+      <div class="bg-white p-6 rounded shadow mb-6">
+        <h2 class="text-xl font-semibold mb-4">Projects</h2>
+        <table class="w-full text-left">
+          <thead class="bg-gray-200">
+            <tr>
+              <th class="p-2">Project</th>
+              <th class="p-2">Role</th>
+              <th class="p-2">Status</th>
+              <th class="p-2">Deadline</th>
+            </tr>
+          </thead>
+          <tbody id="projectTable"></tbody>
+        </table>
+      </div>
+
+      <!-- LEAVES -->
+      <div class="bg-white p-6 rounded shadow">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold">Leave Records</h2>
+          <button
+            onclick="openLeaveModal()"
+            class="bg-green-600 text-white px-4 py-1 rounded text-sm"
+          >
+            + Add Leave
+          </button>
+        </div>
+
+        <table class="w-full text-left">
+          <tbody id="leaveTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- EDIT MODAL -->
+    <div
+      id="editModal"
+      class="hidden fixed inset-0 bg-black/50 flex items-center justify-center"
+    >
+      <div class="bg-white p-6 rounded-xl w-full max-w-xl">
+        <h2 class="text-xl font-bold mb-4">Edit Employee</h2>
+
+        <div class="grid grid-cols-2 gap-3">
+          <input id="name" placeholder="Name" class="border p-2 rounded" />
+          <input id="role" placeholder="Role" class="border p-2 rounded" />
+          <input
+            id="dept"
+            placeholder="Department"
+            class="border p-2 rounded"
+          />
+          <input id="rank" placeholder="Rank" class="border p-2 rounded" />
+          <input id="email" placeholder="Email" class="border p-2 rounded" />
+          <input id="phone" placeholder="Phone" class="border p-2 rounded" />
+          <input
+            id="address"
+            placeholder="Address"
+            class="border p-2 rounded"
+          />
+          <input id="join" type="date" class="border p-2 rounded" />
+        </div>
+
+        <div class="flex gap-3 mt-5">
+          <button
+            onclick="saveProfile()"
+            class="flex-1 bg-blue-600 text-white py-2 rounded"
+          >
+            Save
+          </button>
+          <button
+            onclick="closeModal()"
+            class="flex-1 bg-gray-200 py-2 rounded"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEAVE MODAL -->
+    <div
+      id="leaveModal"
+      class="hidden fixed inset-0 bg-black/50 flex items-center justify-center"
+    >
+      <div class="bg-white p-6 rounded-xl w-full max-w-md">
+        <h2 class="text-lg font-bold mb-4">Add Leave</h2>
+
+        <input
+          id="leaveType"
+          placeholder="Leave Type"
+          class="border p-2 rounded w-full mb-2"
+        />
+        <input
+          id="leaveFrom"
+          type="date"
+          class="border p-2 rounded w-full mb-2"
+        />
+        <input
+          id="leaveTo"
+          type="date"
+          class="border p-2 rounded w-full mb-2"
+        />
+
+        <select id="leaveStatus" class="border p-2 rounded w-full mb-3">
+          <option>Pending</option>
+          <option>Approved</option>
+          <option>Rejected</option>
+        </select>
+
+        <div class="flex gap-2">
+          <button
+            onclick="addLeave()"
+            class="flex-1 bg-green-600 text-white py-2 rounded"
+          >
+            Add
+          </button>
+          <button
+            onclick="closeLeaveModal()"
+            class="flex-1 bg-gray-200 py-2 rounded"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+    <script src="load-layout.js"></script>
+    <script>
+      let employee = {
+        name: "John Doe",
+        role: "Developer",
+        id: "EMP1023",
+        department: "IT",
+        rank: "Team Lead",
+        email: "john@email.com",
+        phone: "9876543210",
+        address: "Delhi",
+        joinDate: "2024-01-10",
+        image: "https://i.pravatar.cc/120",
+        projects: [
+          {
+            name: "Website",
+            role: "Lead",
+            status: "Ongoing",
+            deadline: "2026-05-10",
+          },
+        ],
+        leaves: [],
+      };
+
+      function renderProfile() {
+        document.getElementById("empName").textContent = employee.name;
+        document.getElementById("empRole").textContent = employee.role;
+        document.getElementById("empId").textContent = "ID: " + employee.id;
+        document.getElementById("empDept").textContent =
+          "Dept: " + employee.department;
+        document.getElementById("empRank").textContent =
+          "Rank: " + employee.rank;
+
+        document.getElementById("empEmail").textContent = employee.email;
+        document.getElementById("empPhone").textContent = employee.phone;
+        document.getElementById("empAddress").textContent = employee.address;
+        document.getElementById("empJoin").textContent = employee.joinDate;
+        document.getElementById("empImg").src = employee.image;
+
+        document.getElementById("projectTable").innerHTML = employee.projects
+          .map(
+            (p) => `
+    <tr class="border-b">
+      <td class="p-2">${p.name}</td>
+      <td class="p-2">${p.role}</td>
+      <td class="p-2">${p.status}</td>
+      <td class="p-2">${p.deadline}</td>
+    </tr>
+  `,
+          )
+          .join("");
+
+        document.getElementById("leaveTable").innerHTML = employee.leaves
+          .map(
+            (l) => `
+    <tr class="border-b">
+      <td class="p-2">${l.type}</td>
+      <td class="p-2">${l.from}</td>
+      <td class="p-2">${l.to}</td>
+      <td class="p-2">${l.status}</td>
+    </tr>
+  `,
+          )
+          .join("");
+      }
+
+      function openEditModal() {
+        document.getElementById("editModal").classList.remove("hidden");
+
+        document.getElementById("name").value = employee.name;
+        document.getElementById("role").value = employee.role;
+        document.getElementById("dept").value = employee.department;
+        document.getElementById("rank").value = employee.rank;
+        document.getElementById("email").value = employee.email;
+        document.getElementById("phone").value = employee.phone;
+        document.getElementById("address").value = employee.address;
+        document.getElementById("join").value = employee.joinDate;
+      }
+
+      function saveProfile() {
+        const newName = document.getElementById("name").value.trim();
+        if (!newName) {
+          alert("Name required");
+          return;
+        }
+
+        employee.name = newName;
+        employee.role = document.getElementById("role").value.trim();
+        employee.department = document.getElementById("dept").value.trim();
+        employee.rank = document.getElementById("rank").value.trim();
+        employee.email = document.getElementById("email").value.trim();
+        employee.phone = document.getElementById("phone").value.trim();
+        employee.address = document.getElementById("address").value.trim();
+        employee.joinDate = document.getElementById("join").value;
+
+        renderProfile();
+        closeModal();
+      }
+
+      function closeModal() {
+        document.getElementById("editModal").classList.add("hidden");
+      }
+
+      function changeImage(e) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          employee.image = reader.result;
+          renderProfile();
+        };
+        reader.readAsDataURL(e.target.files[0]);
+      }
+
+      function openLeaveModal() {
+        document.getElementById("leaveModal").classList.remove("hidden");
+      }
+
+      function closeLeaveModal() {
+        document.getElementById("leaveModal").classList.add("hidden");
+      }
+
+      function addLeave() {
+        employee.leaves.push({
+          type: document.getElementById("leaveType").value,
+          from: document.getElementById("leaveFrom").value,
+          to: document.getElementById("leaveTo").value,
+          status: document.getElementById("leaveStatus").value,
+        });
+
+        renderProfile();
+        closeLeaveModal();
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        renderProfile();
+        document.getElementById("main-content").classList.add("ready");
+      });
+    </script>
+  </body>
+</html>

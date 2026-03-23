@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EMS • Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#6366f1",
+              primaryDark: "#4f46e5",
+              emsBlue: "#1e40af",
+              emsLight: "#3b82f6",
+            },
+            animation: {
+              "gradient-x": "gradient-x 16s ease infinite",
+              breathe: "breathe 10s ease-in-out infinite",
+              float: "float 8s ease-in-out infinite",
+            },
+            keyframes: {
+              "gradient-x": {
+                "0%, 100%": { "background-position": "0% 50%" },
+                "50%": { "background-position": "100% 50%" },
+              },
+              breathe: {
+                "0%, 100%": { transform: "scale(1)" },
+                "50%": { transform: "scale(1.04)" },
+              },
+              float: {
+                "0%, 100%": { transform: "translateY(0)" },
+                "50%": { transform: "translateY(-12px)" },
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+
+    <style>
+      .card-glow {
+        position: relative;
+        overflow: hidden;
+      }
+      .card-glow::before,
+      .card-glow::after {
+        content: "";
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(
+          circle at 30% 20%,
+          rgba(99, 102, 241, 0.18),
+          transparent 60%
+        );
+        opacity: 0;
+        transition:
+          opacity 0.4s ease,
+          transform 0.6s ease;
+        pointer-events: none;
+        z-index: -1;
+      }
+      .card-glow::after {
+        background: radial-gradient(
+          circle at 70% 80%,
+          rgba(59, 130, 246, 0.16),
+          transparent 60%
+        );
+      }
+      .card-glow:hover::before,
+      .card-glow:hover::after {
+        opacity: 1;
+      }
+      .card-glow.moving::before {
+        transform: translate(20px, -30px) scale(1.1);
+      }
+      .card-glow.moving::after {
+        transform: translate(-30px, 40px) scale(1.15);
+      }
+    </style>
+  </head>
+  <body
+    class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center px-4"
+  >
+    <div class="w-full max-w-md">
+      <div
+        class="card-glow bg-white rounded-2xl shadow-2xl overflow-hidden transition-all duration-500 hover:shadow-3xl"
+      >
+        <!-- Header with logo -->
+        <div
+          class="relative h-52 overflow-hidden bg-gradient-to-br from-emsBlue via-blue-600 to-emsLight animate-gradient-x bg-[length:240%_240%]"
+        >
+          <div class="absolute inset-0 bg-black/15"></div>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div
+              class="relative transform transition-all duration-700 hover:scale-110 animate-float animate-breathe"
+            >
+              <img
+                src="EMSlogo.jpg"
+                alt="EMS Logo"
+                class="w-40 h-40 object-contain drop-shadow-2xl"
+                onerror="
+                  this.src =
+                    'https://via.placeholder.com/160/1e40af/ffffff?text=EMS'
+                "
+              />
+              <div
+                class="absolute inset-0 rounded-full bg-white/10 blur-2xl scale-125 animate-pulse pointer-events-none"
+              ></div>
+            </div>
+          </div>
+          <div class="absolute bottom-6 left-0 right-0 text-center">
+            <h2 class="text-xl font-bold text-white drop-shadow-lg">
+              Emergency Medical Services
+            </h2>
+            <p class="text-white/80 text-xs mt-1">Secure Login</p>
+          </div>
+        </div>
+
+        <!-- Form -->
+        <div class="p-7 pb-9">
+          <form id="login-form" class="space-y-5">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5"
+                >Email / Emp ID</label
+              >
+              <div class="relative">
+                <input
+                  type="text"
+                  id="identifier"
+                  required
+                  class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/40 outline-none transition-all duration-200 shadow-sm text-sm"
+                  placeholder="example@domain.com  or  EMP12345"
+                />
+                <i
+                  class="fas fa-user-tie absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"
+                ></i>
+              </div>
+              <p class="mt-1.5 text-xs text-gray-500">
+                Use your registered email or employee ID
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5"
+                >Password</label
+              >
+              <div class="relative">
+                <input
+                  type="password"
+                  id="password"
+                  required
+                  class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/40 outline-none transition-all duration-200 shadow-sm text-sm"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  id="toggle-password"
+                  class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <i class="fas fa-eye text-sm"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between text-xs">
+              <label class="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  class="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
+                />
+                <span class="ml-2 text-gray-600 select-none">Remember me</span>
+              </label>
+              <a href="#" class="text-primary hover:underline"
+                >Forgot password?</a
+              >
+            </div>
+
+            <button
+              type="submit"
+              class="w-full py-3.5 bg-gradient-to-r from-primary to-primaryDark text-white rounded-xl font-semibold shadow-md hover:shadow-lg hover:brightness-110 focus:ring-4 focus:ring-primary/30 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0"
+            >
+              Sign In
+            </button>
+          </form>
+
+          <div class="mt-5 text-center text-xs text-gray-600">
+            By signing in, you agree to our
+            <button
+              id="open-terms"
+              class="text-primary hover:underline font-medium focus:outline-none"
+            >
+              Terms & Conditions
+            </button>
+          </div>
+
+          <!-- Replaced "New user" with Contact Us button -->
+          <div class="mt-6 text-center">
+            <a
+              href="https://mail.google.com/mail/?view=cm&fs=1&to=ankityadv22a@gmail.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-medium shadow-md hover:shadow-lg hover:brightness-110 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0"
+            >
+              <i class="fas fa-envelope mr-2"></i> Contact Us
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Terms & Conditions Modal -->
+    <div
+      id="terms-modal"
+      class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[85vh] overflow-y-auto transform scale-95 transition-transform duration-300"
+      >
+        <div
+          class="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10"
+        >
+          <h3 class="text-xl font-bold text-gray-800">Terms & Conditions</h3>
+          <button
+            id="close-terms"
+            class="text-gray-500 hover:text-gray-800 text-2xl focus:outline-none"
+          >
+            ×
+          </button>
+        </div>
+
+        <div
+          class="px-6 py-5 text-sm text-gray-700 whitespace-pre-wrap"
+          id="terms-content"
+        >
+          <!-- Content will be inserted here -->
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ================================================
+      // === PASTE YOUR terms.txt CONTENT HERE ==========
+      const termsText = `# Terms and Conditions
+
+**Employee Management System (EMS)**
+
+---
+
+## ● Acceptance of Terms
+
+By accessing, browsing, or using this Employee Management System (EMS), you acknowledge that you have read, understood, and agreed to be legally bound by these Terms and Conditions. These terms apply to all users of the system, including employees, administrators, HR personnel, and company representatives.
+
+If you do not agree with any part of these terms, you must immediately discontinue use of the system. Continued use of the platform will be considered as your acceptance of any updates or modifications made to these terms over time.
+
+---
+
+## ● Purpose and Scope of the System
+
+The EMS is developed to streamline and manage organizational operations related to employee data and administrative processes. This includes, but is not limited to:
+
+* Employee personal and professional information
+* Attendance and leave management
+* Payroll and compensation tracking
+* Performance evaluation and reporting
+* Internal communication and document storage
+
+The system is strictly intended for official and authorized use within the organization. Any use beyond the intended business purpose is strictly prohibited.
+
+---
+
+## ● Data Collection, Ownership, and Control
+
+All information entered, uploaded, or generated within the system—including employee details, documents, attendance logs, reports, and communications—shall be considered the exclusive property of the company.
+
+By using the EMS, users explicitly agree that:
+
+* The company retains full ownership and control over all system data.
+* Administrators and authorized personnel have unrestricted access to view, edit, update, or delete data as required.
+* Data entered into the system may be used for operational, analytical, legal, and compliance purposes.
+
+Users waive any claim of personal ownership over the data stored within the system once it has been entered.
+
+---
+
+## ● Administrative Authority and Monitoring
+
+The EMS is under the full control of designated administrators and company authorities. Administrative rights include, but are not limited to:
+
+* Full access to all employee records and system data
+* Monitoring of user activities and system logs
+* Approval, rejection, or modification of employee requests
+* Creation and generation of reports for decision-making
+* Configuration and management of system settings
+
+The company reserves the right to monitor all activities performed within the system to ensure compliance, security, and proper usage.
+
+---
+
+## ● User Responsibilities and Obligations
+
+Users of the EMS are expected to maintain professionalism and integrity while interacting with the system. By using the platform, you agree to:
+
+* Provide accurate, complete, and up-to-date information at all times
+* Maintain confidentiality of your login credentials and not share them with others
+* Use the system only for authorized, work-related purposes
+* Immediately report any suspicious activity or security concerns
+
+Failure to comply with these responsibilities may result in disciplinary action, including termination of access or employment.
+
+---
+
+## ● Data Privacy and Security Measures
+
+The company is committed to implementing reasonable and appropriate security measures to protect the integrity and confidentiality of data stored in the EMS. These measures may include encryption, access control, and regular system monitoring.
+
+However, users acknowledge that:
+
+* No system is completely secure, and risks of unauthorized access may exist
+* The company is not responsible for breaches caused by user negligence (such as weak passwords or sharing credentials)
+* Data may be stored on secure servers and may be backed up periodically for recovery purposes
+
+---
+
+## ● Data Usage and Retention Policy
+
+Data collected through the EMS may be used for various business and legal purposes, including:
+
+* Human resource management and administrative processing
+* Payroll, taxation, and compliance with labor laws
+* Performance tracking and employee evaluations
+* Internal audits, reporting, and analytics
+
+The company reserves the right to retain employee data even after termination of employment, in accordance with internal policies or applicable legal requirements.
+
+---
+
+## ● System Availability and Maintenance
+
+While the company strives to ensure uninterrupted access to the EMS, there may be instances of downtime due to maintenance, upgrades, or unforeseen technical issues.
+
+Users agree that:
+
+* The system may be temporarily unavailable without prior notice
+* The company is not liable for any inconvenience or loss caused by such interruptions
+* Scheduled maintenance may be conducted to improve system performance and security
+
+---
+
+## ● Prohibited Activities and Misuse
+
+Users are strictly prohibited from engaging in any activity that may harm the system or compromise its integrity. Prohibited actions include, but are not limited to:
+
+* Entering false, misleading, or fraudulent information
+* Attempting unauthorized access to other user accounts or restricted areas
+* Uploading malicious software, viruses, or harmful files
+* Using the system for personal, illegal, or non-business purposes
+* Attempting to disrupt system functionality or security
+
+Violation of these rules may lead to immediate disciplinary and legal action.
+
+---
+
+## ● Intellectual Property Rights
+
+All software, design, content, and materials associated with the EMS are the intellectual property of the company or its licensors. Users are not permitted to:
+
+* Copy, modify, distribute, or reproduce any part of the system
+* Reverse-engineer or attempt to extract source code
+* Use system content for unauthorized commercial purposes
+
+---
+
+## ● Termination and Suspension of Access
+
+The company reserves the right to suspend, restrict, or terminate access to the EMS at its sole discretion, without prior notice, in cases of:
+
+* Violation of these Terms and Conditions
+* Misuse or unauthorized use of the system
+* Security threats or suspicious activities
+* End of employment or contractual relationship
+
+Upon termination, users must cease all use of the system immediately.
+
+---
+
+## ● Limitation of Liability
+
+The EMS is provided on an "as-is" and "as-available" basis. The company does not guarantee that the system will be error-free or uninterrupted.
+
+The company shall not be held liable for:
+
+* Loss or corruption of data due to technical issues
+* Unauthorized access beyond reasonable control
+* Any indirect, incidental, or consequential damages arising from system use
+
+---
+
+## ● Updates and Modifications
+
+The company reserves the right to modify, update, or revise these Terms and Conditions at any time. Users will be notified of significant changes where applicable.
+
+Continued use of the EMS after such updates constitutes acceptance of the revised terms.
+
+---
+
+## ● Compliance with Laws and Policies
+
+Users agree to comply with all applicable local, national, and international laws, as well as internal company policies, while using the EMS.
+
+Any violation of legal requirements may result in strict action, including legal proceedings.
+
+---
+
+## ● Confidentiality Clause
+
+All data and information available within the EMS are considered confidential. Users must not disclose, share, or misuse any company or employee information without proper authorization.
+
+Breach of confidentiality may result in serious disciplinary and legal consequences.
+
+---
+
+## ● Contact and Support
+
+For any technical issues, queries, or concerns related to the EMS, users should contact the designated system administrator or the company’s IT/HR department.
+
+---
+
+## ● Acknowledgment and Agreement
+
+By accessing and using this system, you confirm that you have read, understood, and agreed to abide by these Terms and Conditions in their entirety.
+
+---
+
+**Last Updated:** [23-3-2026]
+`;
+
+      // ================================================
+
+      // Password visibility toggle
+      document
+        .getElementById("toggle-password")
+        .addEventListener("click", function () {
+          const password = document.getElementById("password");
+          const icon = this.querySelector("i");
+          if (password.type === "password") {
+            password.type = "text";
+            icon.classList.replace("fa-eye", "fa-eye-slash");
+          } else {
+            password.type = "password";
+            icon.classList.replace("fa-eye-slash", "fa-eye");
+          }
+        });
+
+      // Side glow animation
+      const card = document.querySelector(".card-glow");
+      if (card) {
+        card.addEventListener("mousemove", (e) => {
+          const rect = card.getBoundingClientRect();
+          const x = (e.clientX - rect.left) / rect.width;
+          const y = (e.clientY - rect.top) / rect.height;
+          if (x < 0.3 || x > 0.7 || y < 0.3 || y > 0.7) {
+            card.classList.add("moving");
+          } else {
+            card.classList.remove("moving");
+          }
+        });
+        card.addEventListener("mouseleave", () =>
+          card.classList.remove("moving"),
+        );
+      }
+
+      // Terms modal
+      const modal = document.getElementById("terms-modal");
+      const termsContentEl = document.getElementById("terms-content");
+      const openTermsBtn = document.getElementById("open-terms");
+      const closeTermsBtn = document.getElementById("close-terms");
+
+      openTermsBtn.addEventListener("click", () => {
+        termsContentEl.textContent = termsText;
+        modal.classList.remove("pointer-events-none");
+        modal.classList.add("opacity-100");
+        modal.querySelector("div").classList.remove("scale-95");
+        modal.querySelector("div").classList.add("scale-100");
+      });
+
+      closeTermsBtn.addEventListener("click", () => {
+        modal.classList.remove("opacity-100");
+        modal.classList.add("pointer-events-none");
+        modal.querySelector("div").classList.remove("scale-100");
+        modal.querySelector("div").classList.add("scale-95");
+      });
+
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          closeTermsBtn.click();
+        }
+      });
+
+      // Login simulation (demo)
+      document.getElementById("login-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        const originalText = btn.textContent;
+        btn.innerHTML =
+          '<i class="fas fa-spinner fa-spin mr-2"></i> Signing in...';
+        btn.disabled = true;
+
+        setTimeout(() => {
+          alert("Login simulation successful");
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }, 1400);
+      });
+    </script>
+  </body>
+</html>

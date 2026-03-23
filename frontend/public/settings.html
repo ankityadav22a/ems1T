@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EMS • Settings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+
+    <style>
+      #main-content {
+        opacity: 0;
+        transition: 0.4s ease;
+      }
+      #main-content.ready {
+        opacity: 1;
+      }
+
+      .skeleton {
+        background: linear-gradient(
+          90deg,
+          #f0f0f0 25%,
+          #e0e0e0 50%,
+          #f0f0f0 75%
+        );
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+      }
+      @keyframes loading {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+      body {
+        background: linear-gradient(to bottom right, #f0f9ff, #e0e7ff);
+      }
+      .card {
+        transition: all 0.3s ease;
+      }
+      .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen flex items-center justify-center p-4 font-sans">
+    <div id="nav-placeholder"></div>
+    <div class="w-full max-w-lg">
+      <!-- Main Card -->
+      <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <!-- Header -->
+        <div class="bg-indigo-600 px-8 py-10 text-center">
+          <h1 class="text-3xl font-bold text-white">Settings</h1>
+          <p class="text-indigo-100 mt-2">Manage your account security</p>
+        </div>
+
+        <!-- Options -->
+        <div class="p-8 space-y-6">
+          <!-- Change Password Option -->
+          <div
+            class="card bg-gray-50 border border-gray-200 rounded-xl p-6 cursor-pointer hover:bg-indigo-50"
+            id="change-password-btn"
+          >
+            <div class="flex items-center gap-4">
+              <div
+                class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl"
+              >
+                <i class="fas fa-key"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-800">
+                  Change Password
+                </h3>
+                <p class="text-sm text-gray-600">
+                  Update your account password
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Logout Option -->
+          <div
+            class="card bg-gray-50 border border-gray-200 rounded-xl p-6 cursor-pointer hover:bg-red-50"
+            id="logout-btn"
+          >
+            <div class="flex items-center gap-4">
+              <div
+                class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600 text-xl"
+              >
+                <i class="fas fa-sign-out-alt"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-800">Logout</h3>
+                <p class="text-sm text-gray-600">Sign out from all devices</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div
+      id="change-pass-modal"
+      class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden"
+      >
+        <div class="bg-indigo-600 px-6 py-5 text-white">
+          <h2 class="text-xl font-bold">Change Password</h2>
+        </div>
+        <div class="p-6 space-y-5">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Email / Emp ID</label
+            >
+            <input
+              type="text"
+              id="cp-identifier"
+              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
+              placeholder="example@domain.com or EMP12345"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Current Password</label
+            >
+            <input
+              type="password"
+              id="cp-current"
+              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
+              placeholder="••••••••"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >New Password</label
+            >
+            <input
+              type="password"
+              id="cp-new"
+              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
+              placeholder="New password"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Confirm New Password</label
+            >
+            <input
+              type="password"
+              id="cp-confirm"
+              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
+              placeholder="Confirm new password"
+            />
+          </div>
+
+          <div id="cp-message" class="text-sm min-h-[1.25rem]"></div>
+
+          <div class="flex gap-3">
+            <button
+              id="cp-cancel"
+              class="flex-1 py-3 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              id="cp-submit"
+              class="flex-1 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700"
+            >
+              Update Password
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div
+      id="logout-modal"
+      class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden"
+      >
+        <div class="bg-red-600 px-6 py-5 text-white">
+          <h2 class="text-xl font-bold">Confirm Logout</h2>
+          <p class="text-sm mt-1">Please verify your identity</p>
+        </div>
+        <div class="p-6 space-y-5">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Email / Emp ID</label
+            >
+            <input
+              type="text"
+              id="logout-identifier"
+              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none"
+              placeholder="example@domain.com or EMP12345"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Password</label
+            >
+            <input
+              type="password"
+              id="logout-password"
+              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none"
+              placeholder="••••••••"
+            />
+          </div>
+
+          <div id="logout-message" class="text-sm min-h-[1.25rem]"></div>
+
+          <div class="flex gap-3">
+            <button
+              id="logout-cancel"
+              class="flex-1 py-3 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              id="logout-confirm"
+              class="flex-1 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700"
+            >
+              Confirm Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="load-layout.js"></script>
+    <script>
+      // ────────────────────────────────────────────────
+      // Simulated stored credentials (NEVER do this in real app!)
+      const stored = {
+        identifier: "EMP12345", // or "user@example.com"
+        password: "securepass123",
+      };
+      // ────────────────────────────────────────────────
+
+      const changePassModal = document.getElementById("change-pass-modal");
+      const logoutModal = document.getElementById("logout-modal");
+
+      // Change Password
+      document
+        .getElementById("change-password-btn")
+        .addEventListener("click", () => {
+          changePassModal.classList.remove("hidden");
+          document.getElementById("cp-message").textContent = "";
+          document
+            .querySelectorAll("#change-pass-modal input")
+            .forEach((el) => (el.value = ""));
+        });
+
+      document
+        .getElementById("cp-cancel")
+        .addEventListener("click", () =>
+          changePassModal.classList.add("hidden"),
+        );
+      document.getElementById("cp-submit").addEventListener("click", () => {
+        const id = document.getElementById("cp-identifier").value.trim();
+        const curr = document.getElementById("cp-current").value;
+        const nw = document.getElementById("cp-new").value;
+        const conf = document.getElementById("cp-confirm").value;
+        const msg = document.getElementById("cp-message");
+
+        msg.className = "text-sm min-h-[1.25rem]";
+
+        if (!id || !curr || !nw || !conf) {
+          msg.textContent = "Please fill all fields";
+          msg.className += " text-red-600";
+          return;
+        }
+
+        if (nw !== conf) {
+          msg.textContent = "New password and confirmation do not match";
+          msg.className += " text-red-600";
+          return;
+        }
+
+        if (id !== stored.identifier || curr !== stored.password) {
+          msg.textContent = "Incorrect Email/Emp ID or current password";
+          msg.className += " text-red-600";
+          return;
+        }
+
+        // In real app → send to backend
+        msg.textContent = "Password changed successfully!";
+        msg.className += " text-green-600 font-medium";
+
+        setTimeout(() => {
+          changePassModal.classList.add("hidden");
+        }, 1800);
+      });
+
+      // Logout
+      document.getElementById("logout-btn").addEventListener("click", () => {
+        logoutModal.classList.remove("hidden");
+        document.getElementById("logout-message").textContent = "";
+        document
+          .querySelectorAll("#logout-modal input")
+          .forEach((el) => (el.value = ""));
+      });
+
+      document
+        .getElementById("logout-cancel")
+        .addEventListener("click", () => logoutModal.classList.add("hidden"));
+      document
+        .getElementById("logout-confirm")
+        .addEventListener("click", () => {
+          const id = document.getElementById("logout-identifier").value.trim();
+          const pass = document.getElementById("logout-password").value;
+          const msg = document.getElementById("logout-message");
+
+          msg.className = "text-sm min-h-[1.25rem]";
+
+          if (!id || !pass) {
+            msg.textContent = "Please enter your credentials";
+            msg.className += " text-red-600";
+            return;
+          }
+
+          if (id === stored.identifier && pass === stored.password) {
+            msg.textContent = "Logout successful. Redirecting...";
+            msg.className += " text-green-600 font-medium";
+
+            setTimeout(() => {
+              // In real app → clear session / token / redirect to login
+              alert("You have been logged out");
+              logoutModal.classList.add("hidden");
+              // window.location.href = 'login.html';
+            }, 1400);
+          } else {
+            msg.textContent = "Incorrect credentials";
+            msg.className += " text-red-600";
+          }
+        });
+    </script>
+  </body>
+</html>

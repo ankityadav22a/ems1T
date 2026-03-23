@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employees</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+      #main-content {
+        opacity: 0;
+        transition: 0.4s ease;
+      }
+      #main-content.ready {
+        opacity: 1;
+      }
+
+      .skeleton {
+        background: linear-gradient(
+          90deg,
+          #f0f0f0 25%,
+          #e0e0e0 50%,
+          #f0f0f0 75%
+        );
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+      }
+      @keyframes loading {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="bg-gray-100 font-sans">
+    <div id="nav-placeholder"></div>
+
+    <div id="main-content" class="md:ml-56 pt-20 p-6">
+      <!-- HEADER -->
+      <div class="flex justify-between items-center mb-8">
+        <div>
+          <h1 class="text-3xl font-extrabold">Employees</h1>
+          <p class="text-gray-500 text-sm">Manage workforce & assignments</p>
+        </div>
+
+        <button
+          onclick="openModal()"
+          class="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 shadow"
+        >
+          + Add Employee
+        </button>
+      </div>
+
+      <!-- SEARCH -->
+      <input
+        id="search"
+        onkeyup="renderCards()"
+        placeholder="Search employees..."
+        class="mb-6 p-3 w-full max-w-md rounded-xl border focus:ring-2 focus:ring-blue-500"
+      />
+      <!-- salary filter  -->
+      <select
+        id="salaryFilter"
+        onchange="renderCards()"
+        class="p-3 rounded-xl border w-full md:w-auto"
+      >
+        <option value="">Salary Range</option>
+        <option value="10000-50000">₹10,000 – ₹50,000</option>
+        <option value="50000-100000">₹50,000 – ₹1,00,000</option>
+        <option value="100000-300000">₹1 Lakh – ₹3 Lakhs</option>
+        <option value="300000-700000">₹3 Lakhs – ₹7 Lakhs</option>
+        <option value="700000-1500000">₹7 Lakhs – ₹15 Lakhs</option>
+        <option value="1500000-3000000">₹15 Lakhs – ₹30 Lakhs</option>
+        <option value="3000000-6000000">₹30 Lakhs – ₹60 Lakhs</option>
+        <option value="6000000-1000000₀">₹6₀ Lakhs – ₹1 Crore</option>
+        <option value="1₀₀₀₀₀₀₀-above">Above ₹1 Crore</option>
+      </select>
+      <!-- CARD GRID -->
+      <div
+        id="cardContainer"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+      ></div>
+    </div>
+
+    <!-- MODAL -->
+    <div
+      id="modal"
+      class="hidden fixed inset-0 bg-black/50 flex items-center justify-center"
+    >
+      <div class="bg-white p-6 rounded-2xl w-full max-w-lg">
+        <h2 id="modalTitle" class="text-xl font-bold mb-5">Add Employee</h2>
+
+        <div class="grid grid-cols-2 gap-4">
+          <input id="name" placeholder="Name" class="border p-2 rounded" />
+          <input
+            id="department"
+            placeholder="Department"
+            class="border p-2 rounded"
+          />
+          <input
+            id="project"
+            placeholder="Project"
+            class="border p-2 rounded"
+          />
+          <input id="role" placeholder="Role" class="border p-2 rounded" />
+
+          <select id="mode" class="border p-2 rounded">
+            <option value="">Work Mode</option>
+            <option>Remote</option>
+            <option>Hybrid</option>
+            <option>Onsite</option>
+          </select>
+
+          <input
+            id="salary"
+            type="number"
+            placeholder="Salary"
+            class="border p-2 rounded"
+          />
+
+          <input
+            id="joinDate"
+            type="date"
+            class="border p-2 rounded col-span-2"
+          />
+        </div>
+
+        <div class="flex gap-3 mt-6">
+          <button
+            onclick="saveEmployee()"
+            class="flex-1 bg-blue-600 text-white py-2 rounded-lg"
+          >
+            Save
+          </button>
+
+          <button
+            onclick="closeModal()"
+            class="flex-1 bg-gray-200 py-2 rounded-lg"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="load-layout.js"></script>
+
+    <script>
+      let employees = JSON.parse(localStorage.getItem("employees")) || [];
+      let editId = null;
+
+      function openModal() {
+        document.getElementById("modal").classList.remove("hidden");
+        document.getElementById("modalTitle").textContent = "Add Employee";
+        editId = null;
+        clearForm();
+      }
+
+      function closeModal() {
+        document.getElementById("modal").classList.add("hidden");
+      }
+
+      function renderCards() {
+        const container = document.getElementById("cardContainer");
+        const q = document.getElementById("search").value.toLowerCase().trim();
+        const salaryRange =
+          document.getElementById("salaryFilter")?.value || "";
+
+        let filtered = employees.filter((emp) => {
+          // 🔍 SEARCH (ID + name + dept + project)
+          const matchesSearch =
+            emp.name.toLowerCase().includes(q) ||
+            emp.department.toLowerCase().includes(q) ||
+            emp.project.toLowerCase().includes(q) ||
+            emp.id.toString().includes(q);
+
+          // 💰 SALARY FILTER
+          let matchesSalary = true;
+
+          if (salaryRange) {
+            const [min, max] = salaryRange.split("-");
+            const salary = Number(emp.salary);
+
+            if (max === "above") {
+              matchesSalary = salary >= Number(min);
+            } else {
+              matchesSalary = salary >= Number(min) && salary <= Number(max);
+            }
+          }
+
+          return matchesSearch && matchesSalary;
+        });
+
+        container.innerHTML =
+          filtered.length === 0
+            ? `<p class="col-span-full text-center text-gray-500 py-10">No employees found</p>`
+            : filtered
+                .map((emp) => {
+                  const modeColor =
+                    emp.mode === "Remote"
+                      ? "bg-green-100 text-green-700"
+                      : emp.mode === "Hybrid"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : "bg-blue-100 text-blue-700";
+
+                  return `
+               <div class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
+
+                 <div class="flex justify-between mb-4">
+                   <span class="text-xs font-bold bg-gray-100 px-3 py-1 rounded">
+                     #${emp.id}
+                   </span>
+                   <span class="text-xs px-2 py-1 rounded ${modeColor}">
+                     ${emp.mode}
+                   </span>
+                 </div>
+
+                 <h2 class="text-xl font-bold">${emp.name}</h2>
+                 <p class="text-sm text-gray-500">${emp.role}</p>
+
+                <div class="mt-4 text-sm text-gray-600 space-y-1">
+                  <p><strong>Dept:</strong> ${emp.department}</p>
+                  <p><strong>Project:</strong> ${emp.project}</p>
+                  <p><strong>Salary:</strong> ₹${emp.salary}</p>
+                </div>
+
+                <div class="mt-5 pt-4 border-t text-xs text-gray-500">
+                  Joined: ${emp.joinDate}
+                </div>
+
+                <!-- ✅ ACTION BUTTONS -->
+                <div class="mt-4 flex gap-2">
+                  <button onclick="editEmployee(${emp.id})"
+                    class="flex-1 bg-yellow-100 text-yellow-700 py-2 rounded-lg text-sm font-semibold hover:bg-yellow-200">
+                    Edit
+                  </button>
+
+                  <button onclick="deleteEmployee(${emp.id})"
+                    class="flex-1 bg-red-100 text-red-700 py-2 rounded-lg text-sm font-semibold hover:bg-red-200">
+                    Delete
+                  </button>
+                </div>
+
+              </div>`;
+                })
+                .join("");
+
+        localStorage.setItem("employees", JSON.stringify(employees));
+      }
+
+      function saveEmployee() {
+        const name = document.getElementById("name").value.trim();
+        const department = document.getElementById("department").value.trim();
+        const project = document.getElementById("project").value.trim();
+        const role = document.getElementById("role").value.trim();
+        const mode = document.getElementById("mode").value;
+        const salary = document.getElementById("salary").value;
+        const joinDate = document.getElementById("joinDate").value;
+
+        if (
+          !name ||
+          !department ||
+          !project ||
+          !role ||
+          !mode ||
+          !salary ||
+          !joinDate
+        ) {
+          alert("Fill all fields");
+          return;
+        }
+
+        if (editId) {
+          const emp = employees.find((e) => e.id === editId);
+          Object.assign(emp, {
+            name,
+            department,
+            project,
+            role,
+            mode,
+            salary,
+            joinDate,
+          });
+        } else {
+          employees.push({
+            id: Date.now(),
+            name,
+            department,
+            project,
+            role,
+            mode,
+            salary,
+            joinDate,
+          });
+        }
+
+        renderCards();
+        closeModal();
+        clearForm();
+      }
+
+      function editEmployee(id) {
+        const emp = employees.find((e) => e.id === id);
+        if (!emp) return;
+
+        editId = id;
+        document.getElementById("modalTitle").textContent = "Edit Employee";
+
+        document.getElementById("name").value = emp.name;
+        document.getElementById("department").value = emp.department;
+        document.getElementById("project").value = emp.project;
+        document.getElementById("role").value = emp.role;
+        document.getElementById("mode").value = emp.mode;
+        document.getElementById("salary").value = emp.salary;
+        document.getElementById("joinDate").value = emp.joinDate;
+
+        openModal();
+      }
+
+      function deleteEmployee(id) {
+        if (!confirm("Delete this employee?")) return;
+        employees = employees.filter((e) => e.id !== id);
+        renderCards();
+      }
+
+      function clearForm() {
+        document
+          .querySelectorAll("#modal input")
+          .forEach((i) => (i.value = ""));
+        document.getElementById("mode").value = "";
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        renderCards();
+        document.getElementById("main-content").classList.add("ready");
+      });
+    </script>
+  </body>
+</html>
