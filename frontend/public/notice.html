@@ -47,43 +47,6 @@
           + Add Notice
         </button>
       </div>
-      <!-- <div class="bg-white p-6 rounded shadow mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            id="title"
-            type="text"
-            placeholder="Title"
-            class="border p-2 rounded w-full"
-          />
-          <input
-            id="author"
-            type="text"
-            placeholder="Author"
-            class="border p-2 rounded w-full"
-          />
-          <select id="type" class="border p-2 rounded w-full">
-            <option>Notice</option>
-            <option>Blog</option>
-          </select>
-          <input
-            id="url"
-            type="url"
-            placeholder="Enter Notice URL"
-            class="border p-2 rounded w-full"
-          />
-        </div>
-        <textarea
-          id="content"
-          placeholder="Short Description..."
-          class="border p-2 rounded w-full mt-4 h-28"
-        ></textarea>
-        <button
-          onclick="addNotice()"
-          class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-medium"
-        >
-          Post Notice
-        </button>
-      </div> -->
 
       <input
         type="text"
@@ -94,12 +57,16 @@
       />
 
       <div class="bg-white rounded shadow overflow-x-auto">
-        <table class="w-full text-left min-w-[700px]">
+        <table class="w-full text-left min-w-[900px]">
           <thead class="bg-gray-100">
             <tr>
+              <th class="p-4 font-semibold">#</th>
               <th class="p-4 font-semibold">Title</th>
               <th class="p-4 font-semibold">Type</th>
               <th class="p-4 font-semibold">Author</th>
+              <th class="p-4 font-semibold">Date</th>
+              <th class="p-4 font-semibold">URL</th>
+              <th class="p-4 font-semibold">Content</th>
               <th class="p-4 font-semibold">Action</th>
             </tr>
           </thead>
@@ -170,10 +137,8 @@
           ></textarea>
 
           <button
-            onclick="
-              addNotice();
-              closeNoticeModal();
-            "
+            onclick="handlePostNotice(event)"
+            id="postButton"
             class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-medium"
           >
             Post Notice
@@ -227,16 +192,15 @@
     </div>
 
     <script src="load-layout.js"></script>
-
     <script>
-      let notices = [];
       let currentId = 1;
       let hideTimeout = null;
       let pendingNotice = null;
+      let notices = [];
 
       function normalizeUrl(url) {
         try {
-          let u = url
+          return url
             .trim()
             .toLowerCase()
             .replace(/^https?:\/\//, "")
@@ -244,22 +208,42 @@
             .replace(/\/$/, "")
             .split("#")[0]
             .split("?")[0];
-          return u;
         } catch {
           return url.trim().toLowerCase();
         }
       }
+
       function openNoticeModal() {
-        document.getElementById("noticeModal").classList.remove("hidden");
-        document.getElementById("noticeModal").classList.add("flex");
+        document
+          .getElementById("noticeModal")
+          .classList.replace("hidden", "flex");
       }
 
       function closeNoticeModal() {
-        document.getElementById("noticeModal").classList.add("hidden");
-        document.getElementById("noticeModal").classList.remove("flex");
+        document
+          .getElementById("noticeModal")
+          .classList.replace("flex", "hidden");
       }
 
-      function addNotice() {
+      async function fetchNotices() {
+        try {
+          const res = await fetch("/api/notices");
+
+          if (!res.ok) {
+            throw new Error(`Fetch failed: ${res.status}`);
+          }
+
+          notices = await res.json();
+          renderNotices(notices);
+        } catch (err) {
+          console.error("❌ Fetch error:", err);
+          alert("Backend not reachable OR server not running.");
+        }
+      }
+
+      async function handlePostNotice(e) {
+        if (e) e.preventDefault();
+
         const title = document.getElementById("title").value.trim();
         const author = document.getElementById("author").value.trim();
         const type = document.getElementById("type").value;
@@ -280,21 +264,56 @@
           return;
         }
 
-        saveNotice({ title, author, type, url, content });
+        const btn = document.getElementById("postButton");
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = "Posting...";
+
+        try {
+          await saveNotice({ title, author, type, url, content });
+        } finally {
+          btn.disabled = false;
+          btn.textContent = originalText;
+        }
       }
 
-      function saveNotice(data) {
-        notices.push({
-          id: currentId++,
-          title: data.title,
-          author: data.author,
-          type: data.type,
-          url: data.url,
-          content: data.content,
-        });
-        renderNotices(notices);
-        clearForm();
-        pendingNotice = null;
+      async function saveNotice(data) {
+        try {
+          const response = await fetch("/api/notices", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          });
+
+          let result = {};
+          try {
+            result = await response.json(); // safe parse
+          } catch {
+            result = { error: "Invalid JSON response from server" };
+          }
+
+          if (!response.ok) {
+            if (result.error && result.error.toLowerCase().includes("exists")) {
+              const existing = notices.find(
+                (n) => normalizeUrl(n.url) === normalizeUrl(data.url),
+              );
+              showDuplicatePopup(existing || data);
+              return;
+            }
+
+            alert("Error: " + (result.error || "Insert failed"));
+            return;
+          }
+
+          closeNoticeModal();
+          clearForm();
+          await fetchNotices(); // ✅ IMPORTANT await
+        } catch (err) {
+          console.error("❌ POST error:", err);
+          alert("Server not reachable. Check backend.");
+        }
       }
 
       function forceAddNotice() {
@@ -313,38 +332,65 @@
 
       function renderNotices(data) {
         const tbody = document.getElementById("noticeTable");
-        tbody.innerHTML = "";
 
-        if (data.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-500">No notices posted yet.</td></tr>`;
+        if (!data.length) {
+          tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-gray-500">No notices posted yet.</td></tr>`;
           return;
         }
 
-        data.forEach((n) => {
-          tbody.innerHTML += `
-            <tr class="border-b hover:bg-gray-50 transition-colors">
-              <td class="p-4">
-                <span 
-                  onmouseenter="showHover(event, ${n.id})"
-                  onmouseleave="hideHover()"
-                  class="text-blue-600 font-medium cursor-pointer hover:underline">
-                  ${n.title}
-                </span>
-              </td>
-              <td class="p-4">${n.type}</td>
-              <td class="p-4">${n.author}</td>
-              <td class="p-4 flex gap-2">
-                <button onclick="openNotice('${n.url.replace(/'/g, "\\'")}')" 
-                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded text-sm">
-                  Open
-                </button>
-                <button onclick="deleteNotice(${n.id})" 
-                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-1.5 rounded text-sm">
-                  Delete
-                </button>
-              </td>
-            </tr>`;
-        });
+        tbody.innerHTML = data
+          .map((n, index) => {
+            const date = n.created_at
+              ? new Date(n.created_at).toLocaleString()
+              : "-";
+            const shortContent =
+              n.content?.length > 70
+                ? n.content.slice(0, 70) + "..."
+                : n.content || "-";
+
+            return `
+    <tr class="border-b hover:bg-gray-50">
+      <td class="p-4">${index + 1}</td>
+      <td class="p-4">
+        <span onmouseenter="showHover(event, ${n.id})"
+              onmouseleave="hideHover()"
+              class="text-blue-600 cursor-pointer hover:underline">
+          ${n.title}
+        </span>
+      </td>
+      <td class="p-4">${n.type}</td>
+      <td class="p-4">${n.author}</td>
+      <td class="p-4">${date}</td>
+      <td class="p-4">
+        <a href="${n.url}" target="_blank" class="text-blue-600 underline">Link</a>
+      </td>
+      <td class="p-4">${shortContent}</td>
+      <td class="p-4 flex gap-2">
+        <button onclick="openNotice('${n.url}')" class="bg-green-600 text-white px-3 py-1 rounded">Open</button>
+        <button onclick="deleteNotice(${n.id})" class="bg-red-600 text-white px-3 py-1 rounded">Delete</button>
+      </td>
+    </tr>`;
+          })
+          .join("");
+      }
+
+      async function deleteNotice(id) {
+        if (!confirm("Delete this notice?")) return;
+
+        await fetch(`/api/notices/${id}`, { method: "DELETE" });
+        fetchNotices();
+      }
+
+      function searchNotice() {
+        const val = document.getElementById("searchInput").value.toLowerCase();
+
+        const filtered = notices.filter(
+          (n) =>
+            n.title.toLowerCase().includes(val) ||
+            n.author.toLowerCase().includes(val),
+        );
+
+        renderNotices(filtered);
       }
 
       function showHover(e, id) {
@@ -357,87 +403,52 @@
         document.getElementById("hoverAuthor").textContent =
           "By " + notice.author;
         document.getElementById("hoverContent").textContent =
-          notice.content || "No description provided.";
+          notice.content || "-";
 
         const popup = document.getElementById("hoverPopup");
 
-        // Position popup near cursor with safety margins
-        let top = e.clientY + 18;
-        let left = e.clientX + 22;
-
-        // Prevent going off right edge
-        if (left + 440 > window.innerWidth) {
-          left = e.clientX - 440 - 10;
-        }
-        // Prevent going off top
-        if (top + 280 > window.innerHeight) {
-          top = e.clientY - 280 - 10;
-        }
-
-        popup.style.top = top + "px";
-        popup.style.left = left + "px";
+        popup.style.top = e.clientY + 15 + "px";
+        popup.style.left = e.clientX + 20 + "px";
         popup.classList.remove("hidden");
       }
 
       function hideHover() {
         hideTimeout = setTimeout(() => {
           document.getElementById("hoverPopup").classList.add("hidden");
-        }, 220);
+        }, 200);
       }
 
       function openNotice(url) {
         window.open(url, "_blank", "noopener,noreferrer");
       }
 
-      function deleteNotice(id) {
-        if (!confirm("Delete this notice?")) return;
-        notices = notices.filter((n) => n.id !== id);
-        renderNotices(notices);
-      }
-
-      function searchNotice() {
-        const val = document
-          .getElementById("searchInput")
-          .value.toLowerCase()
-          .trim();
-        const filtered = notices.filter(
-          (n) =>
-            n.title.toLowerCase().includes(val) ||
-            n.author.toLowerCase().includes(val),
-        );
-        renderNotices(filtered);
-      }
-
       function showDuplicatePopup(existing) {
+        const notice = existing || {
+          title: "(unknown)",
+          author: "(unknown)",
+          url: "",
+        };
         document.getElementById("popupContent").innerHTML = `
-          <p class="font-medium">This URL is already used:</p>
-          <p class="mt-2 break-all"><strong>Title:</strong> ${existing.title}</p>
-          <p><strong>Author:</strong> ${existing.author}</p>
-          <p><strong>URL:</strong> <a href="${existing.url}" target="_blank" class="text-blue-600 hover:underline break-all">${existing.url}</a></p>
-          <p class="mt-4 text-sm text-gray-600">Add it anyway?</p>
-        `;
-        const modal = document.getElementById("popupModal");
-        modal.classList.remove("hidden");
-        modal.classList.add("flex");
+    <p><strong>Title:</strong> ${notice.title}</p>
+    <p><strong>Author:</strong> ${notice.author}</p>
+    <p class="text-blue-600">${notice.url}</p>
+  `;
+
+        document
+          .getElementById("popupModal")
+          .classList.replace("hidden", "flex");
       }
 
       function closePopup() {
-        document.getElementById("popupModal").classList.add("hidden");
-        document.getElementById("popupModal").classList.remove("flex");
+        document
+          .getElementById("popupModal")
+          .classList.replace("flex", "hidden");
         pendingNotice = null;
       }
 
       function initializePage() {
-        renderNotices(notices);
+        fetchNotices();
         document.getElementById("main-content").classList.add("ready");
-
-        setTimeout(() => {
-          const link = document.querySelector('a[href="notice.html"]');
-          if (link) {
-            link.classList.add("bg-blue-700", "font-semibold");
-            link.classList.remove("hover:bg-blue-600");
-          }
-        }, 400);
       }
 
       document.addEventListener("DOMContentLoaded", () => {
