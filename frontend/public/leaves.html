@@ -34,7 +34,6 @@
       }
     </style>
   </head>
-
   <body class="bg-gray-100">
     <div id="nav-placeholder"></div>
 
@@ -43,7 +42,7 @@
 
       <button
         onclick="openLeaveModal()"
-        class="mb-4 bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700"
+        class="mb-4 bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 transition"
       >
         + Apply Leave
       </button>
@@ -51,8 +50,8 @@
       <input
         id="searchBox"
         onkeyup="searchLeave()"
-        placeholder="Search by ID or Name..."
-        class="mb-4 w-full md:w-1/3 border p-2 rounded shadow"
+        placeholder="Search by Employee ID or Name..."
+        class="mb-4 w-full md:w-1/3 border p-2 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
 
       <div class="bg-white rounded shadow overflow-x-auto">
@@ -74,33 +73,41 @@
       </div>
     </div>
 
+    <!-- Apply Leave Modal -->
     <div
       id="leaveModal"
-      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50"
+      class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50"
     >
-      <div class="bg-white p-6 rounded shadow w-[90%] max-w-lg relative">
+      <div class="bg-white p-6 rounded-lg shadow-xl w-[90%] max-w-lg relative">
         <button
           onclick="closeLeaveModal()"
-          class="absolute top-2 right-3 text-xl"
+          class="absolute top-3 right-4 text-2xl text-gray-500 hover:text-gray-700"
         >
-          ✖
+          ✕
         </button>
 
-        <h2 class="text-lg font-bold mb-4">Apply for Leave</h2>
+        <h2 class="text-xl font-bold mb-5">Apply for Leave</h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            id="empId"
-            placeholder="Employee ID"
-            class="border p-2 rounded"
-          />
-          <input
-            id="name"
-            placeholder="Employee Name"
-            class="border p-2 rounded"
-          />
+        <div class="grid grid-cols-1 gap-4">
+          <div>
+            <input
+              id="empId"
+              onkeyup="fetchEmployeeName()"
+              placeholder="Employee ID"
+              class="border p-3 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
-          <select id="type" class="border p-2 rounded">
+          <div
+            id="employeeNameDisplay"
+            class="text-sm font-medium min-h-[24px]"
+          ></div>
+
+          <select
+            id="leaveType"
+            class="border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Select Leave Type</option>
             <option>Adoption Leave</option>
             <option>Bereavement Leave</option>
             <option>Casual Leave (CL)</option>
@@ -114,219 +121,310 @@
             <option>Other</option>
           </select>
 
-          <input id="fromDate" type="date" class="border p-2 rounded" />
-          <input id="toDate" type="date" class="border p-2 rounded" />
+          <div class="grid grid-cols-2 gap-4">
+            <input
+              id="fromDate"
+              type="date"
+              class="border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+              id="toDate"
+              type="date"
+              class="border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
         </div>
 
         <button
-          onclick="
-            addLeave();
-            closeLeaveModal();
-          "
-          class="mt-4 bg-blue-600 text-white px-5 py-2 rounded"
+          onclick="addLeave()"
+          class="mt-6 w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 transition font-medium"
         >
-          Submit Leave
+          Submit Leave Application
         </button>
       </div>
     </div>
 
+    <!-- History Modal -->
     <div
       id="historyModal"
-      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50"
+      class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50"
     >
-      <div class="bg-white p-6 rounded shadow w-[90%] max-w-2xl relative">
-        <button onclick="closeHistory()" class="absolute top-2 right-3 text-xl">
-          ✖
+      <div class="bg-white p-6 rounded-lg shadow-xl w-[90%] max-w-2xl relative">
+        <button
+          onclick="closeHistory()"
+          class="absolute top-3 right-4 text-2xl text-gray-500 hover:text-gray-700"
+        >
+          ✕
         </button>
 
-        <h2 class="text-lg font-bold mb-4">Employee Leave History</h2>
+        <h2 class="text-xl font-bold mb-4" id="historyTitle">
+          Employee Leave History
+        </h2>
 
-        <table class="w-full border">
-          <thead class="bg-gray-200">
-            <tr>
-              <th class="p-2">Type</th>
-              <th class="p-2">From</th>
-              <th class="p-2">To</th>
-              <th class="p-2">Days</th>
-              <th class="p-2">Status</th>
-              <th class="p-2">Action</th>
-            </tr>
-          </thead>
-          <tbody id="historyTable"></tbody>
-        </table>
+        <div class="overflow-x-auto">
+          <table class="w-full border">
+            <thead class="bg-gray-200">
+              <tr>
+                <th class="p-3">Type</th>
+                <th class="p-3">From</th>
+                <th class="p-3">To</th>
+                <th class="p-3">Days</th>
+                <th class="p-3">Status</th>
+                <th class="p-3">Action</th>
+              </tr>
+            </thead>
+            <tbody id="historyTable" class="text-sm"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
     <script src="load-layout.js"></script>
 
     <script>
-      let leaves = JSON.parse(localStorage.getItem("leaves")) || [];
+      let leaves = [];
+      let currentEmployeeName = "";
 
-      // Helper to calculate duration
+      async function fetchLeaves() {
+        try {
+          const res = await fetch("/api/leaves");
+          if (!res.ok) throw new Error("Failed to fetch");
+          leaves = await res.json();
+          renderLeaves();
+        } catch (err) {
+          console.error(err);
+          alert("Failed to load leaves. Check console.");
+        }
+      }
+
       function calculateDays(from, to) {
         if (!from || !to) return 0;
-        const start = new Date(from);
-        const end = new Date(to);
-        const diffTime = end - start;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-        return diffDays > 0 ? diffDays : 0;
+        let start = new Date(from);
+        let end = new Date(to);
+        if (end < start) return 0;
+
+        let count = 0;
+        while (start <= end) {
+          if (start.getDay() !== 0) count++; // Exclude Sundays
+          start.setDate(start.getDate() + 1);
+        }
+        return count;
       }
 
       function openLeaveModal() {
-        leaveModal.classList.remove("hidden");
-        leaveModal.classList.add("flex");
+        document.getElementById("leaveModal").classList.remove("hidden");
+        // Clear previous name when opening modal
+        document.getElementById("employeeNameDisplay").innerHTML = "";
+        currentEmployeeName = "";
       }
 
       function closeLeaveModal() {
-        leaveModal.classList.add("hidden");
+        document.getElementById("leaveModal").classList.add("hidden");
       }
 
       function closeHistory() {
-        historyModal.classList.add("hidden");
+        document.getElementById("historyModal").classList.add("hidden");
       }
 
-      function addLeave() {
-        let empId = empIdInput.value.trim();
-        let name = nameInput.value.trim();
-        let type = typeInput.value;
-        let from = fromDateInput.value;
-        let to = toDateInput.value;
+      async function fetchEmployeeName() {
+        const empId = document.getElementById("empId").value.trim();
+        const nameDisplay = document.getElementById("employeeNameDisplay");
 
-        if (!empId || !name || !from || !to) {
-          alert("Fill all fields");
+        if (empId.length < 2) {
+          nameDisplay.innerHTML = "";
+          currentEmployeeName = "";
           return;
         }
 
-        leaves.push({
-          empId,
-          name,
-          type,
-          from,
-          to,
-          status: "Pending",
-          appliedAt: new Date().toISOString(),
-        });
-
-        localStorage.setItem("leaves", JSON.stringify(leaves));
-        renderLeaves();
-        clearForm();
+        try {
+          const res = await fetch(`/api/employees/${empId}`);
+          if (res.ok) {
+            const employee = await res.json();
+            currentEmployeeName =
+              employee.employee_name || employee.name || "Employee Found";
+            nameDisplay.innerHTML = `✓ <strong>${currentEmployeeName}</strong>`;
+            nameDisplay.className =
+              "text-sm text-green-600 font-medium min-h-[24px]";
+          } else {
+            nameDisplay.innerHTML = "❌ Employee not found";
+            nameDisplay.className =
+              "text-sm text-red-600 font-medium min-h-[24px]";
+            currentEmployeeName = "";
+          }
+        } catch (err) {
+          nameDisplay.innerHTML = "Error checking Employee ID";
+          nameDisplay.className =
+            "text-sm text-red-600 font-medium min-h-[24px]";
+          currentEmployeeName = "";
+        }
       }
 
-      function renderLeaves(data = leaves) {
-        let map = {};
-        leaves.forEach((l, index) => {
-          map[l.empId] = { ...l, originalIndex: index };
-        });
+      async function addLeave() {
+        const empId = document.getElementById("empId").value.trim();
+        const leaveType = document.getElementById("leaveType").value;
+        const fromDate = document.getElementById("fromDate").value;
+        const toDate = document.getElementById("toDate").value;
 
-        let val =
-          typeof searchBox !== "undefined" ? searchBox.value.toLowerCase() : "";
-        let latest = Object.values(map).filter(
-          (l) =>
-            l.empId.toLowerCase().includes(val) ||
-            l.name.toLowerCase().includes(val),
-        );
+        if (!empId || !leaveType || !fromDate || !toDate) {
+          alert("Please fill all fields");
+          return;
+        }
 
-        leaveTable.innerHTML = latest
+        try {
+          const res = await fetch("/api/leaves", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              employee_id: empId,
+              leave_type: leaveType,
+              from_date: fromDate,
+              to_date: toDate,
+            }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            alert(data.error || "Failed to submit leave");
+            return;
+          }
+
+          alert(
+            `Leave application submitted successfully for ${currentEmployeeName || empId}`,
+          );
+          closeLeaveModal();
+          clearForm();
+          fetchLeaves(); // Refresh table
+        } catch (err) {
+          console.error(err);
+          alert("Error submitting leave");
+        }
+      }
+
+      function renderLeaves(filtered = leaves) {
+        const tbody = document.getElementById("leaveTable");
+        tbody.innerHTML = filtered
           .map(
             (l) => `
-          <tr class="border-b hover:bg-gray-50">
-            <td class="p-3">${l.empId}</td>
-            <td class="p-3">
-              <button onclick="openHistory('${l.empId}')"
-                class="text-blue-600 hover:underline font-medium">
-                ${l.name}
-              </button>
-            </td>
-            <td class="p-3">${l.type}</td>
-            <td class="p-3">${l.from}</td>
-            <td class="p-3">${l.to}</td>
-            <td class="p-3 font-semibold">${calculateDays(l.from, l.to)}</td>
-            <td class="p-3 ${
-              l.status === "Approved"
-                ? "text-green-600"
-                : l.status === "Rejected"
-                  ? "text-red-600"
-                  : "text-yellow-600"
-            }">${l.status}</td>
-            <td class="p-3">
-              <button onclick="updateStatus(${l.originalIndex}, 'Approved')"
-                class="bg-green-500 text-white px-2 py-1 text-xs rounded">Approve</button>
-              <button onclick="updateStatus(${l.originalIndex}, 'Rejected')"
-                class="bg-red-500 text-white px-2 py-1 text-xs rounded ml-1">Reject</button>
-            </td>
-          </tr>
-        `,
+        <tr class="border-b hover:bg-gray-50">
+          <td class="p-3">${l.employee_id}</td>
+          <td class="p-3">
+            <button onclick="openHistory('${l.employee_id}')" 
+                    class="text-blue-600 hover:underline font-medium">
+              ${l.employee_name || "N/A"}
+            </button>
+          </td>
+          <td class="p-3">${l.leave_type}</td>
+          <td class="p-3">${l.from_date}</td>
+          <td class="p-3">${l.to_date}</td>
+          <td class="p-3 font-semibold">${calculateDays(l.from_date, l.to_date)}</td>
+          <td class="p-3 ${
+            l.status === "Approved"
+              ? "text-green-600 font-medium"
+              : l.status === "Rejected"
+                ? "text-red-600 font-medium"
+                : "text-yellow-600"
+          }">${l.status || "Pending"}</td>
+          <td class="p-3">
+            <button onclick="updateStatus(${l.id}, 'Approved')" 
+                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 text-xs rounded mr-1 transition">
+              Approve
+            </button>
+            <button onclick="updateStatus(${l.id}, 'Rejected')" 
+                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-xs rounded transition">
+              Reject
+            </button>
+          </td>
+        </tr>
+      `,
           )
           .join("");
       }
 
       function openHistory(empId) {
-        let empLeavesWithIndex = leaves
-          .map((l, index) => ({ ...l, index }))
-          .filter((l) => l.empId === empId);
+        const empLeaves = leaves.filter((l) => l.employee_id === empId);
+        const historyTitle = document.getElementById("historyTitle");
+        historyTitle.textContent = `Leave History - ${empId}`;
 
-        let reversedHistory = empLeavesWithIndex.reverse();
-
-        historyTable.innerHTML = reversedHistory
+        const tbody = document.getElementById("historyTable");
+        tbody.innerHTML = empLeaves
           .map(
             (l) => `
-          <tr class="border-b">
-            <td class="p-2">${l.type}</td>
-            <td class="p-2">${l.from}</td>
-            <td class="p-2">${l.to}</td>
-            <td class="p-2">${calculateDays(l.from, l.to)}</td>
-            <td class="p-2 ${
-              l.status === "Approved"
-                ? "text-green-600"
-                : l.status === "Rejected"
-                  ? "text-red-600"
-                  : "text-yellow-600"
-            }">${l.status}</td>
-            <td class="p-2">
-              <button onclick="updateStatus(${l.index}, 'Approved', '${empId}')"
-                class="bg-green-500 text-white px-2 py-1 text-xs rounded">Approve</button>
-              <button onclick="updateStatus(${l.index}, 'Rejected', '${empId}')"
-                class="bg-red-500 text-white px-2 py-1 text-xs rounded ml-1">Reject</button>
-            </td>
-          </tr>
-        `,
+        <tr class="border-b">
+          <td class="p-3">${l.leave_type}</td>
+          <td class="p-3">${l.from_date}</td>
+          <td class="p-3">${l.to_date}</td>
+          <td class="p-3">${calculateDays(l.from_date, l.to_date)}</td>
+          <td class="p-3 ${
+            l.status === "Approved"
+              ? "text-green-600"
+              : l.status === "Rejected"
+                ? "text-red-600"
+                : "text-yellow-600"
+          }">${l.status || "Pending"}</td>
+          <td class="p-3">
+            <button onclick="updateStatus(${l.id}, 'Approved')" 
+                    class="bg-green-500 text-white px-3 py-1 text-xs rounded mr-1">Approve</button>
+            <button onclick="updateStatus(${l.id}, 'Rejected')" 
+                    class="bg-red-500 text-white px-3 py-1 text-xs rounded">Reject</button>
+          </td>
+        </tr>
+      `,
           )
           .join("");
 
-        historyModal.classList.remove("hidden");
-        historyModal.classList.add("flex");
+        document.getElementById("historyModal").classList.remove("hidden");
       }
 
-      function updateStatus(index, status, empId = null) {
-        leaves[index].status = status;
-        localStorage.setItem("leaves", JSON.stringify(leaves));
-        renderLeaves();
-        if (empId) openHistory(empId);
+      async function updateStatus(id, status) {
+        if (!confirm(`Mark this leave as ${status}?`)) return;
+
+        try {
+          await fetch(`/api/leaves/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status }),
+          });
+          fetchLeaves();
+        } catch (err) {
+          console.error(err);
+          alert("Failed to update status");
+        }
       }
 
       function searchLeave() {
-        renderLeaves();
+        const val = document
+          .getElementById("searchBox")
+          .value.toLowerCase()
+          .trim();
+        if (!val) {
+          renderLeaves(leaves);
+          return;
+        }
+        const filtered = leaves.filter(
+          (l) =>
+            (l.employee_id || "").toLowerCase().includes(val) ||
+            (l.employee_name || "").toLowerCase().includes(val),
+        );
+        renderLeaves(filtered);
       }
 
       function clearForm() {
-        empIdInput.value = "";
-        nameInput.value = "";
-        fromDateInput.value = "";
-        toDateInput.value = "";
+        document.getElementById("empId").value = "";
+        document.getElementById("leaveType").value = "";
+        document.getElementById("fromDate").value = "";
+        document.getElementById("toDate").value = "";
+        document.getElementById("employeeNameDisplay").innerHTML = "";
+        currentEmployeeName = "";
       }
 
       function initializePage() {
-        renderLeaves();
+        fetchLeaves();
         document.getElementById("main-content").classList.add("ready");
       }
 
       document.addEventListener("DOMContentLoaded", () => {
-        window.empIdInput = document.getElementById("empId");
-        window.nameInput = document.getElementById("name");
-        window.typeInput = document.getElementById("type");
-        window.fromDateInput = document.getElementById("fromDate");
-        window.toDateInput = document.getElementById("toDate");
-        setTimeout(initializePage, 300);
+        setTimeout(initializePage, 100);
       });
     </script>
   </body>

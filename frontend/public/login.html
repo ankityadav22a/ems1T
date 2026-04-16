@@ -117,7 +117,7 @@
           </div>
           <div class="absolute bottom-6 left-0 right-0 text-center">
             <h2 class="text-xl font-bold text-white drop-shadow-lg">
-              Emergency Medical Services
+              Employee Management System
             </h2>
             <p class="text-white/80 text-xs mt-1">Secure Login</p>
           </div>
@@ -169,7 +169,7 @@
               </div>
             </div>
 
-            <div class="flex items-center justify-between text-xs">
+            <!-- <div class="flex items-center justify-between text-xs">
               <label class="flex items-center cursor-pointer">
                 <input
                   type="checkbox"
@@ -180,7 +180,7 @@
               <a href="#" class="text-primary hover:underline"
                 >Forgot password?</a
               >
-            </div>
+            </div> -->
 
             <button
               type="submit"
@@ -502,21 +502,54 @@ By accessing and using this system, you confirm that you have read, understood, 
           closeTermsBtn.click();
         }
       });
-
-      // Login simulation (demo)
       document.getElementById("login-form").addEventListener("submit", (e) => {
         e.preventDefault();
-        const btn = e.target.querySelector('button[type="submit"]');
-        const originalText = btn.textContent;
-        btn.innerHTML =
-          '<i class="fas fa-spinner fa-spin mr-2"></i> Signing in...';
-        btn.disabled = true;
 
-        setTimeout(() => {
-          alert("Login simulation successful");
-          btn.innerHTML = originalText;
-          btn.disabled = false;
-        }, 1400);
+        const identifier = document.getElementById("identifier").value.trim();
+        const password = document.getElementById("password").value.trim();
+
+        // 🔐 Demo Users with roles (authority)
+        const users = [
+          {
+            id: "EMP1001",
+            email: "john.doe@company.com",
+            password: "password123",
+            role: "employee",
+          },
+          {
+            id: "HR2024",
+            email: "hr@company.com",
+            password: "admin@123",
+            role: "hr",
+          },
+          {
+            id: "ADMIN1",
+            email: "admin@company.com",
+            password: "admin123",
+            role: "admin",
+          },
+        ];
+
+        // 🔍 Find matching user
+        const user = users.find(
+          (u) =>
+            (u.id === identifier || u.email === identifier) &&
+            u.password === password,
+        );
+
+        if (user) {
+          // ✅ Save user in localStorage (important for next pages)
+          localStorage.setItem("user", JSON.stringify(user));
+
+          // 🚀 Role-based redirect
+          if (user.role === "employee") {
+            window.location.href = "profile.html";
+          } else {
+            window.location.href = "index.html";
+          }
+        } else {
+          alert("Invalid credentials ❌");
+        }
       });
     </script>
   </body>

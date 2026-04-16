@@ -44,55 +44,55 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 app.get("/profile", (req, res) => {
-  res.sendFile(path.join(__dirname, "profile.html"));
+  res.sendFile(path.join(__dirname, "public", "profile.html"));
 });
 app.post("/profile", (req, res) => {
-  res.sendFile(path.join(__dirname, "profile.html"));
+  res.sendFile(path.join(__dirname, "public", "profile.html"));
 });
 app.get("/employee", (req, res) => {
-  res.sendFile(path.join(__dirname, "employee.html"));
+  res.sendFile(path.join(__dirname, "public", "employee.html"));
 });
 app.post("/employee", (req, res) => {
-  res.sendFile(path.join(__dirname, "employee.html"));
+  res.sendFile(path.join(__dirname, "public", "employee.html"));
 });
 app.get("/projects", (req, res) => {
-  res.sendFile(path.join(__dirname, "projects.html"));
+  res.sendFile(path.join(__dirname, "public", "projects.html"));
 });
 app.post("/projects", (req, res) => {
-  res.sendFile(path.join(__dirname, "projects.html"));
+  res.sendFile(path.join(__dirname, "public", "projects.html"));
 });
 app.get("/leaves", (req, res) => {
-  res.sendFile(path.join(__dirname, "leaves.html"));
+  res.sendFile(path.join(__dirname, "public", "leaves.html"));
 });
 app.post("/leaves", (req, res) => {
-  res.sendFile(path.join(__dirname, "leaves.html"));
+  res.sendFile(path.join(__dirname, "public", "leaves.html"));
 });
 app.get("/document", (req, res) => {
-  res.sendFile(path.join(__dirname, "document.html"));
+  res.sendFile(path.join(__dirname, "public", "document.html"));
 });
 app.post("/document", (req, res) => {
-  res.sendFile(path.join(__dirname, "document.html"));
+  res.sendFile(path.join(__dirname, "public", "document.html"));
 });
 app.get("/payroll", (req, res) => {
-  res.sendFile(path.join(__dirname, "payroll.html"));
+  res.sendFile(path.join(__dirname, "public", "payroll.html"));
 });
 app.post("/payroll", (req, res) => {
-  res.sendFile(path.join(__dirname, "payroll.html"));
+  res.sendFile(path.join(__dirname, "public", "payroll.html"));
 });
 app.get("/clients", (req, res) => {
-  res.sendFile(path.join(__dirname, "clients.html"));
+  res.sendFile(path.join(__dirname, "public", "clients.html"));
 });
 app.post("/clients", (req, res) => {
-  res.sendFile(path.join(__dirname, "clients.html"));
+  res.sendFile(path.join(__dirname, "public", "clients.html"));
 });
 app.get("/notice", (req, res) => {
-  res.sendFile(path.join(__dirname, "notice.html"));
+  res.sendFile(path.join(__dirname, "public", "notice.html"));
 });
 app.post("/notice", (req, res) => {
-  res.sendFile(path.join(__dirname, "notice.html"));
+  res.sendFile(path.join(__dirname, "public", "notice.html"));
 });
 
 // GET all documents
@@ -260,7 +260,305 @@ app.get("/test-db", async (req, res) => {
       .json({ error: "Database connection failed", details: err.message });
   }
 });
+// 🧠 Department Codes
+const deptCodes = {
+  IT: "01",
+  HR: "02",
+  Sales: "03",
+  Finance: "04",
+  Marketing: "05",
+  Operations: "06",
+};
+
+// 🔑 Generate Employee ID
+async function generateEmployeeId(department, join_date) {
+  // ✅ validate inputs
+  if (!department) throw new Error("Department is required");
+  if (!join_date) throw new Error("Join date is required");
+
+  const year = new Date(join_date).getFullYear();
+  const deptCode = deptCodes[department] || "99";
+
+  const result = await pool.query(
+    `SELECT COUNT(*) FROM employees 
+     WHERE EXTRACT(YEAR FROM join_date) = $1 
+     AND department = $2`,
+    [year, department],
+  );
+
+  const count = parseInt(result.rows[0].count, 10) || 0;
+  if (count < 9999) {
+    let serial = count + 1;
+    let employee_id;
+
+    while (true) {
+      const padded = String(serial).padStart(4, "0");
+      employee_id = `EMP${year}-${deptCode}-${padded}`;
+
+      // check if already exists
+      const check = await pool.query(
+        "SELECT 1 FROM employees WHERE employee_id = $1",
+        [employee_id],
+      );
+
+      if (check.rowCount === 0) return employee_id; // ✅ unique मिला
+
+      serial++; // 🔁 try next number
+    }
+  } else {
+    const allIds = await pool.query(
+      `SELECT employee_id FROM employees 
+     WHERE EXTRACT(YEAR FROM join_date) = $1 
+     AND department = $2`,
+      [year, department],
+    );
+
+    const usedSerials = allIds.rows
+      .map((row) => {
+        const parts = row.employee_id.split("-");
+        return parseInt(parts[2], 10);
+      })
+      .filter((n) => !isNaN(n))
+      .sort((a, b) => a - b);
+
+    // 🔍 Find gap
+    let serial = 1;
+    for (let i = 0; i < usedSerials.length; i++) {
+      if (usedSerials[i] !== serial) {
+        const padded = String(serial).padStart(4, "0");
+        return `EMP${year}-${deptCode}-${padded}`;
+      }
+      serial++;
+    }
+
+    // ❌ No gap found → limit exceeded
+    throw new Error("❌ No available Employee IDs (limit reached)");
+  }
+}
+
+//////////////////////////////////////////
+// ✅ CREATE EMPLOYEE (FIXED)
+//////////////////////////////////////////
+app.post("/api/employees", async (req, res) => {
+  try {
+    const {
+      employee_name,
+      role,
+      work_mode,
+      department,
+      join_date,
+      password,
+      authority,
+      email,
+      address,
+      salary,
+    } = req.body;
+
+    // ✅ Validate required fields
+    if (!employee_name || !department || !join_date || !email) {
+      return res.status(400).json({
+        error: "employee_name, department, join_date, and email are required",
+      });
+    }
+
+    // ✅ Generate ID using join_date
+    const employee_id = await generateEmployeeId(department, join_date);
+
+    const result = await pool.query(
+      `INSERT INTO employees 
+      (employee_id, employee_name, role, work_mode, department, join_date, password, authority, email, address, salary)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+      RETURNING employee_id`,
+      [
+        employee_id,
+        employee_name,
+        role || "N/A",
+        work_mode || "N/A",
+        department,
+        join_date,
+        password || "123456",
+        authority || "Employee",
+        email || "test@mail.com",
+        address || "NA",
+        salary || 0,
+      ],
+    );
+
+    res.status(201).json({
+      message: "Employee created successfully",
+      employee_id: result.rows[0].employee_id, // Return generated ID
+    });
+  } catch (err) {
+    console.error("CREATE EMPLOYEE ERROR:", err);
+
+    res.status(500).json({
+      error: "Failed to create employee",
+      details: err.message,
+    });
+  }
+});
+
+//////////////////////////////////////////
+// 📖 READ ALL EMPLOYEES
+//////////////////////////////////////////
+app.get("/api/employees", async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM employees ORDER BY join_date DESC",
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+//////////////////////////////////////////
+// 📖 READ SINGLE EMPLOYEE
+//////////////////////////////////////////
+app.get("/api/employees/:id", async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM employees WHERE employee_id=$1",
+      [req.params.id],
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+//////////////////////////////////////////
+// ✏️ UPDATE EMPLOYEE
+//////////////////////////////////////////
+app.put("/api/employees/:id", async (req, res) => {
+  try {
+    const {
+      employee_name,
+      role,
+      work_mode,
+      department,
+      join_date,
+      email,
+      address,
+      salary,
+    } = req.body;
+
+    let employee_id = req.params.id;
+
+    // ✅ regenerate ID if dept or date changes
+    if (department && join_date) {
+      employee_id = await generateEmployeeId(department, join_date);
+    }
+
+    await pool.query(
+      `UPDATE employees SET
+        employee_id=$1,
+        employee_name=$2,
+        role=$3,
+        work_mode=$4,
+        department=$5,
+        join_date=$6,
+        email=$7,
+        address=$8,
+        salary=$9
+      WHERE employee_id=$10`,
+      [
+        employee_id,
+        employee_name,
+        role,
+        work_mode,
+        department,
+        join_date,
+        email,
+        address,
+        salary,
+        req.params.id,
+      ],
+    );
+
+    res.json({
+      message: "Employee updated",
+      new_employee_id: employee_id,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+//////////////////////////////////////////
+// ❌ DELETE EMPLOYEE
+//////////////////////////////////////////
+app.delete("/api/employees/:id", async (req, res) => {
+  try {
+    await pool.query("DELETE FROM employees WHERE employee_id=$1", [
+      req.params.id,
+    ]);
+
+    res.json({ message: "Employee deleted" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on port http://localhost:${PORT}`);
+});
+app.post("/api/leaves", async (req, res) => {
+  try {
+    const { employee_id, leave_type, from_date, to_date } = req.body;
+
+    const start = new Date(from_date);
+    const end = new Date(to_date);
+
+    const days = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+    const result = await pool.query(
+      `INSERT INTO leaves 
+      (employee_id, leave_type, from_date, to_date, days)
+      VALUES ($1,$2,$3,$4,$5)
+      RETURNING *`,
+      [employee_id, leave_type, from_date, to_date, days],
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+app.get("/api/leaves", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+
+        l.id,
+        l.employee_id,
+        e.employee_name,
+        l.leave_type,
+        l.from_date,
+        l.to_date,
+        l.days,
+        l.status
+      FROM leaves l
+      JOIN employees e 
+      ON l.employee_id = e.employee_id
+      ORDER BY l.applied_at DESC
+    `);
+
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+app.put("/api/leaves/:id", async (req, res) => {
+  try {
+    await pool.query("UPDATE leaves SET status=$1 WHERE id=$2", [
+      req.body.status,
+      req.params.id,
+    ]);
+
+    res.json({ message: "Updated" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });

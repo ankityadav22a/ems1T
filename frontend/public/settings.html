@@ -335,9 +335,10 @@
 
             setTimeout(() => {
               // In real app → clear session / token / redirect to login
-              alert("You have been logged out");
+              localStorage.clear();
+              sessionStorage.clear();
               logoutModal.classList.add("hidden");
-              // window.location.href = 'login.html';
+              window.location.href = "login.html";
             }, 1400);
           } else {
             msg.textContent = "Incorrect credentials";
