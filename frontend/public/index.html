@@ -6,6 +6,7 @@
     <title>EMS • Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 
     <!-- Anti-flash + loading + background styles -->
     <style>
@@ -140,16 +141,12 @@
               <div class="text-blue-400 text-4xl">👥</div>
               <div
                 class="text-xs font-medium px-3 py-1 bg-emerald-500/30 text-emerald-300 rounded-2xl"
-              >
-                +12%
-              </div>
+              ></div>
             </div>
             <div
               id="total-employees"
               class="text-5xl font-bold text-white mb-1"
-            >
-              248
-            </div>
+            ></div>
             <p class="text-gray-300 text-lg">Total Employees</p>
             <div class="h-1.5 bg-white/10 rounded-full mt-6 overflow-hidden">
               <div class="h-1.5 bg-blue-500 w-[92%] rounded-full"></div>
@@ -161,16 +158,12 @@
               <div class="text-violet-400 text-4xl">📦</div>
               <div
                 class="text-xs font-medium px-3 py-1 bg-amber-500/30 text-amber-300 rounded-2xl"
-              >
-                -3%
-              </div>
+              ></div>
             </div>
             <div
               id="active-projects"
               class="text-5xl font-bold text-white mb-1"
-            >
-              17
-            </div>
+            ></div>
             <p class="text-gray-300 text-lg">Active Projects</p>
             <div
               onclick="quickAction('project')"
@@ -185,13 +178,12 @@
               <div class="text-emerald-400 text-4xl">🏖️</div>
               <div
                 class="text-xs font-medium px-3 py-1 bg-red-500/30 text-red-300 rounded-2xl"
-              >
-                8 pending
-              </div>
+              ></div>
             </div>
-            <div id="pending-leaves" class="text-5xl font-bold text-white mb-1">
-              8
-            </div>
+            <div
+              id="pending-leaves"
+              class="text-5xl font-bold text-white mb-1"
+            ></div>
             <p class="text-gray-300 text-lg">Pending Leaves</p>
           </div>
 
@@ -200,26 +192,23 @@
               <div class="text-amber-400 text-4xl">₹</div>
               <div
                 class="text-xs font-medium px-3 py-1 bg-emerald-500/30 text-emerald-300 rounded-2xl"
-              >
-                +8%
-              </div>
+              ></div>
             </div>
             <div
-              id="monthly-payroll"
+              id="yearly-payroll"
               class="text-5xl font-bold text-white mb-1"
-            >
-              4.82
-            </div>
-            <p class="text-gray-300 text-lg">Lakhs • This Month</p>
+            ></div>
+            <p class="text-gray-300 text-lg">Yearly Payroll</p>
           </div>
 
           <div class="stat-card rounded-3xl p-6 group">
             <div class="flex justify-between items-start mb-4">
               <div class="text-fuchsia-400 text-4xl">📄</div>
             </div>
-            <div id="documents" class="text-5xl font-bold text-white mb-1">
-              134
-            </div>
+            <div
+              id="documents"
+              class="text-5xl font-bold text-white mb-1"
+            ></div>
             <p class="text-gray-300 text-lg">Documents Uploaded</p>
           </div>
 
@@ -227,9 +216,7 @@
             <div class="flex justify-between items-start mb-4">
               <div class="text-cyan-400 text-4xl">👔</div>
             </div>
-            <div id="clients" class="text-5xl font-bold text-white mb-1">
-              23
-            </div>
+            <div id="clients" class="text-5xl font-bold text-white mb-1"></div>
             <p class="text-gray-300 text-lg">Active Clients</p>
           </div>
         </div>
@@ -241,7 +228,7 @@
           >
             <div class="flex items-center justify-between mb-8">
               <h3 class="text-2xl font-semibold">Department Distribution</h3>
-              <div class="text-sm text-gray-400">248 employees</div>
+              <div class="text-sm text-gray-400"></div>
             </div>
             <canvas id="deptPie" class="max-h-80"></canvas>
           </div>
@@ -250,51 +237,48 @@
             class="lg:col-span-7 bg-white/6 backdrop-blur-xl border border-white/10 rounded-3xl p-8"
           >
             <div class="flex items-center justify-between mb-8">
-              <h3 class="text-2xl font-semibold">
-                Payroll Trend (Last 6 Months)
-              </h3>
+              <h3 class="text-2xl font-semibold">Payroll Trend</h3>
+              <select
+                id="payrollFilter"
+                class="bg-black/40 border px-4 py-2 rounded-xl text-white"
+              >
+                <option value="month" class="bg-black text-white">
+                  Monthly
+                </option>
+                <option value="year" class="bg-black text-white">Yearly</option>
+              </select>
             </div>
-            <canvas id="payrollBar" class="max-h-80"></canvas>
+            <div class="w-full h-[320px] relative overflow-hidden">
+              <canvas id="payrollBar"></canvas>
+            </div>
           </div>
         </div>
 
         <!-- Recent Employees + Active Projects -->
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-16">
+        <!-- Recent Employees - Modern Card Layout -->
+        <div class="grid grid-cols-1 mb-16,relative">
           <div
             class="bg-white/6 backdrop-blur-xl border border-white/10 rounded-3xl p-8"
           >
             <div class="flex justify-between items-center mb-8">
-              <h3 class="text-2xl font-semibold">Recent Employees</h3>
+              <h3 class="text-2xl font-semibold">Recent Joiners</h3>
               <button
                 onclick="quickAction('employee')"
-                class="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center gap-2"
+                class="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center gap-2 transition-colors"
               >
                 View all <span class="text-xl leading-none">→</span>
               </button>
             </div>
-            <div class="space-y-3">
-              <div
-                class="table-row flex items-center justify-between bg-white/5 hover:bg-white/10 px-6 py-4 rounded-2xl"
-              >
-                <div class="flex items-center gap-4">
-                  <div
-                    class="w-10 h-10 bg-orange-500 text-white flex items-center justify-center rounded-2xl font-bold"
-                  >
-                    RK
-                  </div>
-                  <div>
-                    <p class="font-semibold">Rahul Kumar</p>
-                    <p class="text-sm text-gray-400">Software Engineer • IT</p>
-                  </div>
-                </div>
-                <div class="text-emerald-400 text-sm font-medium">Active</div>
-              </div>
-              <!-- other employee rows ... -->
-              <!-- keep the rest as in your original -->
+
+            <div
+              id="recent-employees"
+              class="grid grid-cols-1 sm:grid-cols-2 gap-4 min-h-[280px]"
+            >
+              <!-- Cards will be injected here by JavaScript -->
             </div>
           </div>
 
-          <!-- Active Projects section remains similar -->
+          <!-- Active Projects section can go here (right side on xl screens) -->
         </div>
 
         <!-- Notices + Leave + Clients row remains similar -->
@@ -359,15 +343,445 @@
           }
         }, 16);
       }
+      function formatDate(dateStr) {
+        if (!dateStr) return "N/A";
 
-      function initCharts() {
-        new Chart(document.getElementById("deptPie"), {
-          type: "doughnut",
+        const date = new Date(dateStr);
+
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0"); // months start from 0
+        const year = date.getFullYear();
+
+        return `${day}/${month}/${year}`;
+      }
+      // ✅ FORMAT NUMBER (K, Lakh, Crore)
+      function formatIndianNumber(num) {
+        if (num >= 10000000) return Math.round(num / 10000000) + " Cr";
+        if (num >= 100000) return Math.round(num / 100000) + " L";
+        if (num >= 1000) return Math.round(num / 1000) + " K";
+        return num.toString();
+      }
+      async function loadDashboardData() {
+        try {
+          const [employees, projects, leaves, documents, clients] =
+            await Promise.all([
+              fetch("/api/employees").then((res) => res.json()),
+              fetch("/api/projects").then((res) => res.json()),
+              fetch("/api/leaves").then((res) => res.json()),
+              fetch("/api/documents").then((res) => res.json()),
+              fetch("/api/clients").then((res) => res.json()),
+            ]);
+
+          // ✅ KPI Calculations
+          const totalEmployees = employees.length;
+
+          const activeProjects = projects.filter(
+            (p) => p.status !== "Completed",
+          ).length;
+
+          const pendingLeaves = leaves.filter(
+            (l) => l.status === "Pending",
+          ).length;
+
+          const totalDocs = documents.length;
+          const totalClients = clients.length;
+
+          // =========================
+          // 💰 PAYROLL (OPTIMIZED)
+          // =========================
+          const payrollPromises = employees.map((emp) =>
+            fetch(`/api/payroll/${emp.employee_id}`).then((res) => res.json()),
+          );
+
+          const payrollResults = await Promise.all(payrollPromises);
+          const currentYear = new Date().getFullYear();
+          let payrollTotal = 0;
+
+          payrollResults.forEach((records) => {
+            records.forEach((p) => {
+              if (!p.from_date) return;
+
+              const year = new Date(p.from_date).getFullYear();
+
+              if (year === currentYear) {
+                payrollTotal += Number(p.net || 0);
+              }
+            });
+          });
+          // ✅ RAW YEARLY PAYROLL (NO DIVISION)
+          const yearlyPayrollRaw = payrollResults.reduce((sum, records) => {
+            records.forEach((p) => {
+              if (!p.from_date) return;
+              const year = new Date(p.from_date).getFullYear();
+              if (year === currentYear) {
+                sum += Number(p.net || 0);
+              }
+            });
+            return sum;
+          }, 0);
+
+          payrollTotal = (payrollTotal / 100000).toFixed(2);
+
+          // =========================
+          // 📊 DEPARTMENT DATA
+          // =========================
+          const deptCount = {};
+
+          employees.forEach((emp) => {
+            const dept = emp.department || "Unknown";
+            deptCount[dept] = (deptCount[dept] || 0) + 1;
+          });
+
+          window.deptLabels = Object.keys(deptCount);
+          window.deptData = Object.values(deptCount);
+
+          // 💰 PAYROLL TREND (DAY DISTRIBUTION FIX)
+          // =========================
+
+          const payrollByYearMonth = {};
+
+          function addToMonth(date, amount) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = d.getMonth(); // 0-11
+
+            const key = `${year}-${month}`;
+
+            if (!payrollByYearMonth[key]) {
+              payrollByYearMonth[key] = {
+                year,
+                month,
+                total: 0,
+              };
+            }
+
+            payrollByYearMonth[key].total += amount;
+          }
+
+          // loop all employees payroll
+          payrollResults.forEach((records) => {
+            records.forEach((p) => {
+              if (!p.from_date || !p.to_date) return;
+
+              const start = new Date(p.from_date);
+              const end = new Date(p.to_date);
+
+              const net = Number(p.net || 0);
+
+              // total days (inclusive)
+              const diffTime = end - start;
+              const days = Math.max(
+                1,
+                Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1,
+              );
+
+              const dailySalary = net / days;
+
+              // distribute day by day
+              let current = new Date(start);
+
+              while (current <= end) {
+                addToMonth(current, dailySalary);
+                current.setDate(current.getDate() + 1);
+              }
+            });
+          });
+
+          // sort properly
+          const sortedKeys = Object.keys(payrollByYearMonth).sort((a, b) => {
+            const [ay, am] = a.split("-").map(Number);
+            const [by, bm] = b.split("-").map(Number);
+            return ay - by || am - bm;
+          });
+
+          window.fullPayrollData = sortedKeys.map((k) => payrollByYearMonth[k]);
+          // =========================
+          // 🎯 UPDATE UI
+          // =========================
+          animateCounter(
+            document.getElementById("total-employees"),
+            totalEmployees,
+          );
+
+          animateCounter(
+            document.getElementById("active-projects"),
+            activeProjects,
+          );
+
+          animateCounter(
+            document.getElementById("pending-leaves"),
+            pendingLeaves,
+          );
+
+          animateCounter(
+            document.getElementById("yearly-payroll"),
+            yearlyPayrollRaw / 100000,
+            1800,
+            "₹",
+            " L",
+          );
+
+          animateCounter(document.getElementById("documents"), totalDocs);
+          animateCounter(document.getElementById("clients"), totalClients);
+          renderRecentEmployees(employees);
+          // ✅ IMPORTANT: INIT CHARTS AFTER DATA
+          initCharts();
+          initPayrollChart();
+        } catch (err) {
+          console.error("Dashboard load error:", err);
+        }
+      }
+      function formatDate(dateStr) {
+        if (!dateStr) return "N/A";
+        const date = new Date(dateStr);
+        return date.toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        });
+      }
+
+      function renderRecentEmployees(employees) {
+        const container = document.getElementById("recent-employees");
+        container.innerHTML = "";
+
+        const now = new Date();
+
+        // Filter employees who joined this month or last month
+        const filtered = employees.filter((emp) => {
+          if (!emp.join_date) return false;
+          const joinDate = new Date(emp.join_date);
+          return (
+            joinDate.getFullYear() === now.getFullYear() &&
+            (joinDate.getMonth() === now.getMonth() ||
+              joinDate.getMonth() === now.getMonth() - 1)
+          );
+        });
+
+        // Sort by join date (newest first) and take top 6
+        const recent = filtered
+          .sort((a, b) => new Date(b.join_date) - new Date(a.join_date))
+          .slice(0, 6);
+
+        if (recent.length === 0) {
+          container.innerHTML = `
+      <div class="col-span-2 text-center py-12">
+        <p class="text-gray-400 text-lg">No recent joiners this month</p>
+      </div>`;
+          return;
+        }
+
+        recent.forEach((emp) => {
+          const initials = (emp.employee_name || emp.name || "??")
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .toUpperCase()
+            .slice(0, 2);
+
+          const cardHTML = `
+      <div class="group bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-500/30 
+                  rounded-3xl p-5 transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl">
+        
+        <div class="flex items-start gap-4">
+          <!-- Avatar -->
+          <div class="w-14 h-14 bg-gradient-to-br from-orange-500 to-amber-500 
+                      text-white flex items-center justify-center rounded-2xl font-bold text-xl shadow-inner flex-shrink-0">
+            ${initials}
+          </div>
+
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-lg text-white truncate">
+              ${emp.name || ""} ${emp.employee_name || ""}
+            </p>
+            <p class="text-sm text-gray-400 mt-0.5">
+              ${emp.designation || "Employee"} • ${emp.department || "N/A"}
+            </p>
+            
+            <!-- Join Date -->
+            <div class="mt-4 flex items-center gap-2">
+              <div class="text-emerald-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2" />
+                </svg>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400">Joined</p>
+                <p class="text-sm font-medium text-emerald-300">
+                  ${formatDate(emp.join_date)}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subtle bottom accent -->
+        <div class="h-1 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-b-3xl mt-6 opacity-60 group-hover:opacity-100 transition-opacity"></div>
+      </div>
+    `;
+
+          container.innerHTML += cardHTML;
+        });
+      }
+      function preparePayrollChart(type = "month") {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+
+        let labels = [];
+        let data = [];
+
+        if (type === "month") {
+          const months = Array(12).fill(0);
+
+          window.fullPayrollData.forEach((p) => {
+            if (p.year === currentYear) {
+              months[p.month] += p.total;
+            }
+          });
+
+          labels = [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+          ];
+          data = months.map((v) => v);
+        } else {
+          const yearly = {};
+
+          window.fullPayrollData.forEach((p) => {
+            yearly[p.year] = (yearly[p.year] || 0) + p.total;
+          });
+
+          const years = Object.keys(yearly).sort();
+
+          labels = years;
+          data = years.map((y) => yearly[y]);
+        }
+
+        return { labels, data };
+      }
+
+      function initPayrollChart(filterType = "month") {
+        const { labels, data } = preparePayrollChart(filterType);
+        const canvas = document.getElementById("payrollBar");
+        const wrapper = canvas.parentElement;
+
+        if (window.payrollChart) window.payrollChart.destroy();
+        const maxVal = Math.max(...data.map(Number));
+
+        // dynamic scaling
+        let step = 1000;
+
+        if (maxVal > 10000000) step = 10000000;
+        else if (maxVal > 100000) step = 100000;
+        else if (maxVal > 10000) step = 10000;
+
+        const suggestedMax = Math.ceil(maxVal / step) * step;
+        window.payrollChart = new Chart(canvas, {
+          type: "line",
           data: {
-            labels: ["IT", "HR", "Sales", "Finance", "Marketing", "Operations"],
+            labels,
             datasets: [
               {
-                data: [92, 34, 45, 28, 19, 30],
+                label: "Payroll (₹ Lakhs)",
+                data,
+                borderColor: "#22d3ee",
+                tension: 0.4,
+                fill: true,
+                pointRadius: 4,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            interaction: {
+              mode: "nearest",
+              intersect: false,
+            },
+
+            scales: {
+              y: {
+                min: 0,
+                max: suggestedMax,
+                ticks: {
+                  callback: (val) => "₹" + formatIndianNumber(val),
+                  color: "#9ca3af",
+                },
+                grid: { color: "#374151" },
+              },
+              x: {
+                ticks: { color: "#9ca3af" },
+                grid: { color: "#374151" },
+              },
+            },
+
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return "₹" + formatIndianNumber(context.raw);
+                  },
+                },
+              },
+              legend: { display: false },
+            },
+          },
+        });
+      }
+
+      function quickAction(module) {
+        const routes = {
+          "add-employee": "employee.html",
+          "apply-leave": "leaves.html",
+          project: "projects.html",
+          employee: "employee.html",
+          leave: "leaves.html",
+          notice: "notice.html",
+          payroll: "payroll.html",
+          document: "document.html",
+          profile: "profile.html",
+        };
+        const route = routes[module];
+        if (route) {
+          window.location.href = route;
+        } else {
+          alert("Module opened!");
+        }
+      }
+      function initCharts() {
+        // 🛑 Destroy old charts if reloaded (prevents duplicate canvas issue)
+        if (window.deptChart) window.deptChart.destroy();
+        if (window.payrollChart) window.payrollChart.destroy();
+
+        // =========================
+        // 📊 DEPARTMENT PIE CHART
+        // =========================
+        window.deptChart = new Chart(document.getElementById("deptPie"), {
+          type: "doughnut",
+          data: {
+            labels: window.deptLabels || [
+              "IT",
+              "HR",
+              "Sales",
+              "Finance",
+              "Marketing",
+              "Operations",
+            ],
+            datasets: [
+              {
+                data: window.deptData || [1, 1, 1, 1, 1, 1], // fallback
                 backgroundColor: [
                   "#22d3ee",
                   "#a78bfa",
@@ -386,70 +800,23 @@
             plugins: {
               legend: {
                 position: "bottom",
-                labels: { color: "#e5e7eb", padding: 18, font: { size: 13 } },
+                labels: {
+                  color: "#e5e7eb",
+                  padding: 18,
+                  font: { size: 13 },
+                },
               },
             },
           },
         });
 
-        new Chart(document.getElementById("payrollBar"), {
-          type: "bar",
-          data: {
-            labels: ["Oct", "Nov", "Dec", "Jan", "Feb", "Mar"],
-            datasets: [
-              {
-                label: "Payroll (₹ Lakhs)",
-                data: [3.2, 3.8, 4.1, 4.3, 4.6, 4.82],
-                backgroundColor: "#22d3ee",
-                borderRadius: 12,
-                barThickness: 28,
-              },
-            ],
-          },
-          options: {
-            scales: {
-              y: { grid: { color: "#374151" }, ticks: { color: "#9ca3af" } },
-              x: { grid: { color: "#374151" }, ticks: { color: "#9ca3af" } },
-            },
-            plugins: { legend: { display: false } },
-          },
-        });
-      }
-
-      function quickAction(module) {
-        const messages = {
-          "add-employee": "Opening Employee Module → Adding new member...",
-          "apply-leave": "Opening Leave Module → New leave request created",
-          project: "Navigating to Projects → Mobile Banking App opened",
-          employee: "Loading full Employee Directory...",
-          leave: "Leave calendar opened",
-          notice: "Notice board expanded",
-          payroll: "Payroll dashboard launched",
-          document: "Document vault opened",
-          profile: "Your profile is loading...",
-        };
-        alert(messages[module] || "Module opened!");
+        // =========================
+        // 💰 PAYROLL BAR CHART
+        // =========================
       }
 
       function initializeDashboard() {
         document.getElementById("main-content").classList.add("ready");
-
-        setTimeout(() => {
-          animateCounter(document.getElementById("total-employees"), 248);
-          animateCounter(document.getElementById("active-projects"), 17);
-          animateCounter(document.getElementById("pending-leaves"), 8);
-          animateCounter(
-            document.getElementById("monthly-payroll"),
-            4.82,
-            1200,
-            "₹",
-            "",
-          );
-          animateCounter(document.getElementById("documents"), 134);
-          animateCounter(document.getElementById("clients"), 23);
-        }, 800);
-
-        initCharts();
 
         setTimeout(() => {
           const link = document.querySelector('a[href="index.html"]');
@@ -462,9 +829,15 @@
         });
       }
 
-      document.addEventListener("DOMContentLoaded", () => {
+      document.addEventListener("DOMContentLoaded", async () => {
         setTimeout(initializeDashboard, 400);
+        await loadDashboardData();
       });
+      document
+        .getElementById("payrollFilter")
+        ?.addEventListener("change", (e) => {
+          initPayrollChart(e.target.value);
+        });
     </script>
   </body>
 </html>

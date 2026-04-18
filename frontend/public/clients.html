@@ -223,7 +223,7 @@
           </div>
 
           <div
-            class="bg-blue-50/70 p-5 rounded-xl border border-blue-100 space-y-4"
+            id="projectFields" class="bg-blue-50/70 p-5 rounded-xl border border-blue-100 space-y-4"
           >
             <h3
               class="text-xs font-bold text-blue-700 uppercase tracking-wider"
@@ -267,15 +267,12 @@
                 placeholder="Budget (USD)"
                 class="border p-2.5 rounded-lg w-full text-sm"
               />
-              <select
-                id="status"
-                class="border p-2.5 rounded-lg w-full text-sm bg-white"
-              >
-                <option>Not Started</option>
-                <option>Ongoing</option>
-                <option>Pending</option>
-                <option>Completed</option>
-              </select>
+              <input
+  id="shortDescription"
+  type="text"
+  placeholder="Short Description"
+  class="border p-2.5 rounded-lg w-full text-sm bg-white"
+/>
             </div>
           </div>
         </div>
@@ -325,9 +322,13 @@
             <p id="v_contact" class="text-sm text-gray-500 mt-1"></p>
          </div>
       </div>
+      
 
        <!-- RIGHT ACTIONS -->
       <div class="flex gap-3">
+        <button onclick="deleteClient()" class="bg-red-100 text-red-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-200">
+         Delete Client
+         </button>
         <button
           onclick="editClientDetails()"
           class="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-yellow-200">
@@ -366,34 +367,17 @@
 
     <script src="load-layout.js"></script>
     <script>
-      let clients = [
-        {
-          id: "CL-8291",
-          name: "Michael Brown",
-          company: "Tech Solutions Ltd",
-          location: "New York, USA",
-          email: "m.brown@techsol.com",
-          phone: "+1 202-555-0143",
-          projects: [
-            {
-              name: "Website Redesign",
-              start: "2026-01-10",
-              deadline: "2026-05-10",
-              budget: "4500",
-              status: "Ongoing",
-            },
-            {
-              name: "Cloud Integration",
-              start: "2026-03-01",
-              deadline: "2026-09-15",
-              budget: "12000",
-              status: "Not Started",
-            },
-          ],
-        },
-      ];
+      let clients = [];
       let currentClientId = null;
-
+      async function loadClients() {
+  try {
+    const res = await fetch("/api/clients");
+    clients = await res.json();
+    renderCards();
+  } catch (err) {
+    console.error("Fetch clients error:", err);
+  }
+}
       function renderCards() {
         const container = document.getElementById("cardContainer");
         const q = document.getElementById("search").value.toLowerCase().trim();
@@ -450,7 +434,7 @@
         document.getElementById("v_company").textContent = c.company;
         document.getElementById("v_count").textContent = c.projects.length;
         document.getElementById("v_contact").textContent =
-          `${c.email} | ${c.phone} | ${c.location}`;
+          ` ${c.location} | ${c.email} | ${c.phone} `;
 
         document.getElementById("addProjBtn").onclick = () =>
           openAddProjectOnly(clientId);
@@ -476,7 +460,11 @@
                   <span>Budget: <strong class="text-gray-800">$${p.budget}</strong></span>
                   <span>Deadline: <strong class="text-gray-800">${p.deadline}</strong></span>
                 </div>
+                 <div class="text-gray-500 italic">
+    ${p.short_description || "No description"}
+  </div>
               </div>
+              
               <div class="flex gap-2 flex-shrink-0">
                 <button onclick="editSingleProject('${clientId}', ${idx})" class="p-2.5 bg-gray-100 rounded-lg hover:bg-blue-100 text-gray-600 hover:text-blue-700 transition">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
@@ -498,6 +486,7 @@
           "Register New Client";
         document.getElementById("targetClientId").value = "";
         document.getElementById("clientInfoFields").classList.remove("hidden");
+        document.getElementById("projectFields").classList.remove("hidden");
         document.getElementById("clientId").value = generateClientID();
         clearForm();
         document.getElementById("formModal").classList.remove("hidden");
@@ -510,7 +499,7 @@
 
           document.getElementById("targetClientId").value = currentClientId;
           document.getElementById("clientInfoFields").classList.remove("hidden");
-
+          document.getElementById("projectFields").classList.add("hidden");
           document.getElementById("clientId").value = c.id;
           document.getElementById("clientName").value = c.name;
           document.getElementById("company").value = c.company;
@@ -527,6 +516,8 @@
         document.getElementById("targetClientId").value = clientId;
         document.getElementById("editProjectIdx").value = "";
         document.getElementById("clientInfoFields").classList.add("hidden");
+        document.getElementById("projectFields").classList.remove("hidden");
+        document.getElementById("projectName").focus();
         clearForm();
         document.getElementById("formModal").classList.remove("hidden");
       }
@@ -542,69 +533,97 @@
         document.getElementById("startDate").value = p.start;
         document.getElementById("deadline").value = p.deadline;
         document.getElementById("budget").value = p.budget;
-        document.getElementById("status").value = p.status;
+        document.getElementById("shortDescription").value = p.short_description || "";
         document.getElementById("formModal").classList.remove("hidden");
       }
+      async function saveData() {
+  const targetId = document.getElementById("targetClientId").value;
+  const pIdx = document.getElementById("editProjectIdx").value;
 
-      function saveData() {
-        const targetId = document.getElementById("targetClientId").value;
-        const pIdx = document.getElementById("editProjectIdx").value;
-        const proj = {
-          name: document.getElementById("projectName").value.trim(),
-          start: document.getElementById("startDate").value,
-          deadline: document.getElementById("deadline").value,
-          budget: document.getElementById("budget").value,
-          status: document.getElementById("status").value,
-        };
+  const data = {
+    id: document.getElementById("clientId").value,
+    name: document.getElementById("clientName").value.trim(),
+    company: document.getElementById("company").value.trim(),
+    location: document.getElementById("location").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    phone: document.getElementById("phone").value.trim(),
+    projectName: document.getElementById("projectName").value.trim(),
+    startDate: document.getElementById("startDate").value,
+    deadline: document.getElementById("deadline").value,
+    budget: document.getElementById("budget").value,
+    short_description: document.getElementById("shortDescription").value,
+    
+  };
 
-        if (!proj.name || !proj.start || !proj.deadline) {
-          alert("Project name, start date and deadline are required.");
-          return;
-        }
+  try {
+    if (targetId === "") {
+      // ✅ CREATE CLIENT + PROJECT
+      await fetch("/api/clients", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+    } else {
+      // ✅ UPDATE CLIENT / PROJECT
+      const client = clients.find((c) => c.id === targetId);
 
-        if (targetId === "") {
-          clients.push({
-            id: document.getElementById("clientId").value,
-            name: document.getElementById("clientName").value.trim(),
-            company: document.getElementById("company").value.trim(),
-            location: document.getElementById("location").value.trim(),
-            email: document.getElementById("email").value.trim(),
-            phone: document.getElementById("phone").value.trim(),
-            projects: [proj],
-          });
-        } else {
-          const c = clients.find((cl) => cl.id === targetId);
-          // ✅ UPDATE CLIENT DETAILS
-           c.name = document.getElementById("clientName").value.trim();
-           c.company = document.getElementById("company").value.trim();
-           c.location = document.getElementById("location").value.trim();
-           c.email = document.getElementById("email").value.trim();
-           c.phone = document.getElementById("phone").value.trim();
-           //project logic
-          if (pIdx === "") {
-            c.projects.push(proj);
-          } else {
-            c.projects[pIdx] = proj;
-          }
-        }
+      let project_id = null;
 
-        renderCards();
-        if (targetId) viewClientProjects(targetId);
-        closeForm();
+      if (pIdx !== "" && client.projects[pIdx]) {
+        project_id = client.projects[pIdx].project_id;
       }
 
-      function removeProject(cid, idx) {
-        if (!confirm("Delete this project?")) return;
-        const c = clients.find((cl) => cl.id === cid);
-        c.projects.splice(idx, 1);
-        if (c.projects.length === 0) {
-          clients = clients.filter((cl) => cl.id !== cid);
-          closeView();
-        } else {
-          viewClientProjects(cid);
-        }
-        renderCards();
-      }
+      await fetch(`/api/clients/${targetId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...data,
+          project_id,
+          
+        }),
+      });
+    }
+
+    await loadClients();
+    closeForm();
+    if (targetId) viewClientProjects(targetId);
+  } catch (err) {
+    console.error("Save error:", err);
+    alert("Operation failed");
+  }
+}
+
+     async function removeProject(cid, idx) {
+  if (!confirm("Delete this project?")) return;
+
+  const client = clients.find((c) => c.id === cid);
+  const project = client.projects[idx];
+
+  try {
+    await fetch(`/api/projects/${project.project_id}`, {
+      method: "DELETE",
+    });
+
+    await loadClients();
+    viewClientProjects(cid);
+  } catch (err) {
+    console.error(err);
+  }
+}
+async function deleteClient() {
+  if (!confirm("Delete this client?")) return;
+
+  try {
+    await fetch(`/api/clients/${currentClientId}`, {
+      method: "DELETE",
+    });
+
+    closeView();
+    await loadClients();
+  } catch (err) {
+    console.error(err);
+  }
+}
 
       function clearForm() {
         [
@@ -621,7 +640,7 @@
           const el = document.getElementById(id);
           if (el) el.value = "";
         });
-        document.getElementById("status").value = "Not Started";
+
       }
 
       function closeForm() {
@@ -632,8 +651,8 @@
       }
 
       // ── Exact same reveal logic as Notice page ─────────────────────────────
-      function initializePage() {
-        renderCards();
+     async function initializePage() {
+        await loadClients();
         document.getElementById("main-content").classList.add("ready");
 
         setTimeout(() => {

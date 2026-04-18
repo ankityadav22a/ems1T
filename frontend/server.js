@@ -363,7 +363,6 @@ app.post("/api/employees", async (req, res) => {
 
     // ✅ Generate ID using join_date
     const employee_id = await generateEmployeeId(department, join_date);
-
     const result = await pool.query(
       `INSERT INTO employees 
       (employee_id, employee_name, role, work_mode, department, join_date, password, authority, email, address, salary)
@@ -376,7 +375,7 @@ app.post("/api/employees", async (req, res) => {
         work_mode || "N/A",
         department,
         join_date,
-        password || "123456",
+        password || "employee_id",
         authority || "Employee",
         email || "test@mail.com",
         address || "NA",
@@ -433,6 +432,8 @@ app.get("/api/employees/:id", async (req, res) => {
 //////////////////////////////////////////
 app.put("/api/employees/:id", async (req, res) => {
   try {
+    const oldId = req.params.id;
+
     const {
       employee_name,
       role,
@@ -444,13 +445,36 @@ app.put("/api/employees/:id", async (req, res) => {
       salary,
     } = req.body;
 
-    let employee_id = req.params.id;
+    // 🔥 STEP 1: get existing employee
+    const existing = await pool.query(
+      "SELECT department, join_date FROM employees WHERE employee_id = $1",
+      [oldId],
+    );
 
-    // ✅ regenerate ID if dept or date changes
-    if (department && join_date) {
-      employee_id = await generateEmployeeId(department, join_date);
+    if (existing.rowCount === 0) {
+      return res.status(404).json({ error: "Employee not found" });
     }
 
+    const oldData = existing.rows[0];
+
+    // 🔥 STEP 2: decide if ID should change
+    let newId = oldId;
+
+    const oldJoin = oldData.join_date
+      ? new Date(oldData.join_date).toISOString().split("T")[0]
+      : null;
+
+    const dateChanged = join_date && join_date !== oldJoin;
+
+    const deptChanged =
+      department &&
+      department.trim().toLowerCase() !==
+        oldData.department.trim().toLowerCase();
+    if (deptChanged || dateChanged) {
+      newId = await generateEmployeeId(department, join_date);
+    }
+
+    // 🔥 STEP 3: update employee
     await pool.query(
       `UPDATE employees SET
         employee_id=$1,
@@ -464,7 +488,7 @@ app.put("/api/employees/:id", async (req, res) => {
         salary=$9
       WHERE employee_id=$10`,
       [
-        employee_id,
+        newId,
         employee_name,
         role,
         work_mode,
@@ -473,19 +497,20 @@ app.put("/api/employees/:id", async (req, res) => {
         email,
         address,
         salary,
-        req.params.id,
+        oldId,
       ],
     );
 
     res.json({
-      message: "Employee updated",
-      new_employee_id: employee_id,
+      message: "Employee updated successfully",
+      old_id: oldId,
+      new_id: newId,
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
-
 //////////////////////////////////////////
 // ❌ DELETE EMPLOYEE
 //////////////////////////////////////////
@@ -560,5 +585,555 @@ app.put("/api/leaves/:id", async (req, res) => {
     res.json({ message: "Updated" });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+app.post("/api/payroll", async (req, res) => {
+  try {
+    let { employee_id, base, allowance, deduction, bonus, from_date, to_date } =
+      req.body;
+
+    if (!employee_id) {
+      return res.status(400).json({ error: "Employee ID required" });
+    }
+
+    // ✅ Get employee salary + joining date
+    const emp = await pool.query(
+      "SELECT salary, join_date FROM employees WHERE employee_id = $1",
+      [employee_id],
+    );
+
+    if (emp.rowCount === 0) {
+      return res.status(404).json({ error: "Employee not found" });
+    }
+
+    const employee = emp.rows[0];
+
+    // ✅ Get last payroll (latest)
+    const lastPayroll = await pool.query(
+      `SELECT to_date FROM payroll 
+       WHERE employee_id = $1 
+       ORDER BY to_date DESC 
+       LIMIT 1`,
+      [employee_id],
+    );
+
+    // =========================================================
+    // ✅ DEFAULT DATE LOGIC (ONLY if user didn't send dates)
+    // =========================================================
+    if (!from_date || from_date === "" || !to_date || to_date === "") {
+      let from, to;
+
+      if (lastPayroll.rowCount === 0) {
+        // 🟢 FIRST PAYROLL
+        from = new Date(employee.join_date);
+      } else {
+        // 🔵 NEXT PAYROLL
+        const lastTo = new Date(lastPayroll.rows[0].to_date);
+        from = new Date(lastTo);
+        from.setDate(from.getDate() + 1); // next day
+      }
+
+      // ➕ add 1 month
+      to = new Date(from);
+      to.setMonth(to.getMonth() + 1);
+
+      // format YYYY-MM-DD
+      from_date = from.toISOString().split("T")[0];
+      to_date = to.toISOString().split("T")[0];
+    }
+
+    // =========================================================
+    // ✅ BASE SALARY (editable + fallback)
+    // =========================================================
+    const finalBase = base !== undefined ? Number(base) : employee.salary || 0;
+
+    const net = finalBase + (allowance || 0) + (bonus || 0) - (deduction || 0);
+
+    // =========================================================
+    // 🚫 OVERLAP CHECK
+    // =========================================================
+    const overlap = await pool.query(
+      `SELECT * FROM payroll 
+       WHERE employee_id = $1 
+        AND NOT (to_date < $2 OR from_date > $3)`,
+      [employee_id, to_date, from_date],
+    );
+
+    if (overlap.rows.length > 0) {
+      return res.status(409).json({
+        error: `Overlap with ${overlap.rows[0].from_date} → ${overlap.rows[0].to_date}`,
+      });
+    }
+
+    // =========================================================
+    // ✅ INSERT
+    // =========================================================
+    const result = await pool.query(
+      `INSERT INTO payroll 
+      (employee_id, base, allowance, deduction, bonus, net, from_date, to_date)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      RETURNING *`,
+      [
+        employee_id,
+        finalBase,
+        allowance || 0,
+        deduction || 0,
+        bonus || 0,
+        net,
+        from_date,
+        to_date,
+      ],
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error("PAYROLL ERROR:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/payroll/:id", async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM payroll 
+       WHERE employee_id = $1 
+       ORDER BY from_date DESC`,
+      [req.params.id],
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+app.delete("/api/payroll/:id", async (req, res) => {
+  try {
+    await pool.query("DELETE FROM payroll WHERE id=$1", [req.params.id]);
+    res.json({ message: "Deleted" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+app.post("/api/projects", async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const {
+      project_name,
+      priority,
+      start_date,
+      deadline,
+      resources,
+      short_description,
+      budget,
+      tasks,
+      team,
+      expenses,
+      client_id,
+      status,
+    } = req.body;
+
+    await client.query("BEGIN");
+
+    // 1️⃣ Insert project
+    if (client_id) {
+      const check = await client.query("SELECT id FROM clients WHERE id=$1", [
+        client_id,
+      ]);
+
+      if (check.rowCount === 0) {
+        throw new Error("Invalid client_id");
+      }
+    }
+    const proj = await client.query(
+      `INSERT INTO projects 
+      (project_name, priority, start_date, deadline, resources, short_description, budget, client_id, status)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      RETURNING project_id`,
+      [
+        project_name || "N/A",
+        priority || "Medium",
+        start_date || null,
+        deadline || null,
+        resources || null,
+        short_description || null,
+        budget || null,
+        client_id || null,
+        status || "Not Started",
+      ],
+    );
+
+    const projectId = proj.rows[0].project_id;
+
+    // 2️⃣ Insert tasks
+    for (let t of tasks || []) {
+      await client.query(
+        `INSERT INTO tasks (project_id, title, status, deadline)
+         VALUES ($1,$2,$3,$4)`,
+        [projectId, t.title, t.status, t.deadline],
+      );
+    }
+    // 4️⃣ Insert expenses
+    for (let exp of expenses || []) {
+      await client.query(
+        `INSERT INTO expenses (project_id, expense_name, expense_cost)
+     VALUES ($1,$2,$3)`,
+        [projectId, exp.name, exp.cost],
+      );
+    }
+
+    // 3️⃣ Insert team (work instead of role)
+    for (let emp of team || []) {
+      await client.query(
+        `INSERT INTO project_team (project_id, employee_id, work)
+         VALUES ($1,$2,$3)`,
+        [projectId, emp.id, emp.work],
+      );
+    }
+
+    await client.query("COMMIT");
+    res.json({ message: "Project created successfully" });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+app.get("/api/projects", async (req, res) => {
+  try {
+    const projects = await pool.query(`SELECT * FROM projects`);
+
+    for (let p of projects.rows) {
+      const tasks = await pool.query(
+        "SELECT * FROM tasks WHERE project_id=$1",
+        [p.project_id],
+      );
+
+      const team = await pool.query(
+        `SELECT pt.*, e.employee_name 
+   FROM project_team pt
+   LEFT JOIN employees e 
+   ON pt.employee_id = e.employee_id
+   WHERE pt.project_id = $1`,
+        [p.project_id],
+      );
+      const expenses = await pool.query(
+        "SELECT * FROM expenses WHERE project_id=$1",
+        [p.project_id],
+      );
+
+      p.tasks = tasks.rows;
+      p.team = team.rows;
+      p.expenses = expenses.rows;
+    }
+
+    res.json(projects.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+app.put("/api/projects/:id", async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const id = req.params.id;
+    const {
+      project_name,
+      priority,
+      start_date,
+      deadline,
+      resources,
+      short_description,
+      budget,
+      tasks,
+      team,
+      expenses,
+      client_id,
+      status,
+    } = req.body;
+    if (client_id) {
+      const check = await client.query("SELECT id FROM clients WHERE id=$1", [
+        client_id,
+      ]);
+
+      if (check.rowCount === 0) {
+        throw new Error("Invalid client_id");
+      }
+    }
+    await client.query("BEGIN");
+
+    // Update project
+    await client.query(
+      `UPDATE projects SET
+       project_name=$1, priority=$2, start_date=$3, deadline=$4,
+       resources=$5, short_description=$6, budget=$7, client_id=$8 ,status=$9  
+       WHERE project_id=$10`,
+      [
+        project_name,
+        priority,
+        start_date,
+        deadline,
+        resources,
+        short_description,
+        budget,
+        client_id,
+        status,
+        id,
+      ],
+    );
+
+    // Delete old tasks + team
+    await client.query("DELETE FROM tasks WHERE project_id=$1", [id]);
+    await client.query("DELETE FROM project_team WHERE project_id=$1", [id]);
+    await client.query("DELETE FROM expenses WHERE project_id=$1", [id]);
+
+    // Reinsert
+    for (let t of tasks || []) {
+      await client.query(
+        `INSERT INTO tasks (project_id, title, status, deadline)
+         VALUES ($1,$2,$3,$4)`,
+        [id, t.title, t.status, t.deadline],
+      );
+    }
+    for (let exp of expenses || []) {
+      await client.query(
+        `INSERT INTO expenses (project_id, expense_name, expense_cost)
+     VALUES ($1,$2,$3)`,
+        [id, exp.name, exp.cost],
+      );
+    }
+
+    for (let emp of team || []) {
+      await client.query(
+        `INSERT INTO project_team (project_id, employee_id, work)
+         VALUES ($1,$2,$3)`,
+        [id, emp.id, emp.work],
+      );
+    }
+
+    await client.query("COMMIT");
+
+    res.json({ message: "Updated successfully" });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+app.delete("/api/projects/:id", async (req, res) => {
+  try {
+    await pool.query("DELETE FROM projects WHERE project_id=$1", [
+      req.params.id,
+    ]);
+
+    res.json({ message: "Deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+// GET all clients + their projects
+app.get("/api/clients", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        c.id,
+        c.name,
+        c.company,
+        c.location,
+        c.email,
+        c.phone,
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'project_id', p.project_id,
+              'name', p.project_name,
+              'start', p.start_date,
+              'deadline', p.deadline,
+              'budget', p.budget,
+              'short_description', p.short_description,
+              'status', p.status
+            )
+          ) FILTER (WHERE p.project_id IS NOT NULL),
+          '[]'
+        ) AS projects
+      FROM clients c
+      LEFT JOIN projects p ON c.id = p.client_id
+      GROUP BY c.id
+      ORDER BY c.created_at DESC
+    `);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+app.post("/api/clients", async (req, res) => {
+  const {
+    id,
+    name,
+    company,
+    location,
+    email,
+    phone,
+    projectName,
+    startDate,
+    deadline,
+    budget,
+    short_description,
+    status,
+  } = req.body;
+  const clientDB = await pool.connect();
+  try {
+    await pool.query("BEGIN");
+
+    await pool.query(
+      `INSERT INTO clients (id, name, company, location, email, phone)
+       VALUES ($1,$2,$3,$4,$5,$6)`,
+      [id, name, company, location, email, phone],
+    );
+
+    if (projectName) {
+      await pool.query(
+        `INSERT INTO projects 
+        (project_name, start_date, deadline, budget, status,short_description, client_id)
+        VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        [
+          projectName,
+          startDate || null,
+          deadline || null,
+          budget || 0,
+          status || "Not Started",
+          short_description || null,
+          id,
+        ],
+      );
+    }
+
+    await pool.query("COMMIT");
+
+    res.json({ message: "Client + project created" });
+  } catch (err) {
+    await pool.query("ROLLBACK");
+    console.error(err);
+    res.status(500).json({ error: "Error creating client" });
+  }
+});
+app.put("/api/clients/:id", async (req, res) => {
+  const clientDB = await pool.connect();
+
+  try {
+    const id = req.params.id;
+
+    const {
+      name,
+      company,
+      location,
+      email,
+      phone,
+      project_id,
+      projectName,
+      startDate,
+      deadline,
+      budget,
+      status,
+      short_description,
+    } = req.body;
+
+    await clientDB.query("BEGIN");
+
+    // ✅ 1. Update client
+    await clientDB.query(
+      `UPDATE clients SET
+        name = $1,
+        company = $2,
+        location = $3,
+        email = $4,
+        phone = $5
+      WHERE id = $6`,
+      [name, company, location, email, phone, id],
+    );
+
+    // ✅ 2. OPTIONAL project update
+    if (project_id) {
+      await clientDB.query(
+        `UPDATE projects SET
+          project_name = $1,
+          start_date = $2,
+          deadline = $3,
+          budget = $4,
+          status = $5,
+          short_description = $6
+        WHERE project_id = $7 AND client_id = $8`,
+        [
+          projectName || null,
+          startDate || null,
+          deadline || null,
+          budget || 0,
+          status || "Not Started",
+          short_description || null,
+          project_id,
+          id,
+        ],
+      );
+    } else if (projectName) {
+      // 🆕 INSERT NEW PROJECT
+      await clientDB.query(
+        `INSERT INTO projects
+    (project_name, start_date, deadline, budget, status, short_description, client_id)
+    VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        [
+          projectName,
+          startDate || null,
+          deadline || null,
+          budget || 0,
+          status || "Not Started",
+          short_description || null,
+          id,
+        ],
+      );
+    }
+
+    await clientDB.query("COMMIT");
+
+    res.json({ message: "Client updated successfully" });
+  } catch (err) {
+    await clientDB.query("ROLLBACK");
+    console.error("UPDATE CLIENT ERROR:", err);
+    res.status(500).json({ error: "Update failed" });
+  } finally {
+    clientDB.release();
+  }
+});
+app.delete("/api/clients/:id", async (req, res) => {
+  const clientDB = await pool.connect();
+
+  try {
+    const id = req.params.id;
+
+    await clientDB.query("BEGIN");
+
+    // ✅ remove client reference
+    await clientDB.query(
+      "UPDATE projects SET client_id = NULL WHERE client_id = $1",
+      [id],
+    );
+
+    // ✅ delete client
+    await clientDB.query("DELETE FROM clients WHERE id = $1", [id]);
+
+    await clientDB.query("COMMIT");
+
+    res.json({ message: "Client deleted, projects preserved" });
+  } catch (err) {
+    await clientDB.query("ROLLBACK");
+    console.error(err);
+    res.status(500).json({ error: "Delete failed" });
+  } finally {
+    clientDB.release();
   }
 });

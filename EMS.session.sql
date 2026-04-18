@@ -1,19 +1,32 @@
--- DROP TABLE documentations;
-CREATE TABLE IF NOT EXISTS documents(
+-- =============================================
+-- EMS Database Schema - Fixed Version
+-- Run this script in your 'test' database (public schema)
+-- =============================================
+
+CREATE TABLE IF NOT EXISTS clients (
+    id VARCHAR(10) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    company VARCHAR(150),
+    location VARCHAR(150),
+    email VARCHAR(150),
+    phone VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+-- Documents Table
+CREATE TABLE IF NOT EXISTS documents (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     type VARCHAR(100),
     employee VARCHAR(100),
     file_url TEXT UNIQUE    
 );
--- Create index for faster searches
+
 CREATE INDEX IF NOT EXISTS idx_documents_name ON documents(name);
 CREATE INDEX IF NOT EXISTS idx_documents_employee ON documents(employee);
 CREATE INDEX IF NOT EXISTS idx_documents_type ON documents(type);
 
--- Add notice/blog table for the notice page API
-C
-REATE TABLE IF NOT EXISTS notices (
+-- Notices Table
+CREATE TABLE IF NOT EXISTS notices (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     type VARCHAR(50) DEFAULT 'Notice',
@@ -22,16 +35,15 @@ REATE TABLE IF NOT EXISTS notices (
     content TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
--- Create indexes for faster searches (title, author, type)
+
 CREATE INDEX IF NOT EXISTS idx_notices_title ON notices(title);
 CREATE INDEX IF NOT EXISTS idx_notices_author ON notices(author);
 CREATE INDEX IF NOT EXISTS idx_notices_type ON notices(type);
-CREATE INDEX IF NOT EXISTS idx_notices_url ON notices(url);  -- useful for duplicate checks 
+CREATE INDEX IF NOT EXISTS idx_notices_url ON notices(url);
 
-
---add employee table for employee management
-CREATE TABLE employees (
-    employee_id VARCHAR  PRIMARY KEY,
+-- Employees Table
+CREATE TABLE IF NOT EXISTS employees (
+    employee_id VARCHAR PRIMARY KEY,
     employee_name VARCHAR(100) NOT NULL,
     role VARCHAR(50),
     work_mode VARCHAR(20),
@@ -42,23 +54,16 @@ CREATE TABLE employees (
     email VARCHAR(100) UNIQUE NOT NULL,
     address TEXT,
     salary NUMERIC(10,2) CHECK (salary >= 0)
-);  
--- Speed up logins and profile lookups
+);
+
 CREATE INDEX IF NOT EXISTS idx_employees_email ON employees(email);
-
--- Fast filtering by Department (useful for the ID ideas we discussed!)
 CREATE INDEX IF NOT EXISTS idx_employees_dept ON employees(department);
-
--- Speed up searches by Name (e.g., in a search bar or directory)
 CREATE INDEX IF NOT EXISTS idx_employees_name ON employees(employee_name);
-
--- Useful for HR reports and calculating tenure
 CREATE INDEX IF NOT EXISTS idx_employees_join_date ON employees(join_date);
-
--- Quick filtering for "Remote" vs "Office" or "Admin" vs "Employee"
 CREATE INDEX IF NOT EXISTS idx_employees_work_auth ON employees(work_mode, authority);
 
-CREATE TABLE leaves (
+-- Leaves Table (Fixed)
+CREATE TABLE IF NOT EXISTS leaves (
     id SERIAL PRIMARY KEY,
     employee_id VARCHAR NOT NULL,
     leave_type TEXT,
@@ -68,31 +73,184 @@ CREATE TABLE leaves (
     status VARCHAR(20) DEFAULT 'Pending',
     applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_employee
-      FOREIGN KEY(employee_id)
+    CONSTRAINT fk_employee 
+      FOREIGN KEY(employee_id) 
+      REFERENCES employees(employee_id) 
+      ON DELETE CASCADE
+);
+
+-- Indexes for leaves
+CREATE INDEX IF NOT EXISTS idx_leaves_employee_id ON leaves(employee_id);
+CREATE INDEX IF NOT EXISTS idx_leaves_date_range ON leaves(from_date, to_date);
+CREATE INDEX IF NOT EXISTS idx_leaves_status ON leaves(status);
+CREATE INDEX IF NOT EXISTS idx_leaves_applied_at ON leaves(applied_at);
+CREATE INDEX IF NOT EXISTS idx_leaves_emp_status ON leaves(employee_id, status);
+CREATE INDEX IF NOT EXISTS idx_leaves_emp_date ON leaves(employee_id, from_date, to_date);
+
+CREATE TABLE IF NOT EXISTS payroll (
+    id SERIAL PRIMARY KEY,
+    employee_id VARCHAR NOT NULL,
+    base INTEGER DEFAULT 0,
+    allowance INTEGER DEFAULT 0,
+    deduction INTEGER DEFAULT 0,
+    bonus INTEGER DEFAULT 0,
+    net INTEGER,
+    from_date DATE NOT NULL,
+    to_date DATE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_employee_payroll
+      FOREIGN KEY (employee_id)
       REFERENCES employees(employee_id)
       ON DELETE CASCADE
 );
--- 🔍 Fast lookup of all leaves for a specific employee (VERY IMPORTANT)
-CREATE INDEX IF NOT EXISTS idx_leaves_employee_id 
-ON leaves(employee_id);
+-- 🔍 Employee based search (MOST IMPORTANT)
+CREATE INDEX IF NOT EXISTS idx_payroll_employee_id 
+ON payroll(employee_id);
 
--- 📅 Speed up filtering by date range (reports, calendars)
-CREATE INDEX IF NOT EXISTS idx_leaves_date_range 
-ON leaves(from_date, to_date);
+-- 📅 Date range filtering (overlap + reports)
+CREATE INDEX IF NOT EXISTS idx_payroll_date_range 
+ON payroll(from_date, to_date);
 
--- 📊 Fast filtering by leave status (Pending / Approved / Rejected)
-CREATE INDEX IF NOT EXISTS idx_leaves_status 
-ON leaves(status);
+-- ⏱ Sorting by latest payroll
+CREATE INDEX IF NOT EXISTS idx_payroll_created_at 
+ON payroll(created_at);
 
--- 🕒 Sort and fetch recent leaves quickly (dashboard view)
-CREATE INDEX IF NOT EXISTS idx_leaves_applied_at 
--- ON leaves(applied_at DESC);
+-- 🔗 Employee + date range (VERY IMPORTANT for overlap check)
+CREATE INDEX IF NOT EXISTS idx_payroll_emp_date 
+ON payroll(employee_id, from_date, to_date);
 
--- 🔄 Combined index for employee + status (very common query)
-CREATE INDEX IF NOT EXISTS idx_leaves_emp_status 
-ON leaves(employee_id, status);
+-- 📊 Employee + latest records (for dashboard/cards)
+CREATE INDEX IF NOT EXISTS idx_payroll_emp_created 
+ON payroll(employee_id, created_at DESC);
 
--- 📈 Combined index for employee + date (history + reports)
-CREATE INDEX IF NOT EXISTS idx_leaves_emp_date 
-ON leaves(employee_id, from_date, to_date);
+-- 💰 Net salary filtering (used in your frontend filter)
+CREATE INDEX IF NOT EXISTS idx_payroll_net 
+ON payroll(net);
+
+
+CREATE TABLE IF NOT EXISTS projects (
+  project_id SERIAL PRIMARY KEY,
+  project_name TEXT  NOT NULL,
+  priority TEXT,
+  start_date DATE,
+  deadline DATE,
+  resources TEXT,
+  short_description TEXT,
+  budget NUMERIC,
+
+  status VARCHAR(20) DEFAULT 'Upcoming',
+  client_id VARCHAR(10),
+
+  CONSTRAINT fk_client
+    FOREIGN KEY (client_id)
+    REFERENCES clients(id)
+    ON DELETE SET NULL,
+   CONSTRAINT unique_project_per_client UNIQUE (project_name, client_id)
+
+);
+-- 🔍 Search by project name (most common UI search)
+CREATE INDEX IF NOT EXISTS idx_projects_name 
+ON projects(project_name);
+
+-- 📊 Priority filtering (dashboard filters)
+CREATE INDEX IF NOT EXISTS idx_projects_priority 
+ON projects(priority);
+
+-- 📅 Date range filtering (reports, timelines)
+CREATE INDEX IF NOT EXISTS idx_projects_dates 
+ON projects(start_date, deadline);
+
+-- ⏱ Sorting by latest projects
+CREATE INDEX IF NOT EXISTS idx_projects_start_date 
+ON projects(start_date DESC);
+
+-- 💰 Budget filtering (high/low budget projects)
+CREATE INDEX IF NOT EXISTS idx_projects_budget 
+ON projects(budget);
+
+CREATE TABLE IF NOT EXISTS tasks (
+  id SERIAL PRIMARY KEY,
+  project_id INT REFERENCES projects(project_id) ON DELETE CASCADE,
+  title TEXT,
+  status TEXT,
+  deadline DATE
+);
+-- 🔗 Project based fetch (MOST IMPORTANT)
+CREATE INDEX IF NOT EXISTS idx_tasks_project_id 
+ON tasks(project_id);
+
+-- 📊 Status filtering (Ongoing / Complete / Upcoming)
+CREATE INDEX IF NOT EXISTS idx_tasks_status 
+ON tasks(status);
+
+-- 📅 Task deadline filtering
+CREATE INDEX IF NOT EXISTS idx_tasks_deadline 
+ON tasks(deadline);
+
+-- 🔗 Project + status (used in progress calculation)
+CREATE INDEX IF NOT EXISTS idx_tasks_project_status 
+ON tasks(project_id, status);
+
+-- 🔗 Project + deadline (timeline queries)
+CREATE INDEX IF NOT EXISTS idx_tasks_project_deadline 
+ON tasks(project_id, deadline);
+
+
+CREATE TABLE IF NOT EXISTS project_team (
+  id SERIAL PRIMARY KEY,
+
+  project_id INT REFERENCES projects(project_id) ON DELETE CASCADE,
+
+  employee_id TEXT REFERENCES employees(employee_id) ON DELETE CASCADE, -- ✅ LINKED
+
+  work TEXT
+);
+-- 🔍 Employee based search (MOST IMPORTANT)
+CREATE INDEX IF NOT EXISTS idx_project_team_employee_id 
+ON project_team(employee_id);
+
+-- 🔗 Project based team fetch
+CREATE INDEX IF NOT EXISTS idx_project_team_project_id 
+ON project_team(project_id);
+
+-- 🔗 Employee + Project (VERY IMPORTANT for joins)
+CREATE INDEX IF NOT EXISTS idx_project_team_emp_proj 
+ON project_team(employee_id, project_id);
+
+-- 📊 Work/role filtering (e.g., Developer, Manager)
+CREATE INDEX IF NOT EXISTS idx_project_team_work 
+ON project_team(work);
+
+-- 🚀 Employee dashboard (latest assignments first)
+CREATE INDEX IF NOT EXISTS idx_project_team_emp_proj_desc 
+ON project_team(employee_id, project_id DESC);
+
+CREATE TABLE IF NOT EXISTS expenses (
+  expense_id SERIAL PRIMARY KEY,
+  project_id INTEGER NOT NULL,
+  expense_name TEXT NOT NULL,
+  expense_cost NUMERIC NOT NULL,
+
+  -- 🔗 Foreign Key Relation
+  CONSTRAINT fk_project
+    FOREIGN KEY (project_id)
+    REFERENCES projects(project_id)
+    ON DELETE CASCADE
+);
+
+-- 🔗 Project-wise lookup (core)
+CREATE INDEX IF NOT EXISTS idx_expenses_project 
+ON expenses(project_id);
+
+-- 📊 Latest expenses per project
+CREATE INDEX IF NOT EXISTS idx_expenses_project_desc 
+ON expenses(project_id, expense_id DESC);
+
+-- 🔍 Search by name
+CREATE INDEX IF NOT EXISTS idx_expenses_name 
+ON expenses(expense_name);
+
+-- 💰 Cost filtering
+CREATE INDEX IF NOT EXISTS idx_expenses_cost 
+ON expenses(expense_cost);

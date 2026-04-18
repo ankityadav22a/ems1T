@@ -260,51 +260,51 @@
                         : "bg-blue-100 text-blue-700";
 
                   return `
-        <div class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
+            <div class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
 
-          <div class="flex justify-between mb-4">
-            <span class="text-xs font-bold bg-gray-100 px-3 py-1 rounded">
-              #${emp.employee_id}
-            </span>
-            <span class="text-xs px-2 py-1 rounded ${modeColor}">
-              ${emp.work_mode || "N/A"}
-            </span>
-          </div>
+              <div class="flex justify-between mb-4">
+                <span class="text-xs font-bold bg-gray-100 px-3 py-1 rounded">
+                  #${emp.employee_id}
+                </span>
+                <span class="text-xs px-2 py-1 rounded ${modeColor}">
+                  ${emp.work_mode || "N/A"}
+                </span>
+              </div>
 
-          <h2 class="text-xl font-bold">${emp.employee_name}</h2>
-          <p class="text-sm text-gray-500">${emp.role || "N/A"}</p>
+              <h2 class="text-xl font-bold">${emp.employee_name}</h2>
+              <p class="text-sm text-gray-500">${emp.role || "N/A"}</p>
 
-          <div class="mt-4 text-sm text-gray-600 space-y-1">
-            <p><strong>Dept:</strong> ${emp.department}</p>
-            <p><strong>Salary:</strong> ₹${emp.salary}</p>
-            <p><strong>Authority:</strong> 
-    <span class="px-2 py-1 rounded bg-purple-100 text-purple-700 text-xs">
-      ${emp.authority || "Employee"}
-    </span>
-  </p>
-          </div>
+              <div class="mt-4 text-sm text-gray-600 space-y-1">
+                <p><strong>Dept:</strong> ${emp.department}</p>
+                <p><strong>Salary:</strong> ₹${emp.salary}</p>
+                <p><strong>Authority:</strong>
+        <span class="px-2 py-1 rounded bg-purple-100 text-purple-700 text-xs">
+          ${emp.authority || "Employee"}
+        </span>
+      </p>
+              </div>
 
-          <div class="mt-5 pt-4 border-t text-xs text-gray-500">
-            Joined: ${
-              emp.join_date
-                ? new Date(emp.join_date).toLocaleDateString("en-CA")
-                : "N/A"
-            }
-          </div>
+              <div class="mt-5 pt-4 border-t text-xs text-gray-500">
+                Joined: ${
+                  emp.join_date
+                    ? new Date(emp.join_date).toLocaleDateString("en-CA")
+                    : "N/A"
+                }
+              </div>
 
-          <div class="mt-4 flex gap-2">
-            <button onclick="editEmployee('${emp.employee_id}')"
-              class="flex-1 bg-yellow-100 text-yellow-700 py-2 rounded-lg text-sm font-semibold hover:bg-yellow-200">
-              Edit
-            </button>
+              <div class="mt-4 flex gap-2">
+                <button onclick="editEmployee('${emp.employee_id}')"
+                  class="flex-1 bg-yellow-100 text-yellow-700 py-2 rounded-lg text-sm font-semibold hover:bg-yellow-200">
+                  Edit
+                </button>
 
-            <button onclick="deleteEmployee('${emp.employee_id}')"
-              class="flex-1 bg-red-100 text-red-700 py-2 rounded-lg text-sm font-semibold hover:bg-red-200">
-              Delete
-            </button>
-          </div>
+                <button onclick="deleteEmployee('${emp.employee_id}')"
+                  class="flex-1 bg-red-100 text-red-700 py-2 rounded-lg text-sm font-semibold hover:bg-red-200">
+                  Delete
+                </button>
+              </div>
 
-        </div>`;
+            </div>`;
                 })
                 .join("");
       }
@@ -356,19 +356,32 @@
 
         try {
           let successMessage = "";
+
           if (editId) {
-            await fetch(`${API}/${editId}`, {
+            const res = await fetch(`${API}/${editId}`, {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(payload),
             });
-            successMessage = "Employee updated successfully!";
+
+            if (!res.ok) {
+              const errorData = await res.json().catch(() => ({}));
+              throw new Error(errorData.error || "Failed to update employee");
+            }
+
+            const data = await res.json();
+            if (data.new_id && data.new_id !== editId) {
+              editId = data.new_id;
+            }
+
+            successMessage = `Employee updated!\nID: ${data.new_id || editId}`;
           } else {
             const res = await fetch(API, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(payload),
             });
+
             if (!res.ok) {
               const errorData = await res.json().catch(() => ({}));
               throw new Error(errorData.error || "Failed to create employee");
@@ -382,7 +395,7 @@
           closeModal();
           clearForm();
           editId = null;
-          fetchEmployees();
+          await fetchEmployees();
         } catch (err) {
           console.error(err);
           alert(

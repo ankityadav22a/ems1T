@@ -6,7 +6,6 @@
     <title>Payroll Cards</title>
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Exact same anti-flash styles as Notice page -->
     <style>
       #main-content {
         opacity: 0;
@@ -39,7 +38,6 @@
   <body class="bg-gray-100">
     <div id="nav-placeholder"></div>
 
-    <!-- Wrapped in #main-content for fade-in -->
     <div
       id="main-content"
       class="md:ml-56 pt-20 p-6 transition-all duration-300"
@@ -74,33 +72,9 @@
         id="cardContainer"
         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
       >
-        <!-- Immediate skeleton cards (prevents empty flash) -->
+        <!-- skeletons unchanged -->
         <div
           class="bg-white p-6 rounded shadow border border-gray-200 animate-pulse"
-        >
-          <div class="space-y-4">
-            <div class="skeleton h-8 w-3/5 rounded"></div>
-            <div class="skeleton h-5 w-4/5 rounded"></div>
-            <div class="skeleton h-5 w-2/3 rounded"></div>
-            <div class="mt-6 pt-4 border-t">
-              <div class="skeleton h-10 w-full rounded"></div>
-            </div>
-          </div>
-        </div>
-        <div
-          class="bg-white p-6 rounded shadow border border-gray-200 animate-pulse hidden sm:block"
-        >
-          <div class="space-y-4">
-            <div class="skeleton h-8 w-3/5 rounded"></div>
-            <div class="skeleton h-5 w-4/5 rounded"></div>
-            <div class="skeleton h-5 w-2/3 rounded"></div>
-            <div class="mt-6 pt-4 border-t">
-              <div class="skeleton h-10 w-full rounded"></div>
-            </div>
-          </div>
-        </div>
-        <div
-          class="bg-white p-6 rounded shadow border border-gray-200 animate-pulse hidden lg:block"
         >
           <div class="space-y-4">
             <div class="skeleton h-8 w-3/5 rounded"></div>
@@ -114,7 +88,7 @@
       </div>
     </div>
 
-    <!-- formModal and viewModal remain completely unchanged -->
+    <!-- Modals unchanged -->
     <div
       id="formModal"
       class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[60] p-4"
@@ -125,7 +99,12 @@
         <div class="space-y-3">
           <div>
             <label class="text-sm">Base Salary</label>
-            <input id="basic" type="number" class="border p-2 w-full" />
+            <input
+              id="basic"
+              type="number"
+              class="border p-2 w-full bg-gray-100"
+              placeholder="Enter base salary"
+            />
           </div>
           <div>
             <label class="text-sm">Allowance</label>
@@ -198,15 +177,83 @@
     <script src="load-layout.js"></script>
     <script>
       let payroll = [];
-      const employees = [
-        { id: "EMP001", name: "Rahul", dept: "IT", post: "Developer" },
-        { id: "EMP002", name: "Priya", dept: "HR", post: "Manager" },
-        { id: "EMP003", name: "Amit", dept: "Finance", post: "Analyst" },
-      ];
-      let filteredEmployees = [...employees];
+      let employees = [];
+      let filteredEmployees = [];
 
       function getLatestPayroll(id) {
-        return [...payroll].reverse().find((e) => e.id === id);
+        const empPayrolls = payroll
+          .filter((e) => e.employee_id === id)
+          .sort((a, b) => new Date(b.from_date) - new Date(a.from_date));
+
+        return empPayrolls[0]; // latest
+      }
+
+      async function loadPayroll() {
+        payroll = [];
+        for (let emp of employees) {
+          const res = await fetch(`/api/payroll/${emp.id}`);
+          const data = await res.json();
+          payroll.push(...data);
+        }
+        renderCards();
+      }
+
+      async function loadEmployees() {
+        const res = await fetch("/api/employees");
+        employees = await res.json();
+
+        employees = employees.map((e) => ({
+          id: e.employee_id,
+          name: e.employee_name,
+          dept: e.department,
+          post: e.role,
+        }));
+
+        filteredEmployees = [...employees];
+      }
+
+      async function openForm(id) {
+        document.getElementById("empId").value = id;
+
+        const res = await fetch(`/api/employees/${id}`);
+        const emp = await res.json();
+
+        if (emp && emp.salary !== undefined) {
+          document.getElementById("basic").value = emp.salary;
+        }
+
+        document.getElementById("formModal").classList.remove("hidden");
+        // 🔹 Get payroll history
+        const payRes = await fetch(`/api/payroll/${id}`);
+        const payrolls = await payRes.json();
+
+        let from, to;
+
+        if (payrolls.length === 0) {
+          // 🟢 FIRST PAYROLL
+          from = new Date(emp.join_date);
+        } else {
+          // 🔵 NEXT PAYROLL
+          const last = payrolls[0]; // already sorted DESC
+          from = new Date(last.to_date);
+          from.setDate(from.getDate() + 1);
+        }
+
+        // ➕ Add 1 month
+        to = new Date(from);
+        to.setMonth(to.getMonth() + 1);
+
+        // ✅ Format YYYY-MM-DD
+        const format = (d) => d.toISOString().split("T")[0];
+
+        document.getElementById("fromDate").value = format(from);
+        document.getElementById("toDate").value = format(to);
+
+        // 🔓 Keep editable (no readonly)
+        document.getElementById("fromDate").removeAttribute("readonly");
+        document.getElementById("toDate").removeAttribute("readonly");
+
+        document.getElementById("formModal").classList.remove("hidden");
       }
 
       function renderCards() {
@@ -258,65 +305,76 @@
         renderCards();
       }
 
-      function openForm(id) {
-        document.getElementById("empId").value = id;
-        let recent = getLatestPayroll(id);
-        if (recent) document.getElementById("basic").value = recent.base;
-        document.getElementById("formModal").classList.remove("hidden");
-      }
-
       function closeForm() {
         document.getElementById("formModal").classList.add("hidden");
       }
 
-      function savePayroll() {
+      async function savePayroll() {
         let id = document.getElementById("empId").value;
-        let fromDateVal = document.getElementById("fromDate").value;
-        let toDateVal = document.getElementById("toDate").value;
 
-        if (!fromDateVal || !toDateVal) {
+        const data = {
+          employee_id: id,
+          base: +document.getElementById("basic").value || 0,
+          allowance: +document.getElementById("allow").value || 0,
+          deduction: +document.getElementById("deduct").value || 0,
+          bonus: +document.getElementById("bonus").value || 0,
+          from_date: document.getElementById("fromDate").value,
+          to_date: document.getElementById("toDate").value,
+        };
+
+        if (!data.from_date || !data.to_date) {
           alert("Please select dates");
           return;
         }
 
-        let from = new Date(fromDateVal);
-        let to = new Date(toDateVal);
-        let overlap = payroll.find(
-          (e) =>
-            e.id === id && new Date(e.from) <= to && new Date(e.to) >= from,
-        );
+        const res = await fetch("/api/payroll", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
 
-        if (overlap) {
-          alert(`Overlap with ${overlap.from} → ${overlap.to}`);
+        const result = await res.json();
+
+        if (!res.ok) {
+          alert(result.error);
           return;
         }
 
-        let data = {
-          id,
-          base: +document.getElementById("basic").value || 0,
-          allow: +document.getElementById("allow").value || 0,
-          deduct: +document.getElementById("deduct").value || 0,
-          bonus: +document.getElementById("bonus").value || 0,
-          from: fromDateVal,
-          to: toDateVal,
-        };
-        data.net = data.base + data.allow + data.bonus - data.deduct;
-        payroll.push(data);
+        await loadPayroll();
         closeForm();
-        renderCards();
+      }
+      function formatDate(dateStr) {
+        const d = new Date(dateStr);
+
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const year = d.getFullYear();
+
+        return `${day}-${month}-${year}`;
       }
 
-      function openView(id) {
-        let data = payroll.filter((e) => e.id === id);
+      async function openView(id) {
+        const res = await fetch(`/api/payroll/${id}`);
+        const data = await res.json();
+
         document.getElementById("viewTable").innerHTML = data.length
           ? data
               .map(
                 (e) => `
-          <tr class="border-b"><td class="p-2">₹${e.base}</td><td class="p-2">₹${e.allow}</td><td class="p-2">₹${e.deduct}</td><td class="p-2">₹${e.bonus}</td><td class="p-2 text-green-600 font-bold">₹${e.net}</td><td class="p-2 text-xs">${e.from} to ${e.to}</td></tr>
-        `,
+      <tr class="border-b">
+        <td class="p-2">₹${e.base}</td>
+        <td class="p-2">₹${e.allowance}</td>
+        <td class="p-2">₹${e.deduction}</td>
+        <td class="p-2">₹${e.bonus}</td>
+        <td class="p-2 text-green-600 font-bold">₹${e.net}</td>
+       <td class="p-2 text-xs">
+  ${formatDate(e.from_date)} to ${formatDate(e.to_date)}
+</td>
+      </tr>`,
               )
               .join("")
           : `<tr><td colspan="6" class="p-4 text-gray-400">No Records Found</td></tr>`;
+
         document.getElementById("viewModal").classList.remove("hidden");
       }
 
@@ -324,12 +382,11 @@
         document.getElementById("viewModal").classList.add("hidden");
       }
 
-      // ── Exact same reveal logic as Notice page ─────────────────────────────
-      function initializePage() {
-        renderCards();
+      async function initializePage() {
+        await loadEmployees();
+        await loadPayroll();
         document.getElementById("main-content").classList.add("ready");
 
-        // Optional: highlight active menu item
         setTimeout(() => {
           const link = document.querySelector('a[href="payroll.html"]');
           if (link) {

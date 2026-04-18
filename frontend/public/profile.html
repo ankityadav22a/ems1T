@@ -174,46 +174,70 @@
     <div
       id="leaveModal"
       class="hidden fixed inset-0 bg-black/50 flex items-center justify-center"
+    ><!-- LEAVE MODAL -->
+<div
+  id="leaveModal"
+  class="hidden fixed inset-0 bg-black/50 flex items-center justify-center"
+>
+  <div class="bg-white p-6 rounded-xl w-full max-w-md">
+    <h2 class="text-xl font-bold mb-5">Apply for Leave</h2>
+
+    <div class="grid grid-cols-1 gap-4">
+      <div>
+        <input
+          id="empId"
+          onkeyup="fetchEmployeeName()"
+          placeholder="Employee ID"
+          class="border p-3 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <div
+        id="employeeNameDisplay"
+        class="text-sm font-medium min-h-[24px]"
+      ></div>
+
+      <select
+        id="leaveType"
+        class="border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="">Select Leave Type</option>
+        <option>Adoption Leave</option>
+        <option>Bereavement Leave</option>
+        <option>Casual Leave (CL)</option>
+        <option>Compensatory Off (Comp-off)</option>
+        <option>Earned Leave (EL / PL / AL)</option>
+        <option>Marriage / Special Leave</option>
+        <option>Maternity Leave</option>
+        <option>Paternity Leave</option>
+        <option>Sabbatical Leave</option>
+        <option>Sick Leave (SL)</option>
+        <option>Other</option>
+      </select>
+
+      <div class="grid grid-cols-2 gap-4">
+        <input
+          id="fromDate"
+          type="date"
+          class="border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <input
+          id="toDate"
+          type="date"
+          class="border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+    </div>
+
+    <button
+      onclick="addLeave()"
+      class="mt-6 w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 transition font-medium"
     >
-      <div class="bg-white p-6 rounded-xl w-full max-w-md">
-        <h2 class="text-lg font-bold mb-4">Add Leave</h2>
-
-        <input
-          id="leaveType"
-          placeholder="Leave Type"
-          class="border p-2 rounded w-full mb-2"
-        />
-        <input
-          id="leaveFrom"
-          type="date"
-          class="border p-2 rounded w-full mb-2"
-        />
-        <input
-          id="leaveTo"
-          type="date"
-          class="border p-2 rounded w-full mb-2"
-        />
-
-        <select id="leaveStatus" class="border p-2 rounded w-full mb-3">
-          <option>Pending</option>
-          <option>Approved</option>
-          <option>Rejected</option>
-        </select>
-
-        <div class="flex gap-2">
-          <button
-            onclick="addLeave()"
-            class="flex-1 bg-green-600 text-white py-2 rounded"
-          >
-            Add
-          </button>
-          <button
-            onclick="closeLeaveModal()"
-            class="flex-1 bg-gray-200 py-2 rounded"
-          >
-            Cancel
-          </button>
-        </div>
+      Submit Leave Application
+    </button>
+  </div>
+</div>
+      
       </div>
     </div>
     <script src="load-layout.js"></script>

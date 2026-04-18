@@ -6,7 +6,6 @@
     <title>Advanced Projects - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <style>
       #main-content {
         opacity: 0;
@@ -19,7 +18,6 @@
         max-height: 85vh;
         overflow-y: auto;
       }
-      /* Custom scrollbar */
       ::-webkit-scrollbar {
         width: 5px;
       }
@@ -29,10 +27,8 @@
       }
     </style>
   </head>
-
   <body class="bg-gray-100">
     <div id="nav-placeholder"></div>
-
     <main id="main-content" class="md:ml-56 mt-20 p-8">
       <div class="flex justify-between items-end mb-8">
         <div>
@@ -53,372 +49,401 @@
           </button>
         </div>
       </div>
-
+      <input
+        id="projectSearch"
+        onkeyup="renderProjects()"
+        placeholder="Search by Project Name or Client ID..."
+        class="p-3 rounded-xl border w-full max-w-md mb-6"
+      />
+      <div class="flex gap-2 mb-6">
+        <input
+          id="minBudget"
+          type="number"
+          placeholder="Min Budget"
+          class="p-2 border rounded"
+        />
+        <input
+          id="maxBudget"
+          type="number"
+          placeholder="Max Budget"
+          class="p-2 border rounded"
+        />
+        <button
+          onclick="renderProjects()"
+          class="bg-blue-600 text-white px-4 rounded"
+        >
+          Filter
+        </button>
+      </div>
       <div
         class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8"
         id="projectGrid"
       ></div>
     </main>
 
+    <!-- Create / Edit Project Modal -->
     <div
       id="createProjectModal"
       class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-[70] p-4 backdrop-blur-sm"
     >
       <div
-        class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl relative overflow-hidden flex flex-col"
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl relative flex flex-col"
         style="max-height: 90vh"
       >
-        <div class="h-2 bg-emerald-500 w-full shrink-0"></div>
-
-        <div class="p-8 pb-4 shrink-0 relative">
-          <button
-            onclick="toggleCreateModal()"
-            class="absolute top-4 right-4 text-gray-400 hover:text-gray-900 text-2xl"
-          >
-            ✖
-          </button>
-          <h2 id="createModalTitle" class="text-2xl font-black text-slate-800">
-            Initiate New Project
-          </h2>
-        </div>
-
-        <div class="p-8 pt-0 overflow-y-auto flex-grow space-y-6">
-          <div class="space-y-4">
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label
-                  class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
-                  >Project Name</label
-                >
-                <input
-                  id="newProjName"
-                  type="text"
-                  class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:ring-2 ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label
-                  class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
-                  >Priority Level</label
-                >
-                <select
-                  id="newProjPriority"
-                  class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none"
-                >
-                  <option value="Low">Low</option>
-                  <option value="Medium" selected>Medium</option>
-                  <option value="High">High</option>
-                  <option value="Urgent">Urgent</option>
-                </select>
-              </div>
-              <!-- ── NEW: Start Date + Deadline Date (calendar inputs) ── -->
-              <div>
-                <label
-                  class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
-                  >start date</label
-                >
-                <input
-                  id="newProjStart"
-                  type="date"
-                  placeholder="Select start date"
-                  class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:ring-2 ring-blue-500"
-                />
-              </div>
-              <div>
-                <label
-                  class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
-                  >Deadline</label
-                >
-                <input
-                  id="newProjDeadline"
-                  type="date"
-                  placeholder="Select deadline"
-                  class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:ring-2 ring-blue-500"
-                />
-              </div>
-              <div>
-                <label
-                  class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
-                  >Resources</label
-                >
-                <input
-                  id="newProjResources"
-                  type="text"
-                  placeholder="e.g. React, Node.js, AWS"
-                  class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:ring-2 ring-blue-500"
-                />
-              </div>
-            </div>
-            <div class="grid grid-cols-3 gap-4">
-              <div class="col-span-2">
-                <label
-                  class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
-                  >Short Description</label
-                >
-                <input
-                  id="newProjDesc"
-                  type="text"
-                  placeholder="Brief overview..."
-                  class="w-full border p-2.5 rounded-xl bg-slate-50"
-                />
-              </div>
-              <div>
-                <label
-                  class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
-                  >Budget ($)</label
-                >
-                <input
-                  id="newProjBudget"
-                  type="number"
-                  placeholder="0"
-                  class="w-full border p-2.5 rounded-xl bg-slate-50"
-                />
-              </div>
-            </div>
-
-            <div class="border-t border-slate-100 pt-4">
-              <div class="flex justify-between items-center mb-2">
-                <label
-                  class="block text-[10px] font-bold text-blue-600 uppercase"
-                  >Task Matrix</label
-                >
-                <button
-                  onclick="addTaskRow()"
-                  class="text-[10px] bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold hover:bg-blue-200"
-                >
-                  + Add Task
-                </button>
-              </div>
-              <div id="taskInputsContainer" class="space-y-2">
-                <div class="task-row flex gap-2">
+        <div class="overflow-y-auto p-8 flex-grow">
+          <div class="h-2 bg-emerald-500 w-full shrink-0"></div>
+          <div class="p-8 pb-4 shrink-0 relative">
+            <button
+              onclick="toggleCreateModal()"
+              class="absolute top-4 right-4 text-gray-400 hover:text-gray-900 text-2xl"
+            >
+              ✖
+            </button>
+            <h2
+              id="createModalTitle"
+              class="text-2xl font-black text-slate-800"
+            >
+              Initiate New Project
+            </h2>
+          </div>
+          <div class="p-8 pt-0 overflow-y-auto flex-grow space-y-6">
+            <div class="space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
+                    >Project Name</label
+                  >
                   <input
+                    id="newProjName"
                     type="text"
-                    placeholder="Task Name"
-                    class="flex-grow border p-2 rounded-lg bg-slate-50 text-xs t-name"
+                    class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:ring-2 ring-blue-500"
                   />
+                </div>
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
+                  >
+                    Client ID
+                  </label>
                   <input
-                    type="date"
-                    class="w-32 border p-2 rounded-lg bg-slate-50 text-xs t-date"
+                    id="newProjClientId"
+                    type="text"
+                    placeholder="CL-1001"
+                    class="w-full border p-2.5 rounded-xl bg-slate-50"
                   />
+                </div>
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
+                    >Priority Level</label
+                  >
                   <select
-                    class="w-28 border p-2 rounded-lg bg-slate-50 text-xs t-status"
+                    id="newProjPriority"
+                    class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none"
                   >
-                    <option value="Upcoming">Upcoming</option>
-                    <option value="Ongoing">Ongoing</option>
-                    <option value="Complete">Complete</option>
+                    <option value="Low">Low</option>
+                    <option value="Medium" selected>Medium</option>
+                    <option value="High">High</option>
+                    <option value="Urgent">Urgent</option>
                   </select>
-                  <button
-                    onclick="this.parentElement.remove()"
-                    class="text-rose-500 hover:bg-rose-50 px-2 rounded-lg"
+                </div>
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
+                    >Start Date</label
                   >
-                    ✕
-                  </button>
+                  <input
+                    id="newProjStart"
+                    type="date"
+                    class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:ring-2 ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
+                    >Deadline</label
+                  >
+                  <input
+                    id="newProjDeadline"
+                    type="date"
+                    class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:ring-2 ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
+                    >Resources</label
+                  >
+                  <input
+                    id="newProjResources"
+                    type="text"
+                    placeholder="e.g. React, Node.js, AWS"
+                    class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:ring-2 ring-blue-500"
+                  />
                 </div>
               </div>
-            </div>
 
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              <div class="flex justify-between items-center mb-3">
-                <label
-                  class="block text-[10px] font-bold text-slate-400 uppercase"
-                  >Team Members</label
-                >
-                <button
-                  onclick="addEmpRow()"
-                  class="text-[10px] bg-slate-200 text-slate-700 px-2 py-1 rounded font-bold hover:bg-slate-300"
-                >
-                  + Add Staff
-                </button>
-              </div>
-              <div id="empInputsContainer" class="space-y-2">
-                <div class="emp-row flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Name"
-                    class="flex-grow border p-2 rounded-lg bg-white text-xs e-name"
-                  />
-                  <input
-                    type="text"
-                    placeholder="ID"
-                    class="w-20 border p-2 rounded-lg bg-white text-xs e-id"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Role"
-                    class="w-28 border p-2 rounded-lg bg-white text-xs e-pos"
-                  />
-                  <button
-                    onclick="this.parentElement.remove()"
-                    class="text-slate-400 hover:text-rose-500 px-1"
+              <div class="grid grid-cols-3 gap-4">
+                <div class="col-span-2">
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
+                    >Short Description</label
                   >
-                    ✕
+                  <input
+                    id="newProjDesc"
+                    type="text"
+                    placeholder="Brief overview..."
+                    class="w-full border p-2.5 rounded-xl bg-slate-50"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
+                    >Budget ($)</label
+                  >
+                  <input
+                    id="newProjBudget"
+                    type="number"
+                    placeholder="0"
+                    class="w-full border p-2.5 rounded-xl bg-slate-50"
+                  />
+                </div>
+              </div>
+
+              <!-- Task Matrix -->
+              <div class="border-t border-slate-100 pt-4">
+                <div class="flex justify-between items-center mb-2">
+                  <label
+                    class="block text-[10px] font-bold text-blue-600 uppercase"
+                    >Task Matrix</label
+                  >
+                  <button
+                    onclick="addTaskRow()"
+                    class="text-[10px] bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold hover:bg-blue-200"
+                  >
+                    + Add Task
                   </button>
                 </div>
+                <div id="taskInputsContainer" class="space-y-2"></div>
+              </div>
+
+              <!-- Team Members - FIXED: ID first, then Name (auto-filled) -->
+              <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <div class="flex justify-between items-center mb-3">
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase"
+                    >Team Members</label
+                  >
+                  <button
+                    onclick="addEmpRow()"
+                    class="text-[10px] bg-slate-200 text-slate-700 px-2 py-1 rounded font-bold hover:bg-slate-300"
+                  >
+                    + Add Staff
+                  </button>
+                </div>
+                <div id="empInputsContainer" class="space-y-2"></div>
               </div>
             </div>
           </div>
-        </div>
+          <!-- Expenses (Edit Only) -->
+          <div class="border-t border-slate-100 pt-4">
+            <div class="flex justify-between items-center mb-2">
+              <label class="block text-[10px] font-bold text-red-500 uppercase">
+                Expenses
+              </label>
+              <button
+                onclick="addExpenseRow()"
+                class="text-[10px] bg-red-100 text-red-700 px-2 py-1 rounded font-bold"
+              >
+                + Add Expense
+              </button>
+            </div>
 
-        <div class="p-8 pt-4 border-t border-slate-100 bg-white shrink-0">
-          <button
-            id="submitProjectBtn"
-            onclick="addNewProject()"
-            class="w-full bg-slate-900 text-white py-4 rounded-xl font-black hover:bg-slate-800 transition-all shadow-lg"
-          >
-            Create Project
-          </button>
+            <div id="expenseInputsContainer" class="space-y-2"></div>
+          </div>
+
+          <div class="p-8 pt-4 border-t border-slate-100 bg-white shrink-0">
+            <button
+              id="submitProjectBtn"
+              onclick="addNewProject()"
+              class="w-full bg-slate-900 text-white py-4 rounded-xl font-black hover:bg-slate-800 transition-all shadow-lg"
+            >
+              Create Project
+            </button>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- Project Detail Modal -->
 
     <div
       id="projectModal"
       class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-[60] p-4 backdrop-blur-sm"
     >
       <div
-        class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl modal-scroll relative overflow-hidden"
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden"
       >
+        <!-- Top Bar -->
         <div class="h-2 bg-blue-600 w-full"></div>
+
+        <!-- Close Button -->
         <button
           onclick="closeModal()"
-          class="absolute top-4 right-4 text-gray-400 hover:text-gray-900 text-2xl transition-colors"
+          class="absolute top-4 right-6 text-gray-400 hover:text-gray-900 text-2xl z-10"
         >
           ✖
         </button>
 
-        <div class="p-8">
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto p-6 md:p-8">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- LEFT SIDE -->
             <div class="lg:col-span-7">
-              <div class="flex items-center gap-3 mb-2">
+              <div class="flex items-center gap-3 mb-2 flex-wrap">
                 <span
                   id="modalStatusBadge"
-                  class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider"
+                  class="px-3 py-1 rounded-full text-xs font-black uppercase"
                 ></span>
+
                 <h2
                   id="modalTitle"
-                  class="text-3xl font-black text-slate-900"
+                  class="text-2xl md:text-3xl font-black text-slate-900"
                 ></h2>
+
                 <button
                   onclick="editProject()"
-                  class="ml-auto bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-1.5 rounded-lg text-xs font-bold transition-all"
+                  class="ml-auto bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1 rounded text-xs font-bold"
                 >
-                  Edit Project
+                  Edit
                 </button>
               </div>
+              <div class="bg-slate-50 p-3 rounded-xl">
+                <span class="text-[10px] text-slate-400 font-bold"
+                  >Client ID</span
+                >
+                <div id="modalClientId" class="font-black"></div>
+              </div>
+
               <p
                 id="modalDuration"
-                class="text-blue-600 font-bold text-sm mb-6"
+                class="text-blue-600 font-bold text-sm mb-4"
               ></p>
 
-              <h3
-                class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4"
-              >
+              <h3 class="text-sm font-bold text-slate-400 uppercase mb-2">
                 Roadmap & Timeline
               </h3>
-              <div
-                class="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6"
-                style="height: 250px"
-              >
+
+              <div class="bg-slate-50 p-3 rounded-xl mb-4 h-[220px]">
                 <canvas id="roadmapChart"></canvas>
               </div>
 
-              <h3
-                class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2"
-              >
+              <h3 class="text-sm font-bold text-slate-400 uppercase mb-2">
                 Project Brief
               </h3>
-              <p id="modalDesc" class="text-slate-600 leading-relaxed mb-6"></p>
 
-              <div class="grid grid-cols-3 gap-4">
-                <div class="bg-slate-50 p-4 rounded-xl">
-                  <span
-                    class="block text-[10px] text-slate-400 font-bold uppercase"
+              <p id="modalDesc" class="text-slate-600 mb-4"></p>
+              <div class="mb-4">
+                <h3 class="text-sm font-bold text-slate-400 uppercase mb-2">
+                  Resources
+                </h3>
+                <p
+                  id="modalResources"
+                  class="text-xs bg-slate-800 text-white p-3 rounded-lg font-mono"
+                ></p>
+              </div>
+
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div class="bg-slate-50 p-3 rounded-xl">
+                  <span class="text-[10px] text-slate-400 font-bold"
                     >Budget</span
                   >
-                  <span
-                    id="modalBudget"
-                    class="text-lg font-black text-slate-800"
-                  ></span>
+                  <div id="modalBudget" class="font-black"></div>
                 </div>
-                <div class="bg-slate-50 p-4 rounded-xl">
-                  <span
-                    class="block text-[10px] text-slate-400 font-bold uppercase"
-                    >Staffing</span
+
+                <div class="bg-slate-50 p-3 rounded-xl">
+                  <span class="text-[10px] text-slate-400 font-bold"
+                    >Staff</span
                   >
-                  <span
-                    id="modalEmpReq"
-                    class="text-lg font-black text-slate-800"
-                  ></span>
+                  <div id="modalEmpReq" class="font-black"></div>
                 </div>
-                <div class="bg-slate-50 p-4 rounded-xl">
-                  <span
-                    class="block text-[10px] text-slate-400 font-bold uppercase"
-                    >Completion</span
+
+                <div class="bg-slate-50 p-3 rounded-xl">
+                  <span class="text-[10px] text-slate-400 font-bold"
+                    >Progress</span
                   >
-                  <span
+                  <div
                     id="modalProgressText"
-                    class="text-lg font-black text-blue-600"
-                  ></span>
+                    class="font-black text-blue-600"
+                  ></div>
                 </div>
               </div>
             </div>
 
-            <div class="lg:col-span-5 space-y-6">
+            <!-- RIGHT SIDE -->
+            <div class="lg:col-span-5 space-y-4">
               <div>
-                <h3
-                  class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3"
-                >
-                  Resource Stack
-                </h3>
-                <p
-                  id="modalResources"
-                  class="text-sm bg-slate-800 text-slate-200 p-3 rounded-lg font-mono"
-                ></p>
+                <p></p>
               </div>
 
               <div>
-                <h3
-                  class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3"
-                >
-                  Task Matrix
+                <h3 class="text-sm font-bold text-slate-400 uppercase mb-2">
+                  Tasks
                 </h3>
-                <div id="modalTasks" class="space-y-2"></div>
+                <div
+                  id="modalTasks"
+                  class="space-y-2 max-h-40 overflow-y-auto"
+                ></div>
               </div>
 
-              <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
-                <div class="flex justify-between items-center mb-4">
-                  <h3 class="font-bold text-slate-800">Expense Ledger</h3>
-                  <button
-                    onclick="showBillPopup()"
-                    class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold hover:bg-blue-700 transition"
+              <div>
+                <h3 class="text-sm font-bold text-slate-400 uppercase mb-2">
+                  Team
+                </h3>
+                <div
+                  id="modalEmployees"
+                  class="space-y-2 max-h-40 overflow-y-auto"
+                ></div>
+              </div>
+              <!-- Expenses -->
+              <div class="border-t border-slate-100 pt-4">
+                <div class="flex justify-between items-center mb-2">
+                  <label
+                    class="block text-[10px] font-bold text-red-500 uppercase"
                   >
-                    + Add Bill
-                  </button>
+                    Expenses
+                  </label>
                 </div>
-                <div class="max-h-40 overflow-y-auto mb-4">
+
+                <div class="mt-4">
+                  <h3 class="text-sm font-bold text-slate-400 uppercase mb-2">
+                    Expenses Summary
+                  </h3>
                   <table class="w-full text-xs">
                     <tbody id="modalBillsList"></tbody>
                   </table>
-                </div>
-                <div
-                  class="flex justify-between items-center pt-3 border-t border-slate-200"
-                >
-                  <span class="text-xs font-bold text-slate-400 uppercase"
-                    >Total Utilization</span
-                  >
-                  <span
+                  <div
+                    class="text-right font-black mt-2"
                     id="modalTotalSpent"
-                    class="text-xl font-black text-red-600"
-                  ></span>
+                  ></div>
                 </div>
               </div>
+            </div>
+            <div class="ml-auto flex gap-2">
+              <button
+                onclick="deleteProject()"
+                class="bg-red-100 hover:bg-red-200 text-red-600 px-3 py-1 rounded text-xs font-bold"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Bill Popup -->
     <div
       id="billPopup"
       class="fixed inset-0 bg-slate-900/80 hidden items-center justify-center z-[100] p-4"
@@ -455,131 +480,139 @@
     </div>
 
     <script src="load-layout.js"></script>
-
     <script>
+      let projects = [];
       let activeProjectName = null;
       let roadmapChart = null;
       let isEditing = false;
+      let editingProjectId = null;
 
-      const projects = [
-        {
-          name: "Website Redesign",
-          status: "Ongoing",
-          priority: "High",
-          budget: 15000,
-          progress: 50,
-          start: "2026-02-10",
-          deadline: "2026-05-15",
-          description:
-            "Overhauling the primary corporate portal with a headless CMS and modern UI components.",
+      async function loadProjectsFromDB() {
+        try {
+          const res = await fetch("/api/projects");
+          if (!res.ok) throw new Error("Failed to load projects");
+          const data = await res.json();
 
-          resources: "React, Tailwind, Strapi, AWS S3",
-          employees: ["John D.", "Sarah L.", "Sonam"],
-          tasks: [
-            {
-              title: "Design Sprint",
-              status: "Complete",
-              deadline: "2026-02-15",
-            },
-            {
-              title: "Frontend Build",
-              status: "Ongoing",
-              deadline: "2026-03-30",
-            },
-            {
-              title: "API Linkage",
-              status: "Upcoming",
-              deadline: "2026-05-15",
-            },
-          ],
-          bills: [
-            { desc: "Stock Photos", cost: 150 },
-            { desc: "Domain Renewal", cost: 50 },
-          ],
-        },
-        {
-          name: "Inventory System",
-          status: "Upcoming",
-          priority: "Medium",
-          budget: 25000,
-          start: "2026-06-01",
-          deadline: "2026-10-30",
-          description:
-            "Real-time stock tracking application with QR code integration for the warehouse.",
-          resources: "Node.js, MongoDB, Zebra Scanner SDK",
-          employees: ["Mike R."],
-          tasks: [
-            { title: "DB Schema", status: "Ongoing", deadline: "2026-07-01" },
-            {
-              title: "Hardware Test",
-              status: "Upcoming",
-              deadline: "2026-10-30",
-            },
-          ],
-          bills: [],
-        },
-      ];
+          projects = data.map((p) => ({
+            id: p.project_id,
+            name: p.project_name,
+            priority: p.priority,
+            client_id: p.client_id,
+            start: p.start_date,
+            deadline: p.deadline,
+            description: p.short_description,
+            budget: p.budget || 0,
+            resources: p.resources || "",
+            status: p.status || "Upcoming",
+            employees: p.team
+              ? p.team.map((t) => t.employee_name || "Unknown")
+              : [],
+            team: p.team || [], // ← full team objects stored for editing
+            tasks: p.tasks || [],
+            bills: p.expenses
+              ? p.expenses.map((e) => ({
+                  desc: e.expense_name,
+                  cost: Number(e.expense_cost),
+                }))
+              : [],
+          }));
+
+          renderProjects();
+        } catch (err) {
+          console.error(err);
+          alert("Failed to load projects: " + err.message);
+        }
+      }
+      function formatDate(dateStr) {
+        if (!dateStr) return "N/A";
+        const d = new Date(dateStr);
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const year = d.getFullYear();
+        return `${day}-${month}-${year}`;
+      }
 
       function calculateProgress(tasks) {
         if (!tasks || tasks.length === 0) return 0;
-        const total = tasks.length;
         const completed = tasks.filter((t) => t.status === "Complete").length;
-        return Math.round((100 / total) * completed);
+        return Math.round((completed / tasks.length) * 100);
       }
 
       function renderProjects() {
+        const q =
+          document
+            .getElementById("projectSearch")
+            ?.value.toLowerCase()
+            .trim() || "";
+        const min = parseInt(document.getElementById("minBudget")?.value) || 0;
+        const max =
+          parseInt(document.getElementById("maxBudget")?.value) || Infinity;
+
+        const filtered = projects.filter((p) => {
+          const matchesSearch =
+            p.name.toLowerCase().includes(q) ||
+            (p.client_id || "").toLowerCase().includes(q);
+
+          const matchesBudget = p.budget >= min && p.budget <= max;
+
+          return matchesSearch && matchesBudget;
+        });
         const grid = document.getElementById("projectGrid");
         let totalPortfolioSpent = 0;
-        grid.innerHTML = projects
+
+        grid.innerHTML = filtered
           .map((p) => {
             const progress = calculateProgress(p.tasks);
-
-            const spent = p.bills.reduce((acc, curr) => acc + curr.cost, 0);
+            const spent = p.bills.reduce((acc, b) => acc + (b.cost || 0), 0);
             totalPortfolioSpent += spent;
-            const statusTheme = {
-              Ongoing: "bg-amber-100 text-amber-700",
-              Upcoming: "bg-blue-100 text-blue-700",
-              Complete: "bg-emerald-100 text-emerald-700",
-              Halted: "bg-rose-100 text-rose-700",
-            }[p.status];
+
+            const status = calculateProjectStatus(p.tasks) || "Upcoming";
+            const statusTheme =
+              {
+                Ongoing: "bg-amber-100 text-amber-700",
+                Complete: "bg-emerald-100 text-emerald-700",
+                Halted: "bg-rose-100 text-rose-700",
+              }[status] || "bg-blue-100 text-blue-700";
+
             return `
-            <div onclick="openProject('${p.name}')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer group">
-              <div class="flex justify-between items-start mb-6">
-                <div class="${statusTheme} px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter">${p.status}</div>
-                <div class="text-[10px] font-bold text-slate-400 uppercase">#${p.priority} Priority</div>
-              </div>
-              <h3 class="text-xl font-black text-slate-800 mb-2 group-hover:text-blue-600 transition-colors">${p.name}</h3>
-              <p class="text-xs text-slate-400 mb-6 line-clamp-2">${p.description}</p>
-              <div class="space-y-4 mb-6">
-                <div class="flex justify-between text-[11px] font-bold uppercase tracking-widest text-slate-500">
-                    <span>Utilization</span>
-                    <span class="text-slate-800">$${spent} <span class="text-slate-300">/ $${p.budget}</span></span>
-                </div>
-                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                    <div class="bg-blue-600 h-full transition-all duration-700" style="width:${progress}%"></div>
-                </div>
-              </div>
-              <div class="flex justify-between items-center border-t border-slate-50 pt-4">
-                 <div class="flex -space-x-2">
-                    ${p.employees.map((e) => `<div class="w-7 h-7 rounded-full bg-slate-200 border-2 border-white flex items-center justify-center text-[10px] font-bold">${e[0]}</div>`).join("")}
-                 </div>
-                 <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">${progress}% Ready</span>
-              </div>
-            </div>`;
+                <div onclick="openProject('${p.name}')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer group">
+                  <div class="flex justify-between items-start mb-6">
+                    <div class="${statusTheme} px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter">${status}</div>
+                    <div class="text-[10px] font-bold text-slate-400 uppercase">#${p.priority} Priority</div>
+                  </div>
+                  <h3 class="text-xl font-black text-slate-800 mb-2 group-hover:text-blue-600 transition-colors">${p.name}</h3>
+                  <p class="text-xs text-slate-400 mb-6 line-clamp-2">${p.description || ""}</p>
+                  <div class="space-y-4 mb-6">
+                    <div class="flex justify-between text-[11px] font-bold uppercase tracking-widest text-slate-500">
+                      <span>Utilization</span>
+                      <span class="text-slate-800">$${spent} <span class="text-slate-300">/ $${p.budget}</span></span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                      <div class="bg-blue-600 h-full transition-all duration-700" style="width:${progress}%"></div>
+                    </div>
+                  </div>
+                  <div class="flex justify-between items-center border-t border-slate-50 pt-4">
+                    <div class="flex -space-x-2">
+                      ${p.employees
+                        .slice(0, 4)
+                        .map(
+                          (e) =>
+                            `<div class="w-7 h-7 rounded-full bg-slate-200 border-2 border-white flex items-center justify-center text-[10px] font-bold">${(e || "?")[0]}</div>`,
+                        )
+                        .join("")}
+                    </div>
+                    <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">${progress}% Ready</span>
+                  </div>
+                </div>`;
           })
           .join("");
+
         document.getElementById("portfolioCost").innerText =
           totalPortfolioSpent.toLocaleString();
       }
 
       function toggleCreateModal() {
         const modal = document.getElementById("createProjectModal");
-        isEditing = false;
-        document.getElementById("createModalTitle").innerText =
-          "Initiate New Project";
-        document.getElementById("submitProjectBtn").innerText =
-          "Create Project";
-        document.getElementById("newProjName").disabled = false;
         modal.classList.toggle("hidden");
         modal.classList.toggle("flex");
       }
@@ -589,142 +622,165 @@
         const div = document.createElement("div");
         div.className = "task-row flex gap-2";
         div.innerHTML = `
-          <input type="text" placeholder="Task Name" class="flex-grow border p-2 rounded-lg bg-slate-50 text-xs t-name" value="${data ? data.title : ""}">
-          <input type="date" class="w-32 border p-2 rounded-lg bg-slate-50 text-xs t-date" value="${data ? data.deadline : ""}">
-          <select class="w-28 border p-2 rounded-lg bg-slate-50 text-xs t-status">
-            <option value="Upcoming" ${data?.status === "Upcoming" ? "selected" : ""}>Upcoming</option>
-            <option value="Ongoing" ${data?.status === "Ongoing" ? "selected" : ""}>Ongoing</option>
-            <option value="Complete" ${data?.status === "Complete" ? "selected" : ""}>Complete</option>
-          </select>
-          <button onclick="this.parentElement.remove()" class="text-rose-500 hover:bg-rose-50 px-2 rounded-lg">✕</button>
-        `;
+              <input type="text" placeholder="Task Name" class="flex-grow border p-2 rounded-lg bg-slate-50 text-xs t-name" value="${data ? data.title || data.name || "" : ""}">
+              <input type="date" class="w-32 border p-2 rounded-lg bg-slate-50 text-xs t-date" value="${data ? formatDateForInput(data.deadline) : ""}">
+              <select class="w-28 border p-2 rounded-lg bg-slate-50 text-xs t-status">
+                <option value="Upcoming" ${data?.status === "Upcoming" ? "selected" : ""}>Upcoming</option>
+                <option value="Ongoing" ${data?.status === "Ongoing" ? "selected" : ""}>Ongoing</option>
+                <option value="Complete" ${data?.status === "Complete" ? "selected" : ""}>Complete</option>
+              </select>
+              <button onclick="this.parentElement.remove()" class="text-rose-500 hover:bg-rose-50 px-2 rounded-lg">✕</button>
+            `;
         container.appendChild(div);
       }
+      function formatDateForInput(dateStr) {
+        if (!dateStr) return "";
+        return new Date(dateStr).toISOString().split("T")[0];
+      }
 
+      // FIXED: ID field first → Name (readonly, auto-filled) second
       function addEmpRow(data = null) {
         const container = document.getElementById("empInputsContainer");
         const div = document.createElement("div");
         div.className = "emp-row flex gap-2";
         div.innerHTML = `
-            <input type="text" placeholder="Name" class="flex-grow border p-2 rounded-lg bg-white text-xs e-name" value="${data ? data : ""}" />
-            <input type="text" placeholder="ID" class="w-20 border p-2 rounded-lg bg-white text-xs e-id" />
-            <input type="text" placeholder="Role" class="w-28 border p-2 rounded-lg bg-white text-xs e-pos" />
-            <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-500 px-1">✕</button>
-          `;
+              <input
+                type="text"
+                placeholder="ID"
+                class="w-20 border p-2 rounded-lg bg-white text-xs e-id"
+                value="${data ? data.employee_id || data.id || "" : ""}"
+                onblur="fetchEmployeeName(this)"
+              />
+
+          <span
+            class="flex-grow p-2 text-xs font-bold text-blue-600 e-name"
+          >
+            ${data ? data.employee_name || data.name || data.emp_name || "" : ""}
+          </span>
+              <input
+                type="text"
+                placeholder="Work"
+                class="w-28 border p-2 rounded-lg bg-white text-xs e-pos"
+                value="${data ? data.work || "" : ""}"
+              />
+              <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-500 px-1">✕</button>
+            `;
         container.appendChild(div);
       }
 
-      function addNewProject() {
-        const name = document.getElementById("newProjName").value;
-        const priority = document.getElementById("newProjPriority").value;
-        const desc = document.getElementById("newProjDesc").value;
-        const budget =
-          parseInt(document.getElementById("newProjBudget").value) || 0;
+      async function fetchEmployeeName(input) {
+        const empId = input.value.trim();
+        if (!empId) return;
 
-        // ✅ NEW VALUES
-        const startDate = document.getElementById("newProjStart").value;
-        const deadlineDate = document.getElementById("newProjDeadline").value;
-        const resourcesInput =
-          document.getElementById("newProjResources").value;
+        const row = input.closest(".emp-row");
+        const nameField = row.querySelector(".e-name");
 
-        const taskRows = document.querySelectorAll(".task-row");
-        const tasks = Array.from(taskRows)
-          .map((row) => ({
-            title: row.querySelector(".t-name").value || "Unnamed Task",
-            deadline: row.querySelector(".t-date").value || "TBD",
-            status: row.querySelector(".t-status").value,
-          }))
-          .filter((t) => t.title !== "Unnamed Task");
+        try {
+          const res = await fetch(`/api/employees/${empId}`);
+          if (!res.ok) throw new Error("Employee not found");
+          const data = await res.json();
 
-        const empRows = document.querySelectorAll(".emp-row");
-        const employeeNames = Array.from(empRows)
-          .map((row) => row.querySelector(".e-name").value)
-          .filter((n) => n);
+          // Backend returns { employee_name: "..." } - this now works reliably
+          nameField.innerText = data.employee_name || data.name || "Not Found";
+        } catch (err) {
+          nameField.innerText = "Not Found";
+          console.error("Employee fetch failed:", err);
+        }
+      }
 
+      async function addNewProject() {
+        const name = document.getElementById("newProjName").value.trim();
         if (!name) {
           alert("Project name is required!");
           return;
         }
+        const client_id = document
+          .getElementById("newProjClientId")
+          .value.trim();
+        const priority = document.getElementById("newProjPriority").value;
+        const desc = document.getElementById("newProjDesc").value;
+        const budget =
+          parseInt(document.getElementById("newProjBudget").value) || 0;
+        const startDate = document.getElementById("newProjStart").value;
+        const deadlineDate = document.getElementById("newProjDeadline").value;
+        const resources = document.getElementById("newProjResources").value;
 
-        const calculatedProgress = calculateProgress(tasks);
+        const tasks = Array.from(document.querySelectorAll(".task-row")).map(
+          (row) => ({
+            title: row.querySelector(".t-name").value,
+            deadline: row.querySelector(".t-date").value,
+            status: row.querySelector(".t-status").value,
+          }),
+        );
 
-        const projectData = {
-          name: name,
-          status: tasks.every((t) => t.status === "Complete")
-            ? "Complete"
-            : tasks.some((t) => t.status === "Ongoing")
-              ? "Ongoing"
-              : "Upcoming",
-          priority: priority,
-          progress: calculatedProgress,
-          budget: budget,
+        const team = Array.from(document.querySelectorAll(".emp-row")).map(
+          (row) => ({
+            id: row.querySelector(".e-id").value,
+            work: row.querySelector(".e-pos").value,
+          }),
+        );
+        const expenses = Array.from(
+          document.querySelectorAll(".expense-row"),
+        ).map((row) => ({
+          name: row.querySelector(".ex-name").value,
+          cost: parseFloat(row.querySelector(".ex-cost").value) || 0,
+        }));
+        const projectStatus = calculateProjectStatus(tasks);
 
-          // ✅ UPDATED
-          start: startDate || new Date().toISOString().split("T")[0],
-          deadline:
-            deadlineDate ||
-            (tasks.length > 0 ? tasks[tasks.length - 1].deadline : "TBD"),
-
-          description: desc,
-          empRequired: employeeNames.length || 1,
-
-          // ✅ UPDATED
-          resources: resourcesInput || "Not Specified",
-
-          employees: employeeNames.length > 0 ? employeeNames : ["Staff"],
-          tasks:
-            tasks.length > 0
-              ? tasks
-              : [{ title: "Initiation", status: "Upcoming", deadline: "TBD" }],
+        const payload = {
+          project_name: name,
+          priority,
+          start_date: startDate,
+          deadline: deadlineDate,
+          resources,
+          short_description: desc,
+          status: projectStatus,
+          budget,
+          tasks,
+          team,
+          expenses,
+          client_id,
         };
 
-        const existingIndex = projects.findIndex((p) => p.name === name);
-
-        if (existingIndex > -1) {
-          projectData.bills = projects[existingIndex].bills;
-          projects[existingIndex] = projectData;
-        } else {
-          projectData.bills = [];
-          projects.push(projectData);
-        }
-
-        renderProjects();
-        toggleCreateModal();
-
-        // ✅ CLEAR ALL FIELDS
-        document.getElementById("newProjName").value = "";
-        document.getElementById("newProjDesc").value = "";
-        document.getElementById("newProjBudget").value = "";
-        document.getElementById("newProjStart").value = "";
-        document.getElementById("newProjDeadline").value = "";
-        document.getElementById("newProjResources").value = "";
-
-        document.getElementById("taskInputsContainer").innerHTML = "";
-        document.getElementById("empInputsContainer").innerHTML = "";
-        addTaskRow();
-        addEmpRow();
-      }
-      //calculate progress based on tasks and update project status accordingly
-      function getEffectiveProgress(tasks) {
-        const sorted = [...tasks].sort((a, b) => {
-          const order = { Complete: 1, Ongoing: 2, Upcoming: 3 };
-          return order[a.status] - order[b.status];
-        });
-
-        const step = 100 / sorted.length;
-        let progress = 0;
-
-        for (let t of sorted) {
-          if (t.status === "Complete") {
-            progress += step;
-          } else if (t.status === "Ongoing") {
-            progress += step / 2;
+        try {
+          let res;
+          if (isEditing && editingProjectId) {
+            res = await fetch(`/api/projects/${editingProjectId}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
           } else {
-            break; // 🔥 STOP at first Upcoming
+            res = await fetch("/api/projects", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
           }
-        }
 
-        return Math.round(progress);
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || `HTTP error ${res.status}`);
+          }
+
+          toggleCreateModal();
+          loadProjectsFromDB(); // refresh the list
+        } catch (err) {
+          console.error(err);
+          alert("❌ Project saving error:\n" + err.message);
+        }
+      }
+      function calculateProjectStatus(tasks) {
+        if (!tasks || tasks.length === 0) return "Upcoming";
+
+        const allComplete = tasks.every((t) => t.status === "Complete");
+        const anyOngoing = tasks.some((t) => t.status === "Ongoing");
+        const anyComplete = tasks.some((t) => t.status === "Complete");
+
+        if (allComplete) return "Complete";
+        if (anyOngoing || anyComplete) return "Ongoing";
+
+        return "Upcoming";
       }
 
       function editProject() {
@@ -735,64 +791,142 @@
         toggleCreateModal();
 
         isEditing = true;
+        editingProjectId = p.id;
+
         document.getElementById("createModalTitle").innerText = "Edit Project";
         document.getElementById("submitProjectBtn").innerText = "Save Changes";
-
         document.getElementById("newProjName").value = p.name;
-        document.getElementById("newProjName").disabled = true; // Key identifier
+        document.getElementById("newProjName").disabled = true;
+        document.getElementById("newProjClientId").value = p.client_id || "";
         document.getElementById("newProjPriority").value = p.priority;
-        document.getElementById("newProjDesc").value = p.description;
+        document.getElementById("newProjDesc").value = p.description || "";
         document.getElementById("newProjBudget").value = p.budget;
-        document.getElementById("newProjStart").value = p.start;
-        document.getElementById("newProjDeadline").value = p.deadline;
-        document.getElementById("newProjResources").value = p.resources;
+        document.getElementById("newProjStart").value = formatDateForInput(
+          p.start,
+        );
+        document.getElementById("newProjDeadline").value = formatDateForInput(
+          p.deadline,
+        );
+        document.getElementById("newProjResources").value = p.resources || "";
 
+        // Clear containers
         document.getElementById("taskInputsContainer").innerHTML = "";
-        p.tasks.forEach((t) => addTaskRow(t));
+        (p.tasks || []).forEach((t) => addTaskRow(t));
 
         document.getElementById("empInputsContainer").innerHTML = "";
-        p.employees.forEach((e) => addEmpRow(e));
+        (p.team || []).forEach((emp) =>
+          addEmpRow({
+            employee_id: emp.employee_id || emp.id,
+            employee_name: emp.employee_name || "",
+            work: emp.work || "",
+          }),
+        );
+        const expenseContainer = document.getElementById(
+          "expenseInputsContainer",
+        );
+        if (expenseContainer) {
+          expenseContainer.innerHTML = "";
+
+          if (p.bills && p.bills.length > 0) {
+            p.bills.forEach((b) => addExpenseRow(b));
+          }
+        } // ← uses full team objects
       }
 
       function openProject(name) {
         activeProjectName = name;
         const p = projects.find((proj) => proj.name === name);
+        if (!p) return;
+
         const badge = document.getElementById("modalStatusBadge");
-        badge.innerText = p.status;
-        badge.className = `px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${p.status === "Ongoing" ? "bg-amber-100 text-amber-700" : p.status === "Complete" ? "bg-emerald-100 text-emerald-700" : "bg-blue-100 text-blue-700"}`;
+        const status = calculateProjectStatus(p.tasks) || "Upcoming";
+        badge.innerText = status;
+        badge.className = `px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
+          status === "Ongoing"
+            ? "bg-amber-100 text-amber-700"
+            : status === "Complete"
+              ? "bg-emerald-100 text-emerald-700"
+              : "bg-blue-100 text-blue-700"
+        }`;
+
         document.getElementById("modalTitle").innerText = p.name;
+        document.getElementById("modalClientId").innerText =
+          p.client_id || "N/A";
         document.getElementById("modalDuration").innerText =
-          `${p.start} — ${p.deadline}`;
-        document.getElementById("modalDesc").innerText = p.description;
+          `${formatDate(p.start || "N/A")} — ${formatDate(p.deadline || "N/A")}`;
+        document.getElementById("modalDesc").innerText = p.description || "";
         document.getElementById("modalEmpReq").innerText =
           `${p.employees.length} Staff`;
         document.getElementById("modalBudget").innerText =
           `$${p.budget.toLocaleString()}`;
-        document.getElementById("modalResources").innerText = p.resources;
-        const EffectiveProgress = calculateProgress(p.tasks);
-        document.getElementById("modalProgressText").innerText =
-          `${EffectiveProgress}%`;
-        document.getElementById("modalTasks").innerHTML = p.tasks
+
+        document.getElementById("modalResources").innerText =
+          p.resources || "No resources listed";
+
+        const progress = calculateProgress(p.tasks);
+        document.getElementById("modalProgressText").innerText = `${progress}%`;
+
+        document.getElementById("modalTasks").innerHTML = (p.tasks || [])
           .map(
-            (t) =>
-              `<div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100"><span class="text-sm font-bold text-slate-700">${t.title}</span><span class="text-[10px] font-black uppercase px-2 py-1 rounded ${t.status === "Complete" ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-500"}">${t.status}</span></div>`,
+            (t) => `
+              <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
+                <span class="text-sm font-bold text-slate-700">${t.title}</span>
+                <span class="text-[10px] font-black uppercase px-2 py-1 rounded ${t.status === "Complete" ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-500"}">${t.status}</span>
+              </div>
+            `,
           )
           .join("");
-        const spent = p.bills.reduce((acc, curr) => acc + curr.cost, 0);
-        document.getElementById("modalBillsList").innerHTML = p.bills
+
+        document.getElementById("modalEmployees").innerHTML = (p.team || [])
+          .filter((emp) => emp)
           .map(
-            (b) =>
-              `<tr class="border-b border-slate-50"><td class="py-2 text-slate-600">${b.desc}</td><td class="py-2 text-right font-bold text-slate-800">$${b.cost}</td></tr>`,
+            (emp) => `
+        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
+          <span class="text-sm font-bold text-slate-700">
+            ${emp.employee_name || emp.name || "Unknown"}
+          </span>
+          <span class="text-[10px] font-black uppercase px-2 py-1 rounded bg-blue-100 text-blue-700">
+            ${emp.work || "No Role"}
+          </span>
+        </div>
+      `,
+          )
+          .join("");
+
+        const spent = p.bills.reduce((acc, b) => acc + (b.cost || 0), 0);
+        document.getElementById("modalBillsList").innerHTML = (p.bills || [])
+          .map(
+            (b) => `
+              <tr class="border-b border-slate-50">
+                <td class="py-2 text-slate-600">${b.desc || b.description}</td>
+                <td class="py-2 text-right font-bold text-slate-800">$${b.cost}</td>
+              </tr>
+            `,
           )
           .join("");
         document.getElementById("modalTotalSpent").innerText =
           `$${spent.toLocaleString()}`;
+
         initChart(p);
         document
           .getElementById("projectModal")
           .classList.replace("hidden", "flex");
       }
+      async function deleteProject() {
+        if (!confirm("Delete this project?")) return;
 
+        const p = projects.find((proj) => proj.name === activeProjectName);
+        if (!p) return;
+
+        try {
+          await fetch(`/api/projects/${p.id}`, { method: "DELETE" });
+
+          closeModal();
+          loadProjectsFromDB();
+        } catch (err) {
+          console.error(err);
+        }
+      }
       function initChart(project) {
         const ctx = document.getElementById("roadmapChart").getContext("2d");
         if (roadmapChart) roadmapChart.destroy();
@@ -947,7 +1081,7 @@
                     return [
                       `Current: ${currentTask.title}`,
                       `Progress: ${value}%`,
-                      `Deadline: ${currentTask.deadline || "N/A"}`,
+                      `Deadline: ${formatDate(currentTask.deadline) || "N/A"}`,
                     ];
                   },
                 },
@@ -976,6 +1110,28 @@
           },
         });
       }
+      function addExpenseRow(data = null) {
+        const container = document.getElementById("expenseInputsContainer");
+        if (!container) return; // ✅ prevents error if not present
+
+        const div = document.createElement("div");
+        div.className = "expense-row flex gap-2";
+
+        div.innerHTML = `
+          <input type="text" placeholder="Expense Name"
+            class="flex-grow border p-2 rounded-lg bg-slate-50 text-xs ex-name"
+            value="${data ? data.desc || data.name || "" : ""}">
+
+          <input type="number" placeholder="Cost"
+            class="w-28 border p-2 rounded-lg bg-slate-50 text-xs ex-cost"
+            value="${data ? data.cost || "" : ""}">
+
+          <button onclick="this.parentElement.remove()"
+            class="text-rose-500 px-2">✕</button>
+        `;
+
+        container.appendChild(div);
+      }
 
       function showBillPopup() {
         document
@@ -996,22 +1152,25 @@
       function submitBill() {
         const desc = document.getElementById("billName").value;
         const cost = parseFloat(document.getElementById("billAmount").value);
-        if (desc && cost) {
-          const p = projects.find((proj) => proj.name === activeProjectName);
+        if (!desc || !cost) return;
+
+        const p = projects.find((proj) => proj.name === activeProjectName);
+        if (p) {
           p.bills.push({ desc, cost });
           renderProjects();
           openProject(activeProjectName);
-          hideBillPopup();
-          document.getElementById("billName").value = "";
-          document.getElementById("billAmount").value = "";
         }
+        hideBillPopup();
+        document.getElementById("billName").value = "";
+        document.getElementById("billAmount").value = "";
       }
 
+      // Initialize
       document.addEventListener("DOMContentLoaded", () => {
+        loadProjectsFromDB();
         setTimeout(() => {
-          renderProjects();
           document.getElementById("main-content").classList.add("ready");
-        }, 400);
+        }, 300);
       });
     </script>
   </body>

@@ -32,6 +32,110 @@
           background-position: -200% 0;
         }
       }
+      /* 🔮 Neon Ball Style */
+      .ball {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+        position: relative;
+        text-align: center;
+        transition: transform 0.3s ease;
+        animation: float 3s ease-in-out infinite;
+      }
+
+      /* Number */
+      .ball span {
+        font-size: 26px;
+      }
+
+      /* Label */
+      .ball p {
+        font-size: 12px;
+        margin-top: 4px;
+        opacity: 0.9;
+      }
+
+      /* Hover effect */
+      .ball:hover {
+        transform: scale(1.1);
+      }
+
+      /* Floating animation */
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
+      }
+
+      /* Glow animation */
+      @keyframes glow {
+        0% {
+          box-shadow:
+            0 0 10px currentColor,
+            0 0 20px currentColor;
+        }
+        50% {
+          box-shadow:
+            0 0 25px currentColor,
+            0 0 50px currentColor;
+        }
+        100% {
+          box-shadow:
+            0 0 10px currentColor,
+            0 0 20px currentColor;
+        }
+      }
+
+      /* COLORS */
+      /* 🔵 TOTAL — Soft Blue Tech */
+      .ball.total {
+        background: radial-gradient(circle at 30% 30%, #e0f2fe, #bae6fd);
+        color: #0369a1;
+        box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+        animation:
+          float 3s ease-in-out infinite,
+          glowSoft 3s infinite;
+      }
+
+      /* 🟢 APPROVED — Mint Green */
+      .ball.approved {
+        background: radial-gradient(circle at 30% 30%, #dcfce7, #bbf7d0);
+        color: #166534;
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.25);
+        animation:
+          float 3s ease-in-out infinite,
+          glowSoft 3s infinite;
+      }
+
+      /* 🟡 PENDING — Soft Amber */
+      .ball.pending {
+        background: radial-gradient(circle at 30% 30%, #fef9c3, #fde68a);
+        color: #92400e;
+        box-shadow: 0 0 20px rgba(250, 204, 21, 0.25);
+        animation:
+          float 3s ease-in-out infinite,
+          glowSoft 3s infinite;
+      }
+
+      /* 🔴 REJECTED — Soft Rose */
+      .ball.rejected {
+        background: radial-gradient(circle at 30% 30%, #ffe4e6, #fecdd3);
+        color: #9f1239;
+        box-shadow: 0 0 20px rgba(244, 63, 94, 0.25);
+        animation:
+          float 3s ease-in-out infinite,
+          glowSoft 3s infinite;
+      }
     </style>
   </head>
   <body class="bg-gray-100">
@@ -39,6 +143,48 @@
 
     <div id="main-content" class="md:ml-56 mt-20 p-4">
       <h1 class="text-3xl font-bold mb-6">Leave Management</h1>
+      <!-- 🔢 STATS + FILTER -->
+      <!-- 🔢 NEON BALL STATS + FILTER -->
+      <div
+        class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8"
+      >
+        <!-- FILTER -->
+        <select
+          id="timeFilter"
+          onchange="updateStats()"
+          class="border p-2 rounded w-full md:w-48 bg-white shadow"
+        >
+          <option value="all">All Time</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+          <option value="year">This Year</option>
+        </select>
+
+        <!-- BALLS -->
+        <div
+          class="grid grid-cols-2 md:grid-cols-4 gap-6 w-full justify-items-center"
+        >
+          <div class="ball total">
+            <span id="totalCount">0</span>
+            <p>Total</p>
+          </div>
+
+          <div class="ball approved">
+            <span id="approvedCount">0</span>
+            <p>Approved</p>
+          </div>
+
+          <div class="ball pending">
+            <span id="pendingCount">0</span>
+            <p>Pending</p>
+          </div>
+
+          <div class="ball rejected">
+            <span id="rejectedCount">0</span>
+            <p>Rejected</p>
+          </div>
+        </div>
+      </div>
 
       <button
         onclick="openLeaveModal()"
@@ -191,6 +337,7 @@
           if (!res.ok) throw new Error("Failed to fetch");
           leaves = await res.json();
           renderLeaves();
+          updateStats();
         } catch (err) {
           console.error(err);
           alert("Failed to load leaves. Check console.");
@@ -209,6 +356,15 @@
           start.setDate(start.getDate() + 1);
         }
         return count;
+      }
+      function formatDate(dateString) {
+        const d = new Date(dateString);
+
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const year = d.getFullYear();
+
+        return `${day}-${month}-${year}`;
       }
 
       function openLeaveModal() {
@@ -258,7 +414,54 @@
           currentEmployeeName = "";
         }
       }
+      function updateStats() {
+        const filter = document.getElementById("timeFilter").value;
 
+        const now = new Date();
+
+        // 📅 Start of week (Monday)
+        const startOfWeek = new Date(now);
+        const day = now.getDay();
+        const diff = day === 0 ? -6 : 1 - day;
+        startOfWeek.setDate(now.getDate() + diff);
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        // 📅 Start of month
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        // 📅 Start of year
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+
+        let startDate = null;
+
+        if (filter === "week") startDate = startOfWeek;
+        if (filter === "month") startDate = startOfMonth;
+        if (filter === "year") startDate = startOfYear;
+
+        let filtered = leaves;
+
+        if (filter !== "all") {
+          filtered = leaves.filter((l) => {
+            const from = new Date(l.from_date);
+            const to = new Date(l.to_date);
+
+            // ✅ CONDITION:
+            // Include leave if it overlaps with selected period
+            return to >= startDate && from <= now;
+          });
+        }
+
+        // 📊 Counts
+        const total = filtered.length;
+        const approved = filtered.filter((l) => l.status === "Approved").length;
+        const pending = filtered.filter((l) => l.status === "Pending").length;
+        const rejected = filtered.filter((l) => l.status === "Rejected").length;
+
+        document.getElementById("totalCount").textContent = total;
+        document.getElementById("approvedCount").textContent = approved;
+        document.getElementById("pendingCount").textContent = pending;
+        document.getElementById("rejectedCount").textContent = rejected;
+      }
       async function addLeave() {
         const empId = document.getElementById("empId").value.trim();
         const leaveType = document.getElementById("leaveType").value;
@@ -289,9 +492,6 @@
             return;
           }
 
-          alert(
-            `Leave application submitted successfully for ${currentEmployeeName || empId}`,
-          );
           closeLeaveModal();
           clearForm();
           fetchLeaves(); // Refresh table
@@ -303,40 +503,73 @@
 
       function renderLeaves(filtered = leaves) {
         const tbody = document.getElementById("leaveTable");
-        tbody.innerHTML = filtered
+
+        // ✅ Step 1: Group by employee_id (keep latest)
+        const map = {};
+
+        filtered.forEach((l) => {
+          if (!map[l.employee_id]) {
+            map[l.employee_id] = l;
+          } else {
+            if (
+              new Date(l.applied_at) > new Date(map[l.employee_id].applied_at)
+            ) {
+              map[l.employee_id] = l;
+            }
+          }
+        });
+
+        const uniqueLeaves = Object.values(map);
+
+        // ✅ Step 2: Render only one row per employee
+        tbody.innerHTML = uniqueLeaves
           .map(
             (l) => `
-        <tr class="border-b hover:bg-gray-50">
-          <td class="p-3">${l.employee_id}</td>
-          <td class="p-3">
-            <button onclick="openHistory('${l.employee_id}')" 
-                    class="text-blue-600 hover:underline font-medium">
-              ${l.employee_name || "N/A"}
-            </button>
-          </td>
-          <td class="p-3">${l.leave_type}</td>
-          <td class="p-3">${l.from_date}</td>
-          <td class="p-3">${l.to_date}</td>
-          <td class="p-3 font-semibold">${calculateDays(l.from_date, l.to_date)}</td>
-          <td class="p-3 ${
-            l.status === "Approved"
-              ? "text-green-600 font-medium"
-              : l.status === "Rejected"
-                ? "text-red-600 font-medium"
-                : "text-yellow-600"
-          }">${l.status || "Pending"}</td>
-          <td class="p-3">
-            <button onclick="updateStatus(${l.id}, 'Approved')" 
-                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 text-xs rounded mr-1 transition">
-              Approve
-            </button>
-            <button onclick="updateStatus(${l.id}, 'Rejected')" 
-                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-xs rounded transition">
-              Reject
-            </button>
-          </td>
-        </tr>
-      `,
+      <tr class="border-b hover:bg-blue-50 hover:text-blue-600 cursor-pointer transition"
+          onclick="openHistory('${l.employee_id}')">
+        
+        <td class="p-3">${l.employee_id}</td>
+
+        <td class="p-3 ">
+          ${l.employee_name || "N/A"}
+        </td>
+
+        <td class="p-3">${l.leave_type}</td>
+
+        <td class="p-3">${formatDate(l.from_date)}</td>
+
+        <td class="p-3">${formatDate(l.to_date)}</td>
+
+        <td class="p-3 font-semibold">
+          ${calculateDays(l.from_date, l.to_date)}
+        </td>
+
+        <td class="p-3 ${
+          l.status === "Approved"
+            ? "text-green-600 font-medium"
+            : l.status === "Rejected"
+              ? "text-red-600 font-medium"
+              : "text-yellow-600"
+        }">
+          ${l.status || "Pending"}
+        </td>
+
+        <td class="p-3">
+          <button 
+            onclick="event.stopPropagation(); updateStatus(${l.id}, 'Approved')" 
+            class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 text-xs rounded mr-1 transition">
+            Approve
+          </button>
+
+          <button 
+            onclick="event.stopPropagation(); updateStatus(${l.id}, 'Rejected')" 
+            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-xs rounded transition">
+            Reject
+          </button>
+        </td>
+
+      </tr>
+    `,
           )
           .join("");
       }
@@ -350,10 +583,10 @@
         tbody.innerHTML = empLeaves
           .map(
             (l) => `
-        <tr class="border-b">
+        <tr class="border-b hover:bg-blue-50 hover:text-blue-600 cursor-pointer transition">
           <td class="p-3">${l.leave_type}</td>
-          <td class="p-3">${l.from_date}</td>
-          <td class="p-3">${l.to_date}</td>
+          <td class="p-3">${formatDate(l.from_date)}</td>
+          <td class="p-3">${formatDate(l.to_date)}</td>
           <td class="p-3">${calculateDays(l.from_date, l.to_date)}</td>
           <td class="p-3 ${
             l.status === "Approved"
@@ -377,8 +610,6 @@
       }
 
       async function updateStatus(id, status) {
-        if (!confirm(`Mark this leave as ${status}?`)) return;
-
         try {
           await fetch(`/api/leaves/${id}`, {
             method: "PUT",

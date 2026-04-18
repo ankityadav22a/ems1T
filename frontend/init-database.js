@@ -14,7 +14,10 @@ const pool = new Pool({
 async function runMigration() {
   try {
     const sql = fs.readFileSync(
-      path.join(__dirname, "documents-table.sql"),
+      path.join(
+        __dirname,
+        "C:\\Users\\HP\\OneDrive\\Documents\\GitHub\\ems1T\\EMS.session.sql",
+      ),
       "utf-8",
     );
     await pool.query(sql);
