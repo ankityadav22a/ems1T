@@ -43,63 +43,219 @@ const pool = new Pool({
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+const session = require("express-session");
+
+app.use(
+  session({
+    secret: "ems-secret-key",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false, // true only if HTTPS
+      maxAge: 1000 * 60 * 60 * 2, // 2 hours
+    },
+  }),
+);
+
+// 🔐 LOGIN API
+app.post("/api/login", async (req, res) => {
+  try {
+    const { identifier, password } = req.body;
+
+    if (!identifier || !password) {
+      return res.status(400).json({ error: "Missing credentials" });
+    }
+
+    // 🔍 find user (email OR employee_id)
+    const result = await pool.query(
+      `SELECT * FROM employees 
+       WHERE email = $1 OR employee_id = $1`,
+      [identifier],
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    const user = result.rows[0];
+
+    // ⚠️ If you are NOT hashing passwords yet:
+    const validPassword = password === user.password;
+
+    if (!validPassword) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    // ✅ CREATE SESSION
+    req.session.user = {
+      employee_id: user.employee_id,
+      employee_name: user.employee_name,
+      role: user.role,
+      authority: user.authority,
+      email: user.email,
+    };
+
+    res.json({
+      message: "Login successful",
+      user: req.session.user,
+    });
+  } catch (err) {
+    console.error("LOGIN ERROR:", err);
+    res.status(500).json({ error: "Server error" });
+  }
 });
-app.get("/profile", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "profile.html"));
+app.post("/api/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.json({ message: "Logged out" });
+  });
 });
-app.post("/profile", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "profile.html"));
-});
-app.get("/employee", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "employee.html"));
-});
-app.post("/employee", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "employee.html"));
-});
-app.get("/projects", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "projects.html"));
-});
-app.post("/projects", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "projects.html"));
-});
-app.get("/leaves", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "leaves.html"));
-});
-app.post("/leaves", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "leaves.html"));
-});
-app.get("/document", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "document.html"));
-});
-app.post("/document", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "document.html"));
-});
-app.get("/payroll", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "payroll.html"));
-});
-app.post("/payroll", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "payroll.html"));
-});
-app.get("/clients", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "clients.html"));
-});
-app.post("/clients", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "clients.html"));
-});
-app.get("/notice", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "notice.html"));
-});
-app.post("/notice", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "notice.html"));
+// ====================== AUTH MIDDLEWARE ======================
+const AUTH_LEVELS = {
+  Owner: 4,
+  Admin: 3,
+  Administration: 2,
+  Employee: 1,
+};
+function requireAuth(req, res, next) {
+  if (!req.session || !req.session.user) {
+    return res.status(401).json({ error: "Unauthorized - Please login first" });
+  }
+  next();
+}
+
+function requireRole(minRole) {
+  return (req, res, next) => {
+    if (!req.session || !req.session.user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const userRole = req.session.user.authority;
+
+    if (!AUTH_LEVELS[userRole]) {
+      return res.status(403).json({ error: "Invalid role" });
+    }
+
+    if (AUTH_LEVELS[userRole] < AUTH_LEVELS[minRole]) {
+      return res.status(403).json({
+        error: `Access denied. ${minRole} or higher required.`,
+      });
+    }
+
+    next();
+  };
+}
+// GET authenticated user's info
+// Get logged in user info (from session)
+app.get("/api/me", requireAuth, (req, res) => {
+  res.json({
+    employee_id: req.session.user.employee_id,
+    employee_name: req.session.user.employee_name || "User",
+    authority: req.session.user.authority,
+    email: req.session.user.email,
+    role: req.session.user.role,
+  });
 });
 
-// GET all documents
+// Get all employees for role management (Admin only)
+// Replace your current role-management route with this:
+app.get("/api/employees/role-management", requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        employee_id,
+        employee_name,
+        role,
+        authority,
+        email,
+        password
+      FROM employees 
+      ORDER BY employee_name
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch employees" });
+  }
+});
+
+// Update employee authority/role (Admin only)
+app.put(
+  "/api/employees/:id/authority",
+  requireRole("Admin"),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { authority, role } = req.body;
+
+      if (!authority) {
+        return res.status(400).json({ error: "Authority is required" });
+      }
+
+      const result = await pool.query(
+        `UPDATE employees 
+       SET authority = $1, role = $2 
+       WHERE employee_id = $3 
+       RETURNING employee_id, employee_name, authority, role`,
+        [authority, role || null, id],
+      );
+
+      if (result.rowCount === 0) {
+        return res.status(404).json({ error: "Employee not found" });
+      }
+
+      res.json({
+        message: "Authority updated successfully",
+        employee: result.rows[0],
+      });
+    } catch (err) {
+      console.error("Update authority error:", err);
+      res.status(500).json({ error: "Failed to update authority" });
+    }
+  },
+);
+// 🔐 CHANGE PASSWORD
+app.post("/api/change-password", requireAuth, async (req, res) => {
+  try {
+    const { identifier, currentPassword, newPassword } = req.body;
+
+    if (!identifier || !currentPassword || !newPassword) {
+      return res.status(400).json({ error: "All fields required" });
+    }
+
+    // 🔍 find user
+    const result = await pool.query(
+      `SELECT * FROM employees 
+       WHERE email = $1 OR employee_id = $1`,
+      [identifier],
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const user = result.rows[0];
+
+    // ⚠️ plain password check (as per your system)
+    if (user.password !== currentPassword) {
+      return res.status(400).json({ error: "Incorrect current password" });
+    }
+
+    // ✅ update password
+    await pool.query(
+      `UPDATE employees SET password = $1 WHERE employee_id = $2`,
+      [newPassword, user.employee_id],
+    );
+
+    res.json({ message: "Password updated successfully" });
+  } catch (err) {
+    console.error("CHANGE PASSWORD ERROR:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 // ====================== DOCUMENTS API ======================
 
 // GET all documents
-app.get("/api/documents", async (req, res) => {
+app.get("/api/documents", requireAuth, async (req, res) => {
   try {
     const queryText =
       "SELECT id, name, type, employee, file_url, created_at FROM documents ORDER BY created_at DESC";
@@ -128,7 +284,7 @@ app.get("/api/documents", async (req, res) => {
 });
 
 // POST - Add new document (Improved with better error handling)
-app.post("/api/documents", async (req, res) => {
+app.post("/api/documents", requireRole("Admin"), async (req, res) => {
   const { name, type, employee, file } = req.body;
 
   console.log("Received document data:", { name, type, employee, file }); // For debugging
@@ -177,7 +333,7 @@ app.post("/api/documents", async (req, res) => {
 });
 
 // DELETE document
-app.delete("/api/documents/:id", async (req, res) => {
+app.delete("/api/documents/:id", requireRole("Admin"), async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(
@@ -194,7 +350,7 @@ app.delete("/api/documents/:id", async (req, res) => {
     res.status(500).json({ error: "Delete failed" });
   }
 });
-app.get("/api/notices", async (req, res) => {
+app.get("/api/notices", requireAuth, async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM notices ORDER BY id DESC");
     res.json(result.rows);
@@ -203,7 +359,7 @@ app.get("/api/notices", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-app.post("/api/notices", async (req, res) => {
+app.post("/api/notices", requireRole("Admin"), async (req, res) => {
   const { title, type, author, url, content } = req.body;
 
   if (!title || !author || !url) {
@@ -235,7 +391,30 @@ app.post("/api/notices", async (req, res) => {
     });
   }
 });
-app.delete("/api/notices/:id", async (req, res) => {
+app.put("/api/notices/:id", requireRole("Admin"), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, type, author, url, content } = req.body;
+
+    const result = await pool.query(
+      `UPDATE notices
+       SET title=$1, type=$2, author=$3, url=$4, content=$5
+       WHERE id=$6
+       RETURNING *`,
+      [title, type, author, url, content, id],
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Notice not found" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Update failed" });
+  }
+});
+app.delete("/api/notices/:id", requireRole("Admin"), async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -268,6 +447,7 @@ const deptCodes = {
   Finance: "04",
   Marketing: "05",
   Operations: "06",
+  other: "07",
 };
 
 // 🔑 Generate Employee ID
@@ -350,6 +530,7 @@ app.post("/api/employees", async (req, res) => {
       password,
       authority,
       email,
+      phone,
       address,
       salary,
     } = req.body;
@@ -365,8 +546,8 @@ app.post("/api/employees", async (req, res) => {
     const employee_id = await generateEmployeeId(department, join_date);
     const result = await pool.query(
       `INSERT INTO employees 
-      (employee_id, employee_name, role, work_mode, department, join_date, password, authority, email, address, salary)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+      (employee_id, employee_name, role, work_mode, department, join_date, password, authority, email, address, phone, salary)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
       RETURNING employee_id`,
       [
         employee_id,
@@ -375,10 +556,11 @@ app.post("/api/employees", async (req, res) => {
         work_mode || "N/A",
         department,
         join_date,
-        password || "employee_id",
+        password || employee_id,
         authority || "Employee",
         email || "test@mail.com",
         address || "NA",
+        phone || "N/A",
         salary || 0,
       ],
     );
@@ -430,6 +612,7 @@ app.get("/api/employees/:id", async (req, res) => {
 //////////////////////////////////////////
 // ✏️ UPDATE EMPLOYEE
 //////////////////////////////////////////
+
 app.put("/api/employees/:id", async (req, res) => {
   try {
     const oldId = req.params.id;
@@ -441,8 +624,11 @@ app.put("/api/employees/:id", async (req, res) => {
       department,
       join_date,
       email,
+      phone,
       address,
       salary,
+      authority, // ← New: from Authorization page
+      password, // ← New: from Authorization page
     } = req.body;
 
     // 🔥 STEP 1: get existing employee
@@ -457,7 +643,7 @@ app.put("/api/employees/:id", async (req, res) => {
 
     const oldData = existing.rows[0];
 
-    // 🔥 STEP 2: decide if ID should change
+    // 🔥 STEP 2: decide if ID should change (your original logic)
     let newId = oldId;
 
     const oldJoin = oldData.join_date
@@ -465,40 +651,129 @@ app.put("/api/employees/:id", async (req, res) => {
       : null;
 
     const dateChanged = join_date && join_date !== oldJoin;
-
     const deptChanged =
       department &&
       department.trim().toLowerCase() !==
         oldData.department.trim().toLowerCase();
+
     if (deptChanged || dateChanged) {
       newId = await generateEmployeeId(department, join_date);
     }
+    // 🔒 Permission check (FIXED LOGIC)
+    const currentUser = req.session.user;
 
-    // 🔥 STEP 3: update employee
+    const target = await pool.query(
+      "SELECT authority FROM employees WHERE employee_id = $1",
+      [oldId],
+    );
+
+    const targetAuthority = target.rows[0].authority;
+
+    // ✅ SELF EDIT → ALWAYS ALLOWED
+    if (currentUser.employee_id === oldId) {
+      // allow
+    } else {
+      // 🔥 Owner can edit anyone
+      if (currentUser.authority === "Owner") {
+        // allow
+      }
+
+      // 🔥 Admin rules
+      else if (currentUser.authority === "Admin") {
+        if (targetAuthority === "Owner" || targetAuthority === "Admin") {
+          return res.status(403).json({
+            error: "Admin cannot edit Owner or Admin",
+          });
+        }
+      }
+
+      // 🔥 Administration → NO editing others
+      else if (currentUser.authority === "Administration") {
+        if (
+          targetAuthority === "Owner" ||
+          targetAuthority === "Admin" ||
+          targetAuthority === "Administration"
+        ) {
+          return res.status(403).json({
+            error: "Administration cannot edit this profiles",
+          });
+        }
+      }
+
+      // 🔥 Employee → NO editing others
+      else if (currentUser.authority === "Employee") {
+        return res.status(403).json({
+          error: "Employee cannot edit other profiles",
+        });
+      }
+    }
+    // 🔥 STEP 3: Build dynamic update query (keeps your original fields + new ones)
+    const updates = [];
+    const values = [];
+    let param = 1;
+
+    // Original fields
+    if (employee_name !== undefined) {
+      updates.push(`employee_name = $${param++}`);
+      values.push(employee_name);
+    }
+    if (role !== undefined) {
+      updates.push(`role = $${param++}`);
+      values.push(role);
+    }
+    if (work_mode !== undefined) {
+      updates.push(`work_mode = $${param++}`);
+      values.push(work_mode);
+    }
+    if (department !== undefined) {
+      updates.push(`department = $${param++}`);
+      values.push(department);
+    }
+    if (join_date !== undefined) {
+      updates.push(`join_date = $${param++}`);
+      values.push(join_date);
+    }
+    if (email !== undefined) {
+      updates.push(`email = $${param++}`);
+      values.push(email);
+    }
+    if (address !== undefined) {
+      updates.push(`address = $${param++}`);
+      values.push(address);
+    }
+    if (salary !== undefined) {
+      updates.push(`salary = $${param++}`);
+      values.push(salary);
+    }
+    if (phone !== undefined) {
+      updates.push(`phone = $${param++}`);
+      values.push(phone);
+    }
+
+    // New fields from Authorization page
+    if (authority !== undefined) {
+      updates.push(`authority = $${param++}`);
+      values.push(authority);
+    }
+    if (password !== undefined && password.trim() !== "") {
+      updates.push(`password = $${param++}`);
+      values.push(password.trim()); // Plain text as you want
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ error: "No fields to update" });
+    }
+
+    values.push(newId); // for employee_id
+    values.push(oldId); // for WHERE clause
+
+    // Execute update
     await pool.query(
       `UPDATE employees SET
-        employee_id=$1,
-        employee_name=$2,
-        role=$3,
-        work_mode=$4,
-        department=$5,
-        join_date=$6,
-        email=$7,
-        address=$8,
-        salary=$9
-      WHERE employee_id=$10`,
-      [
-        newId,
-        employee_name,
-        role,
-        work_mode,
-        department,
-        join_date,
-        email,
-        address,
-        salary,
-        oldId,
-      ],
+        employee_id = $${param++},
+        ${updates.join(", ")}
+       WHERE employee_id = $${param}`,
+      values,
     );
 
     res.json({
@@ -507,7 +782,7 @@ app.put("/api/employees/:id", async (req, res) => {
       new_id: newId,
     });
   } catch (err) {
-    console.error(err);
+    console.error("Update employee error:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -540,8 +815,8 @@ app.post("/api/leaves", async (req, res) => {
 
     const result = await pool.query(
       `INSERT INTO leaves 
-      (employee_id, leave_type, from_date, to_date, days)
-      VALUES ($1,$2,$3,$4,$5)
+      (employee_id, leave_type, from_date, to_date, days,applied_at)
+      VALUES ($1,$2,$3,$4,$5,CURRENT_TIMESTAMP)
       RETURNING *`,
       [employee_id, leave_type, from_date, to_date, days],
     );

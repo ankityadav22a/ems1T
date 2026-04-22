@@ -261,7 +261,8 @@
         cardContainer.innerHTML = filteredEmployees
           .map((emp) => {
             let latest = getLatestPayroll(emp.id);
-            return `<div class="bg-white p-4 rounded shadow border border-gray-200">
+            return `<div onclick='goToProfile("${emp.id}")'
+            class="bg-white p-4 rounded shadow border border-gray-200 cursor-pointer hover:shadow-lg transition">
             <h2 class="text-xl font-bold">${emp.name}</h2>
             <p class="text-sm text-gray-500">ID: ${emp.id} | ${emp.dept}</p>
             <p class="text-sm text-gray-600">${emp.post}</p>
@@ -394,6 +395,18 @@
             link.classList.remove("hover:bg-blue-600");
           }
         }, 400);
+      }
+      function goToProfile(id, empObj = null) {
+        // store where user came from
+        localStorage.setItem("profileFrom", "payroll.html");
+
+        // store selected employee (like employee.html does)
+        if (empObj) {
+          localStorage.setItem("selectedEmployee", JSON.stringify(empObj));
+        }
+
+        // open profile page
+        window.location.href = `profile.html?id=${id}`;
       }
 
       document.addEventListener("DOMContentLoaded", () => {

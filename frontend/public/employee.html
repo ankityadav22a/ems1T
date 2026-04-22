@@ -260,11 +260,13 @@
                         : "bg-blue-100 text-blue-700";
 
                   return `
-            <div class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
-
+           <div
+  onclick="goToProfile('${emp.employee_id}')"
+  class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition cursor-pointer"
+>
               <div class="flex justify-between mb-4">
                 <span class="text-xs font-bold bg-gray-100 px-3 py-1 rounded">
-                  #${emp.employee_id}
+                  ${emp.employee_id}
                 </span>
                 <span class="text-xs px-2 py-1 rounded ${modeColor}">
                   ${emp.work_mode || "N/A"}
@@ -292,17 +294,21 @@
                 }
               </div>
 
-              <div class="mt-4 flex gap-2">
-                <button onclick="editEmployee('${emp.employee_id}')"
-                  class="flex-1 bg-yellow-100 text-yellow-700 py-2 rounded-lg text-sm font-semibold hover:bg-yellow-200">
-                  Edit
-                </button>
+             <div class="mt-4 flex gap-2">
+  <button
+    onclick="event.stopPropagation(); editEmployee('${emp.employee_id}')"
+    class="flex-1 bg-yellow-100 text-yellow-700 py-2 rounded-lg text-sm font-semibold hover:bg-yellow-200"
+  >
+    Edit
+  </button>
 
-                <button onclick="deleteEmployee('${emp.employee_id}')"
-                  class="flex-1 bg-red-100 text-red-700 py-2 rounded-lg text-sm font-semibold hover:bg-red-200">
-                  Delete
-                </button>
-              </div>
+  <button
+    onclick="event.stopPropagation(); deleteEmployee('${emp.employee_id}')"
+    class="flex-1 bg-red-100 text-red-700 py-2 rounded-lg text-sm font-semibold hover:bg-red-200"
+  >
+    Delete
+  </button>
+</div>
 
             </div>`;
                 })
@@ -349,7 +355,6 @@
           work_mode: mode,
           join_date: joinDate,
           email: email,
-          password: "123456",
           address: "NA",
           salary: Number(salary),
         };
@@ -451,6 +456,10 @@
           console.error(err);
           alert("Delete failed");
         }
+      }
+      function goToProfile(id) {
+        localStorage.setItem("profileFrom", window.location.pathname);
+        window.location.href = `profile.html?id=${encodeURIComponent(id)}`;
       }
 
       function clearForm() {

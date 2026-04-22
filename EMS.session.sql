@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS employees (
     password TEXT NOT NULL,
     authority VARCHAR(20) DEFAULT 'Employee',
     email VARCHAR(100) UNIQUE NOT NULL,
+    phone VARCHAR(20),
     address TEXT,
     salary NUMERIC(10,2) CHECK (salary >= 0)
 );
@@ -76,6 +77,7 @@ CREATE TABLE IF NOT EXISTS leaves (
     CONSTRAINT fk_employee 
       FOREIGN KEY(employee_id) 
       REFERENCES employees(employee_id) 
+      ON UPDATE CASCADE
       ON DELETE CASCADE
 );
 
@@ -102,6 +104,7 @@ CREATE TABLE IF NOT EXISTS payroll (
     CONSTRAINT fk_employee_payroll
       FOREIGN KEY (employee_id)
       REFERENCES employees(employee_id)
+      ON UPDATE CASCADE
       ON DELETE CASCADE
 );
 -- 🔍 Employee based search (MOST IMPORTANT)
@@ -202,7 +205,9 @@ CREATE TABLE IF NOT EXISTS project_team (
 
   project_id INT REFERENCES projects(project_id) ON DELETE CASCADE,
 
-  employee_id TEXT REFERENCES employees(employee_id) ON DELETE CASCADE, -- ✅ LINKED
+  employee_id VARCHAR(20) REFERENCES employees(employee_id) 
+  ON DELETE CASCADE
+  ON UPDATE CASCADE, -- ✅ LINKED
 
   work TEXT
 );

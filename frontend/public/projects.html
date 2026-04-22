@@ -288,14 +288,6 @@
         <!-- Top Bar -->
         <div class="h-2 bg-blue-600 w-full"></div>
 
-        <!-- Close Button -->
-        <button
-          onclick="closeModal()"
-          class="absolute top-4 right-6 text-gray-400 hover:text-gray-900 text-2xl z-10"
-        >
-          ✖
-        </button>
-
         <!-- Scrollable Content -->
         <div class="flex-1 overflow-y-auto p-6 md:p-8">
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -317,6 +309,12 @@
                   class="ml-auto bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1 rounded text-xs font-bold"
                 >
                   Edit
+                </button>
+                <button
+                  onclick="closeModal()"
+                  class="text-gray-400 hover:text-gray-900 text-xl font-bold ml-2"
+                >
+                  ✖
                 </button>
               </div>
               <div class="bg-slate-50 p-3 rounded-xl">
@@ -647,7 +645,7 @@
               <input
                 type="text"
                 placeholder="ID"
-                class="w-20 border p-2 rounded-lg bg-white text-xs e-id"
+                class="w-60 border p-2 rounded-lg bg-white text-xs e-id"
                 value="${data ? data.employee_id || data.id || "" : ""}"
                 onblur="fetchEmployeeName(this)"
               />

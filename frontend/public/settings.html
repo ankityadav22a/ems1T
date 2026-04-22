@@ -97,7 +97,6 @@
               </div>
               <div>
                 <h3 class="text-lg font-semibold text-gray-800">Logout</h3>
-                <p class="text-sm text-gray-600">Sign out from all devices</p>
               </div>
             </div>
           </div>
@@ -118,48 +117,67 @@
         </div>
         <div class="p-6 space-y-5">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Email / Emp ID</label
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Employee ID
+            </label>
+            <div
+              id="cp-empid"
+              class="w-full px-4 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium"
             >
-            <input
-              type="text"
-              id="cp-identifier"
-              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
-              placeholder="example@domain.com or EMP12345"
-            />
+              Loading...
+            </div>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1"
               >Current Password</label
             >
-            <input
-              type="password"
-              id="cp-current"
-              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
-              placeholder="••••••••"
-            />
+            <div class="relative">
+              <input
+                type="password"
+                id="cp-current"
+                class="w-full px-4 py-3 pr-12 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
+                placeholder="••••••••"
+              />
+              <i
+                class="fas fa-eye absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
+                onclick="togglePassword('cp-current', this)"
+              ></i>
+            </div>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1"
               >New Password</label
             >
-            <input
-              type="password"
-              id="cp-new"
-              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
-              placeholder="New password"
-            />
+            <div class="relative">
+              <input
+                type="password"
+                id="cp-new"
+                class="w-full px-4 py-3 pr-12 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
+                placeholder="New password"
+              />
+
+              <i
+                class="fas fa-eye absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
+                onclick="togglePassword('cp-new', this)"
+              ></i>
+            </div>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1"
               >Confirm New Password</label
             >
-            <input
-              type="password"
-              id="cp-confirm"
-              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
-              placeholder="Confirm new password"
-            />
+            <div class="relative">
+              <input
+                type="password"
+                id="cp-confirm"
+                class="w-full px-4 py-3 pr-12 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
+                placeholder="Confirm new password"
+              />
+              <i
+                class="fas fa-eye absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
+                onclick="togglePassword('cp-confirm', this)"
+              ></i>
+            </div>
           </div>
 
           <div id="cp-message" class="text-sm min-h-[1.25rem]"></div>
@@ -181,7 +199,6 @@
         </div>
       </div>
     </div>
-
     <!-- Logout Confirmation Modal -->
     <div
       id="logout-modal"
@@ -192,33 +209,10 @@
       >
         <div class="bg-red-600 px-6 py-5 text-white">
           <h2 class="text-xl font-bold">Confirm Logout</h2>
-          <p class="text-sm mt-1">Please verify your identity</p>
         </div>
-        <div class="p-6 space-y-5">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Email / Emp ID</label
-            >
-            <input
-              type="text"
-              id="logout-identifier"
-              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none"
-              placeholder="example@domain.com or EMP12345"
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Password</label
-            >
-            <input
-              type="password"
-              id="logout-password"
-              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none"
-              placeholder="••••••••"
-            />
-          </div>
 
-          <div id="logout-message" class="text-sm min-h-[1.25rem]"></div>
+        <div class="p-6 text-center space-y-6">
+          <p class="text-gray-700 text-lg">Are you sure you want to logout?</p>
 
           <div class="flex gap-3">
             <button
@@ -227,47 +221,69 @@
             >
               Cancel
             </button>
+
             <button
               id="logout-confirm"
               class="flex-1 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700"
             >
-              Confirm Logout
+              Confirm
             </button>
           </div>
         </div>
       </div>
     </div>
+
     <script src="load-layout.js"></script>
     <script>
-      // ────────────────────────────────────────────────
-      // Simulated stored credentials (NEVER do this in real app!)
-      const stored = {
-        identifier: "EMP12345", // or "user@example.com"
-        password: "securepass123",
-      };
-      // ────────────────────────────────────────────────
+      const API_BASE = "http://localhost:3000/api";
 
       const changePassModal = document.getElementById("change-pass-modal");
       const logoutModal = document.getElementById("logout-modal");
 
-      // Change Password
-      document
-        .getElementById("change-password-btn")
-        .addEventListener("click", () => {
-          changePassModal.classList.remove("hidden");
-          document.getElementById("cp-message").textContent = "";
-          document
-            .querySelectorAll("#change-pass-modal input")
-            .forEach((el) => (el.value = ""));
-        });
+      let currentUser = null;
 
-      document
-        .getElementById("cp-cancel")
-        .addEventListener("click", () =>
-          changePassModal.classList.add("hidden"),
-        );
-      document.getElementById("cp-submit").addEventListener("click", () => {
-        const id = document.getElementById("cp-identifier").value.trim();
+      // =========================
+      // LOAD CURRENT USER
+      // =========================
+      async function loadUser() {
+        try {
+          const res = await fetch(`${API_BASE}/me`, {
+            credentials: "include",
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) throw new Error();
+
+          currentUser = data;
+
+          // show emp id
+          document.getElementById("cp-empid").textContent =
+            data.employee_id || "Unknown";
+        } catch {
+          window.location.href = "login.html";
+        }
+      }
+
+      loadUser();
+
+      // =========================
+      // CHANGE PASSWORD
+      // =========================
+      document.getElementById("change-password-btn").onclick = () => {
+        changePassModal.classList.remove("hidden");
+        document.getElementById("cp-message").textContent = "";
+
+        document
+          .querySelectorAll("#change-pass-modal input")
+          .forEach((el) => (el.value = ""));
+      };
+
+      document.getElementById("cp-cancel").onclick = () => {
+        changePassModal.classList.add("hidden");
+      };
+
+      document.getElementById("cp-submit").onclick = async () => {
         const curr = document.getElementById("cp-current").value;
         const nw = document.getElementById("cp-new").value;
         const conf = document.getElementById("cp-confirm").value;
@@ -275,76 +291,87 @@
 
         msg.className = "text-sm min-h-[1.25rem]";
 
-        if (!id || !curr || !nw || !conf) {
-          msg.textContent = "Please fill all fields";
+        if (!curr || !nw || !conf) {
+          msg.textContent = "Fill all fields";
           msg.className += " text-red-600";
           return;
         }
 
         if (nw !== conf) {
-          msg.textContent = "New password and confirmation do not match";
+          msg.textContent = "Passwords do not match";
           msg.className += " text-red-600";
           return;
         }
 
-        if (id !== stored.identifier || curr !== stored.password) {
-          msg.textContent = "Incorrect Email/Emp ID or current password";
-          msg.className += " text-red-600";
-          return;
-        }
+        try {
+          const res = await fetch(`${API_BASE}/change-password`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              identifier: currentUser.employee_id, // 🔥 AUTO
+              currentPassword: curr,
+              newPassword: nw,
+            }),
+          });
 
-        // In real app → send to backend
-        msg.textContent = "Password changed successfully!";
-        msg.className += " text-green-600 font-medium";
+          const data = await res.json();
 
-        setTimeout(() => {
-          changePassModal.classList.add("hidden");
-        }, 1800);
-      });
-
-      // Logout
-      document.getElementById("logout-btn").addEventListener("click", () => {
-        logoutModal.classList.remove("hidden");
-        document.getElementById("logout-message").textContent = "";
-        document
-          .querySelectorAll("#logout-modal input")
-          .forEach((el) => (el.value = ""));
-      });
-
-      document
-        .getElementById("logout-cancel")
-        .addEventListener("click", () => logoutModal.classList.add("hidden"));
-      document
-        .getElementById("logout-confirm")
-        .addEventListener("click", () => {
-          const id = document.getElementById("logout-identifier").value.trim();
-          const pass = document.getElementById("logout-password").value;
-          const msg = document.getElementById("logout-message");
-
-          msg.className = "text-sm min-h-[1.25rem]";
-
-          if (!id || !pass) {
-            msg.textContent = "Please enter your credentials";
+          if (!res.ok) {
+            msg.textContent = data.error || "Failed";
             msg.className += " text-red-600";
             return;
           }
 
-          if (id === stored.identifier && pass === stored.password) {
-            msg.textContent = "Logout successful. Redirecting...";
-            msg.className += " text-green-600 font-medium";
+          msg.textContent = "Password updated!";
+          msg.className += " text-green-600";
 
-            setTimeout(() => {
-              // In real app → clear session / token / redirect to login
-              localStorage.clear();
-              sessionStorage.clear();
-              logoutModal.classList.add("hidden");
-              window.location.href = "login.html";
-            }, 1400);
-          } else {
-            msg.textContent = "Incorrect credentials";
-            msg.className += " text-red-600";
-          }
-        });
+          setTimeout(() => {
+            changePassModal.classList.add("hidden");
+          }, 1500);
+        } catch {
+          msg.textContent = "Server error";
+          msg.className += " text-red-600";
+        }
+      };
+      function togglePassword(inputId, icon) {
+        const input = document.getElementById(inputId);
+
+        if (input.type === "password") {
+          input.type = "text";
+          icon.classList.remove("fa-eye");
+          icon.classList.add("fa-eye-slash");
+        } else {
+          input.type = "password";
+          icon.classList.remove("fa-eye-slash");
+          icon.classList.add("fa-eye");
+        }
+      }
+
+      // =========================
+      // LOGOUT MODAL
+      // =========================
+      document.getElementById("logout-btn").onclick = () => {
+        logoutModal.classList.remove("hidden");
+      };
+
+      document.getElementById("logout-cancel").onclick = () => {
+        logoutModal.classList.add("hidden");
+      };
+
+      document.getElementById("logout-confirm").onclick = async () => {
+        try {
+          await fetch(`${API_BASE}/logout`, {
+            method: "POST",
+            credentials: "include",
+          });
+        } catch {}
+
+        localStorage.clear();
+        sessionStorage.clear();
+
+        window.location.href = "login.html";
+      };
     </script>
   </body>
 </html>

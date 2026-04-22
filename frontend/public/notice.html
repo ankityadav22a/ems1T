@@ -41,7 +41,8 @@
       <h1 class="text-3xl font-bold mb-6">Notice / Blog Management</h1>
       <div class="mb-6">
         <button
-          onclick="openNoticeModal()"
+          id="addNoticeBtn"
+          onclick="openNoticeModal(false)"
           class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-medium"
         >
           + Add Notice
@@ -67,7 +68,7 @@
               <th class="p-4 font-semibold">Date</th>
               <th class="p-4 font-semibold">URL</th>
 
-              <th class="p-4 font-semibold">Action</th>
+              <th id="actionHeader" class="p-4 font-semibold">Action</th>
             </tr>
           </thead>
           <tbody id="noticeTable">
@@ -194,9 +195,32 @@
     <script src="load-layout.js"></script>
     <script>
       let currentId = 1;
+      let currentUser = null;
       let hideTimeout = null;
       let pendingNotice = null;
       let notices = [];
+      let editMode = false;
+      let editId = null;
+
+      function editNotice(id) {
+        const notice = notices.find((n) => n.id === id);
+        if (!notice) return;
+
+        // Fill form
+        document.getElementById("title").value = notice.title;
+        document.getElementById("author").value = notice.author;
+        document.getElementById("type").value = notice.type;
+        document.getElementById("url").value = notice.url;
+        document.getElementById("content").value = notice.content || "";
+
+        // Switch mode
+        editMode = true;
+        editId = id;
+
+        document.getElementById("postButton").textContent = "Update Notice";
+
+        openNoticeModal(true);
+      }
 
       function normalizeUrl(url) {
         try {
@@ -213,16 +237,29 @@
         }
       }
 
-      function openNoticeModal() {
-        document
-          .getElementById("noticeModal")
-          .classList.replace("hidden", "flex");
+      function openNoticeModal(isEdit = false) {
+        const modal = document.getElementById("noticeModal");
+
+        // If NOT edit → reset form
+        if (!isEdit) {
+          clearForm(); // 🔥 important
+        }
+
+        modal.classList.replace("hidden", "flex");
+      }
+      function applyAuthorityUI() {
+        if (!currentUser) return;
+        if (currentUser.authority === "Employee") {
+          document.getElementById("addNoticeBtn").style.display = "none";
+          document.getElementById("actionHeader").style.display = "none";
+        }
       }
 
       function closeNoticeModal() {
         document
           .getElementById("noticeModal")
           .classList.replace("flex", "hidden");
+        clearForm();
       }
 
       async function fetchNotices() {
@@ -256,7 +293,9 @@
         }
 
         const normUrl = normalizeUrl(url);
-        const existing = notices.find((n) => normalizeUrl(n.url) === normUrl);
+        const existing = notices.find(
+          (n) => normalizeUrl(n.url) === normUrl && n.id !== editId,
+        );
 
         if (existing) {
           pendingNotice = { title, author, type, url, content };
@@ -270,10 +309,41 @@
         btn.textContent = "Posting...";
 
         try {
-          await saveNotice({ title, author, type, url, content });
+          if (editMode) {
+            await updateNotice(editId, { title, author, type, url, content });
+          } else {
+            await saveNotice({ title, author, type, url, content });
+          }
         } finally {
           btn.disabled = false;
           btn.textContent = originalText;
+        }
+      }
+      async function updateNotice(id, data) {
+        try {
+          const res = await fetch(`/api/notices/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+
+          if (!res.ok) {
+            const err = await res.json();
+            alert("Update failed: " + (err.error || "Error"));
+            return;
+          }
+
+          clearForm();
+          closeNoticeModal();
+
+          editMode = false;
+          editId = null;
+
+          document.getElementById("postButton").textContent = "Post Notice";
+
+          fetchNotices();
+        } catch (err) {
+          alert("Update error: " + err.message);
         }
       }
 
@@ -328,6 +398,11 @@
         document.getElementById("author").value = "";
         document.getElementById("url").value = "";
         document.getElementById("content").value = "";
+
+        editMode = false;
+        editId = null;
+
+        document.getElementById("postButton").textContent = "Post Notice";
       }
 
       function renderNotices(data) {
@@ -340,36 +415,68 @@
 
         tbody.innerHTML = data
           .map((n, index) => {
-            const date = n.created_at
-              ? new Date(n.created_at).toLocaleString()
+            const fullDate = n.created_at ? new Date(n.created_at) : null;
+
+            const dateOnly = fullDate
+              ? fullDate.toLocaleDateString("en-IN", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })
               : "-";
+
+            const timeOnly = fullDate
+              ? fullDate.toLocaleTimeString("en-IN", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "";
             const shortContent =
               n.content?.length > 70
                 ? n.content.slice(0, 70) + "..."
                 : n.content || "-";
+            const canManage = currentUser.authority !== "Employee";
 
             return `
-    <tr class="border-b hover:bg-gray-50">
-      <td class="p-4">${index + 1}</td>
-      <td class="p-4">
-        <span onmouseenter="showHover(event, ${n.id})"
-              onmouseleave="hideHover()"
-              class="text-blue-600 cursor-pointer hover:underline">
-          ${n.title}
-        </span>
-      </td>
-      <td class="p-4">${n.type}</td>
-      <td class="p-4">${n.author}</td>
-      <td class="p-4">${date}</td>
-      <td class="p-4">
-        <a href="${n.url}" target="_blank" class="text-blue-600 underline">Link</a>
-      </td>
-      
-      <td class="p-4 flex gap-2">
-        <button onclick="openNotice('${n.url}')" class="bg-green-600 text-white px-3 py-1 rounded">Open</button>
-        <button onclick="deleteNotice(${n.id})" class="bg-red-600 text-white px-3 py-1 rounded">Delete</button>
-      </td>
-    </tr>`;
+        <tr class="border-b hover:bg-gray-50">
+          <td class="p-4">${index + 1}</td>
+          <td class="p-4">
+            <span onmouseenter="showHover(event, ${n.id})"
+                  onmouseleave="hideHover()"
+                  class="text-blue-600 cursor-pointer hover:underline">
+              ${n.title}
+            </span>
+          </td>
+          <td class="p-4">${n.type}</td>
+          <td class="p-4">${n.author}</td>
+          <td class="p-4 relative group"><span
+        class="cursor-pointer"
+      >
+        ${dateOnly}
+      </span><div class="absolute hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 mt-1">
+        ${timeOnly}
+      </div></td>
+          <td class="p-4">
+            <a href="${n.url}" target="_blank" rel="noopener" class="text-blue-600 underline">Link</a>
+          </td>
+
+          <td class="p-4 flex gap-2">
+              ${
+                currentUser.authority !== "Employee"
+                  ? `
+        <button onclick="editNotice(${n.id})"
+          class="bg-blue-600 text-white px-3 py-1 rounded">
+          Edit
+        </button>
+
+        <button onclick="deleteNotice(${n.id})"
+          class="bg-red-600 text-white px-3 py-1 rounded">
+          Delete
+        </button>
+      `
+                  : ""
+              } </td>
+        </tr>`;
           })
           .join("");
       }
@@ -418,10 +525,6 @@
         }, 200);
       }
 
-      function openNotice(url) {
-        window.open(url, "_blank", "noopener,noreferrer");
-      }
-
       function showDuplicatePopup(existing) {
         const notice = existing || {
           title: "(unknown)",
@@ -429,10 +532,10 @@
           url: "",
         };
         document.getElementById("popupContent").innerHTML = `
-    <p><strong>Title:</strong> ${notice.title}</p>
-    <p><strong>Author:</strong> ${notice.author}</p>
-    <p class="text-blue-600">${notice.url}</p>
-  `;
+        <p><strong>Title:</strong> ${notice.title}</p>
+        <p><strong>Author:</strong> ${notice.author}</p>
+        <p class="text-blue-600">${notice.url}</p>
+      `;
 
         document
           .getElementById("popupModal")
@@ -446,13 +549,24 @@
         pendingNotice = null;
       }
 
-      function initializePage() {
-        fetchNotices();
-        document.getElementById("main-content").classList.add("ready");
-      }
+      document.addEventListener("DOMContentLoaded", async () => {
+        try {
+          const res = await fetch("/api/me", {
+            credentials: "include",
+          });
 
-      document.addEventListener("DOMContentLoaded", () => {
-        setTimeout(initializePage, 300);
+          if (!res.ok) throw new Error("Not logged in");
+
+          currentUser = await res.json();
+
+          applyAuthorityUI(); // 🔥 apply UI control
+
+          fetchNotices();
+          document.getElementById("main-content").classList.add("ready");
+        } catch (err) {
+          console.error(err);
+          window.location.href = "login.html";
+        }
       });
     </script>
   </body>

@@ -38,20 +38,36 @@
 
   <body class="bg-gray-100">
     <div id="nav-placeholder"></div>
-    <div id="main-content" class="ml-60 mt-20 p-8">
+    <div id="main-content" class="mt-20 p-4 md:ml-60 p-8">
       <!-- HEADER -->
       <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold">Employee Profile</h1>
-        <button
-          onclick="openEditModal()"
-          class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
-        >
-          Edit Profile
-        </button>
-      </div>
+  <h1 class="text-3xl font-bold">Employee Profile</h1>
+
+  <div class="flex gap-3 items-center">
+   
+    <button
+      id="editBtn"
+      onclick="openEditModal()"
+      class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
+    >
+      Edit Profile
+    </button>
+     <button
+    onclick="goBack()"
+     class="ml-2 transition hover:scale-110"
+  title="Go Back"
+>
+  <img
+    src="back.png"
+    alt="Back"
+    class="w-8 h-8 md:w-10 md:h-10 object-contain"
+  />
+  </button>
+  </div>
+</div>
 
       <!-- PROFILE -->
-      <div class="bg-white p-6 rounded shadow flex items-center gap-6 mb-6">
+      <div class="bg-white p-6 rounded shadow flex flex-col md:flex-row items-center gap-6 mb-6">
         <div class="relative">
           <img
             id="empImg"
@@ -77,14 +93,14 @@
           <p id="empRole" class="text-gray-600"></p>
           <p id="empId"></p>
           <p id="empDept"></p>
-          <p id="empRank"></p>
+          
         </div>
       </div>
 
       <!-- CONTACT -->
       <div class="bg-white p-6 rounded shadow mb-6">
         <h2 class="text-xl font-semibold mb-4">Contact Information</h2>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <p><b>Email:</b> <span id="empEmail"></span></p>
           <p><b>Phone:</b> <span id="empPhone"></span></p>
           <p><b>Address:</b> <span id="empAddress"></span></p>
@@ -95,6 +111,7 @@
       <!-- PROJECTS -->
       <div class="bg-white p-6 rounded shadow mb-6">
         <h2 class="text-xl font-semibold mb-4">Projects</h2>
+        <div class="overflow-x-auto">
         <table class="w-full text-left">
           <thead class="bg-gray-200">
             <tr>
@@ -106,25 +123,84 @@
           </thead>
           <tbody id="projectTable"></tbody>
         </table>
-      </div>
-
-      <!-- LEAVES -->
-      <div class="bg-white p-6 rounded shadow">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-semibold">Leave Records</h2>
-          <button
-            onclick="openLeaveModal()"
-            class="bg-green-600 text-white px-4 py-1 rounded text-sm"
-          >
-            + Add Leave
-          </button>
         </div>
+      </div>
+      <div class="bg-white p-6 rounded shadow mb-6">
+  <h2 class="text-xl font-semibold mb-2">Leave History</h2>
+ <div class="flex justify-start mb-4">
+  <button
+    onclick="openLeaveModal()"
+    class="bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700"
+  >
+    Apply Leave
+  </button>
+</div>
+<div class="overflow-x-auto"></div>
+  <table class="w-full text-left">
+    <thead class="bg-gray-200">
+      <tr>
+        <th class="p-2">Type</th>
+        <th class="p-2">From</th>
+        <th class="p-2">To</th>
+        <th class="p-2">Status</th>
+      </tr>
+    </thead>
+    <tbody id="leaveTable"></tbody>
+  </table>
+ </div>
+</div>
 
-        <table class="w-full text-left">
-          <tbody id="leaveTable"></tbody>
-        </table>
+      <!-- LEAVE MODAL (NEW DESIGN) -->
+<div
+  id="leaveModal"
+  class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50"
+>
+  <div class="bg-white p-4 md:p-6 rounded-lg shadow-xl w-[95%] max-w-lg relative">
+    <button
+      onclick="closeLeaveModal()"
+      class="absolute top-3 right-4 text-2xl text-gray-500 hover:text-gray-700"
+    >
+      ✕
+    </button>
+
+    <h2 class="text-xl font-bold mb-5">Apply for Leave</h2>
+
+    <div class="grid grid-cols-1 gap-4">
+      <!-- AUTO FILLED (READONLY) -->
+      <input
+  id="leaveEmpId"
+  readonly
+  placeholder="Employee ID"
+  class="border p-3 w-full rounded bg-gray-100 cursor-not-allowed"
+/>
+
+      <div id="employeeNameDisplay" class="text-sm font-medium"></div>
+
+      <select
+        id="leaveType"
+        class="border p-3 rounded focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="">Select Leave Type</option>
+        <option>Casual Leave (CL)</option>
+        <option>Sick Leave (SL)</option>
+        <option>Earned Leave (EL)</option>
+        <option>Other</option>
+      </select>
+
+      <div class="grid grid-cols-2 gap-4">
+        <input id="fromDate" type="date" class="border p-3 rounded" />
+        <input id="toDate" type="date" class="border p-3 rounded" />
       </div>
     </div>
+
+    <button
+      onclick="addLeave()"
+      class="mt-6 w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700"
+    >
+      Submit Leave Application
+    </button>
+  </div>
+</div>
 
     <!-- EDIT MODAL -->
     <div
@@ -136,13 +212,6 @@
 
         <div class="grid grid-cols-2 gap-3">
           <input id="name" placeholder="Name" class="border p-2 rounded" />
-          <input id="role" placeholder="Role" class="border p-2 rounded" />
-          <input
-            id="dept"
-            placeholder="Department"
-            class="border p-2 rounded"
-          />
-          <input id="rank" placeholder="Rank" class="border p-2 rounded" />
           <input id="email" placeholder="Email" class="border p-2 rounded" />
           <input id="phone" placeholder="Phone" class="border p-2 rounded" />
           <input
@@ -150,8 +219,7 @@
             placeholder="Address"
             class="border p-2 rounded"
           />
-          <input id="join" type="date" class="border p-2 rounded" />
-        </div>
+           </div>
 
         <div class="flex gap-3 mt-5">
           <button
@@ -170,212 +238,340 @@
       </div>
     </div>
 
-    <!-- LEAVE MODAL -->
-    <div
-      id="leaveModal"
-      class="hidden fixed inset-0 bg-black/50 flex items-center justify-center"
-    ><!-- LEAVE MODAL -->
-<div
-  id="leaveModal"
-  class="hidden fixed inset-0 bg-black/50 flex items-center justify-center"
->
-  <div class="bg-white p-6 rounded-xl w-full max-w-md">
-    <h2 class="text-xl font-bold mb-5">Apply for Leave</h2>
-
-    <div class="grid grid-cols-1 gap-4">
-      <div>
-        <input
-          id="empId"
-          onkeyup="fetchEmployeeName()"
-          placeholder="Employee ID"
-          class="border p-3 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-
-      <div
-        id="employeeNameDisplay"
-        class="text-sm font-medium min-h-[24px]"
-      ></div>
-
-      <select
-        id="leaveType"
-        class="border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">Select Leave Type</option>
-        <option>Adoption Leave</option>
-        <option>Bereavement Leave</option>
-        <option>Casual Leave (CL)</option>
-        <option>Compensatory Off (Comp-off)</option>
-        <option>Earned Leave (EL / PL / AL)</option>
-        <option>Marriage / Special Leave</option>
-        <option>Maternity Leave</option>
-        <option>Paternity Leave</option>
-        <option>Sabbatical Leave</option>
-        <option>Sick Leave (SL)</option>
-        <option>Other</option>
-      </select>
-
-      <div class="grid grid-cols-2 gap-4">
-        <input
-          id="fromDate"
-          type="date"
-          class="border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <input
-          id="toDate"
-          type="date"
-          class="border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-    </div>
-
-    <button
-      onclick="addLeave()"
-      class="mt-6 w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 transition font-medium"
-    >
-      Submit Leave Application
-    </button>
-  </div>
-</div>
+  
       
       </div>
     </div>
     <script src="load-layout.js"></script>
-    <script>
-      let employee = {
-        name: "John Doe",
-        role: "Developer",
-        id: "EMP1023",
-        department: "IT",
-        rank: "Team Lead",
-        email: "john@email.com",
-        phone: "9876543210",
-        address: "Delhi",
-        joinDate: "2024-01-10",
-        image: "https://i.pravatar.cc/120",
-        projects: [
-          {
-            name: "Website",
-            role: "Lead",
-            status: "Ongoing",
-            deadline: "2026-05-10",
-          },
-        ],
-        leaves: [],
-      };
+<script>
+let currentUser = null;
+let employee = {};
+function formatDate(dateString) {
+  if (!dateString) return "N/A";
 
-      function renderProfile() {
-        document.getElementById("empName").textContent = employee.name;
-        document.getElementById("empRole").textContent = employee.role;
-        document.getElementById("empId").textContent = "ID: " + employee.id;
-        document.getElementById("empDept").textContent =
-          "Dept: " + employee.department;
-        document.getElementById("empRank").textContent =
-          "Rank: " + employee.rank;
+  const d = new Date(dateString);
 
-        document.getElementById("empEmail").textContent = employee.email;
-        document.getElementById("empPhone").textContent = employee.phone;
-        document.getElementById("empAddress").textContent = employee.address;
-        document.getElementById("empJoin").textContent = employee.joinDate;
-        document.getElementById("empImg").src = employee.image;
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = String(d.getFullYear()).slice(-2);
 
-        document.getElementById("projectTable").innerHTML = employee.projects
-          .map(
-            (p) => `
-    <tr class="border-b">
-      <td class="p-2">${p.name}</td>
-      <td class="p-2">${p.role}</td>
-      <td class="p-2">${p.status}</td>
-      <td class="p-2">${p.deadline}</td>
-    </tr>
-  `,
-          )
-          .join("");
+  return `${day}/${month}/${year}`;
+}
+async function loadProfile() {
+  try {
+    // 1️⃣ Always get logged-in user
+    const userRes = await fetch("/api/me", {
+      credentials: "include",
+    });
 
-        document.getElementById("leaveTable").innerHTML = employee.leaves
-          .map(
-            (l) => `
-    <tr class="border-b">
-      <td class="p-2">${l.type}</td>
-      <td class="p-2">${l.from}</td>
-      <td class="p-2">${l.to}</td>
-      <td class="p-2">${l.status}</td>
-    </tr>
-  `,
-          )
-          .join("");
-      }
+    if (!userRes.ok) throw new Error("Not logged in");
+    currentUser = await userRes.json();
 
-      function openEditModal() {
-        document.getElementById("editModal").classList.remove("hidden");
+    const params = new URLSearchParams(window.location.search);
+    const profileId = params.get("id");
 
-        document.getElementById("name").value = employee.name;
-        document.getElementById("role").value = employee.role;
-        document.getElementById("dept").value = employee.department;
-        document.getElementById("rank").value = employee.rank;
-        document.getElementById("email").value = employee.email;
-        document.getElementById("phone").value = employee.phone;
-        document.getElementById("address").value = employee.address;
-        document.getElementById("join").value = employee.joinDate;
-      }
+    let data = null;
 
-      function saveProfile() {
-        const newName = document.getElementById("name").value.trim();
-        if (!newName) {
-          alert("Name required");
-          return;
-        }
-
-        employee.name = newName;
-        employee.role = document.getElementById("role").value.trim();
-        employee.department = document.getElementById("dept").value.trim();
-        employee.rank = document.getElementById("rank").value.trim();
-        employee.email = document.getElementById("email").value.trim();
-        employee.phone = document.getElementById("phone").value.trim();
-        employee.address = document.getElementById("address").value.trim();
-        employee.joinDate = document.getElementById("join").value;
-
-        renderProfile();
-        closeModal();
-      }
-
-      function closeModal() {
-        document.getElementById("editModal").classList.add("hidden");
-      }
-
-      function changeImage(e) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          employee.image = reader.result;
-          renderProfile();
-        };
-        reader.readAsDataURL(e.target.files[0]);
-      }
-
-      function openLeaveModal() {
-        document.getElementById("leaveModal").classList.remove("hidden");
-      }
-
-      function closeLeaveModal() {
-        document.getElementById("leaveModal").classList.add("hidden");
-      }
-
-      function addLeave() {
-        employee.leaves.push({
-          type: document.getElementById("leaveType").value,
-          from: document.getElementById("leaveFrom").value,
-          to: document.getElementById("leaveTo").value,
-          status: document.getElementById("leaveStatus").value,
-        });
-
-        renderProfile();
-        closeLeaveModal();
-      }
-
-      document.addEventListener("DOMContentLoaded", () => {
-        renderProfile();
-        document.getElementById("main-content").classList.add("ready");
+    // 2️⃣ PRIORITY 1: URL ID (employee/payroll click)
+    if (profileId) {
+      const empRes = await fetch(`/api/employees/${profileId}`, {
+        credentials: "include",
       });
-    </script>
+
+      if (empRes.ok) {
+        data = await empRes.json();
+      }
+    }
+
+    // 3️⃣ PRIORITY 2: localStorage (fallback from employees page)
+    if (!data) {
+      const storedEmp = localStorage.getItem("selectedEmployee");
+
+      if (storedEmp) {
+        try {
+          const parsed = JSON.parse(storedEmp);
+
+          // safety check
+          if (!profileId || parsed.employee_id == profileId) {
+            data = parsed;
+          }
+        } catch (e) {
+          console.warn("Bad localStorage data");
+        }
+      }
+    }
+
+    // 4️⃣ PRIORITY 3: logged-in user (sidebar/login)
+    if (!data) {
+      const empIdToLoad = currentUser.employee_id;
+
+      const empRes = await fetch(`/api/employees/${empIdToLoad}`, {
+        credentials: "include",
+      });
+
+      if (!empRes.ok) throw new Error("Failed to load employee");
+
+      data = await empRes.json();
+    }
+
+    // -----------------------------
+    // BUILD EMPLOYEE OBJECT
+    // -----------------------------
+    employee = {
+      name: data.employee_name,
+      role: data.role,
+      authority: data.authority,
+      id: data.employee_id,
+      department: data.department,
+      email: data.email,
+      phone: data.phone || "N/A",
+      address: data.address || "N/A",
+      joinDate: data.join_date,
+      image: data.image || "https://i.pravatar.cc/120",
+      projects: [],
+      leaves: [],
+    };
+
+    // -----------------------------
+    // PROJECTS
+    // -----------------------------
+    const projRes = await fetch("/api/projects", {
+      credentials: "include",
+    });
+
+    const allProjects = await projRes.json();
+
+    employee.projects = allProjects
+      .filter(p => p.team?.some(t => t.employee_id == employee.id))
+      .map(p => ({
+        name: p.project_name,
+        role: p.team.find(t => t.employee_id == employee.id)?.work || "Member",
+        status: p.status,
+        deadline: p.deadline,
+      }));
+
+    // -----------------------------
+    // LEAVES
+    // -----------------------------
+    const leaveRes = await fetch("/api/leaves", {
+      credentials: "include",
+    });
+
+    const allLeaves = await leaveRes.ok ? await leaveRes.json() : [];
+
+    employee.leaves = allLeaves
+      .filter(l => l.employee_id == employee.id)
+      .map(l => ({
+        type: l.leave_type,
+        from: l.from_date,
+        to: l.to_date,
+        status: l.status,
+      }));
+
+    renderProfile();
+
+    document.getElementById("main-content").classList.add("ready");
+
+  } catch (err) {
+    console.error(err);
+
+    if (err.message === "Unauthorized") {
+      window.location.href = "login.html";
+    } else {
+      alert("Error loading profile");
+    }
+  }
+}
+
+function renderProfile() {
+  document.getElementById("empName").textContent = employee.name;
+  document.getElementById("empRole").textContent = "Role: " + employee.role;
+  document.getElementById("empId").textContent = "ID: " + employee.id;
+  document.getElementById("empDept").textContent =
+    "Dept: " + employee.department;
+  document.getElementById("empEmail").textContent = employee.email;
+  document.getElementById("empPhone").textContent = employee.phone;
+  document.getElementById("empAddress").textContent = employee.address;
+  document.getElementById("empJoin").textContent = formatDate(employee.joinDate);
+  document.getElementById("empImg").src = employee.image;
+
+  // PROJECTS
+  document.getElementById("projectTable").innerHTML =
+    employee.projects.length
+      ? employee.projects.map(p => `
+        <tr class="border-b">
+          <td class="p-2">${p.name}</td>
+          <td class="p-2">${p.role}</td>
+          <td class="p-2">${p.status}</td>
+          <td class="p-2">${formatDate(p.deadline)}</td>
+        </tr>
+      `).join("")
+      : `<tr><td colspan="4" class="p-3 text-center text-gray-500">No Projects</td></tr>`;
+
+  // LEAVES
+  document.getElementById("leaveTable").innerHTML =
+    employee.leaves.length
+      ? employee.leaves.map(l => `
+        <tr class="border-b">
+          <td class="p-2">${l.type}</td>
+          <td class="p-2">${formatDate(l.from)}</td>
+          <td class="p-2">${formatDate(l.to)}</td>
+          <td class="p-2">${l.status}</td>
+        </tr>
+      `).join("")
+      : `<tr><td colspan="4" class="p-3 text-center text-gray-500">No Leaves</td></tr>`;
+ if (!canEdit()) {
+  document.getElementById("editBtn").style.display = "none";
+}
+}
+function goBack() {
+   // Try browser history first
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    // fallback if opened directly
+    window.location.href = "employee.html";
+  }
+  // 🔥 clear temp data
+  localStorage.removeItem("selectedEmployee");
+  localStorage.removeItem("profileFrom");
+}
+function canEdit() {
+  const role = currentUser.authority;
+  const isOwn = currentUser.employee_id == employee.id;
+
+  // ✅ SELF EDIT
+  if (isOwn) return true;
+
+  // ❌ Administration & Employee cannot edit others
+  if (role === "Administration" || role === "Employee") {
+    return false;
+  }
+
+  // ✅ Owner → can edit anyone
+  if (role === "Owner") return true;
+
+  // ✅ Admin → only lower roles
+  if (role === "Admin") {
+    return (
+      employee.authority === "Administration" ||
+      employee.authority === "Employee"
+    );
+  }
+
+  return false;
+}
+
+function openEditModal() {
+  if (!canEdit()) {
+    alert("You are not allowed to edit this profile");
+    return;
+  }
+
+  document.getElementById("editModal").classList.remove("hidden");
+
+  document.getElementById("name").value = employee.name;
+  document.getElementById("email").value = employee.email;
+  document.getElementById("phone").value = employee.phone;
+  document.getElementById("address").value = employee.address;
+ }
+
+async function saveProfile() {
+  if (!canEdit()) {
+    alert("You are not allowed to edit");
+    return;
+  }
+
+  try {
+    const updatedData = {
+      employee_name: document.getElementById("name").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      phone: document.getElementById("phone").value.trim()|| null,
+      address: document.getElementById("address").value.trim(),
+    };
+
+    const res = await fetch(`/api/employees/${employee.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(updatedData),
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      throw new Error(result.error || "Update failed");
+    }
+
+    alert("Profile updated successfully");
+
+    closeModal();
+    loadProfile(); // 🔥 reload from DB (REAL DATA)
+
+  } catch (err) {
+    console.error(err);
+    alert("Error updating profile");
+  }
+}
+
+function closeModal() {
+  document.getElementById("editModal").classList.add("hidden");
+}
+
+function changeImage(e) {
+  if (!canEdit()) {
+    return alert("Not allowed");
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    employee.image = reader.result;
+    renderProfile();
+  };
+  reader.readAsDataURL(e.target.files[0]);
+}
+
+function openLeaveModal() {
+   if (currentUser.employee_id != employee.id) {
+    return alert("You can apply leave only for yourself");
+  }
+   document.getElementById("leaveModal").classList.remove("hidden");
+  document.getElementById("leaveEmpId").value = currentUser.employee_id;
+  document.getElementById("employeeNameDisplay").textContent = employee.name;
+}
+
+function closeLeaveModal() {
+  document.getElementById("leaveModal").classList.add("hidden");
+}
+
+async function addLeave() {
+  try {
+    await fetch("/api/leaves", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        employee_id: currentUser.employee_id,
+        leave_type: document.getElementById("leaveType").value,
+        from_date: document.getElementById("fromDate").value,
+        to_date: document.getElementById("toDate").value,
+      }),
+    });
+
+    alert("Leave applied!");
+    closeLeaveModal();
+    loadProfile(); // refresh
+  } catch (err) {
+    console.error(err);
+  }
+}
+window.addEventListener("beforeunload", () => {
+  localStorage.removeItem("selectedEmployee");
+  localStorage.removeItem("profileFrom");
+});
+
+// 🔥 IMPORTANT FIX
+document.addEventListener("DOMContentLoaded", loadProfile);
+</script>
   </body>
 </html>
