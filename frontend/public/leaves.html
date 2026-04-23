@@ -136,6 +136,12 @@
           float 3s ease-in-out infinite,
           glowSoft 3s infinite;
       }
+
+      /* Disable input styling */
+      input:disabled {
+        background-color: #f3f4f6;
+        cursor: not-allowed;
+      }
     </style>
   </head>
   <body class="bg-gray-100">
@@ -196,7 +202,7 @@
       <input
         id="searchBox"
         onkeyup="searchLeave()"
-        placeholder="Search by Employee ID or Name..."
+        placeholder="Search by Employee ID, Name or Authority..."
         class="mb-4 w-full md:w-1/3 border p-2 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
 
@@ -206,6 +212,7 @@
             <tr>
               <th class="p-3">Emp ID</th>
               <th class="p-3">Name</th>
+              <th class="p-3">Authority</th>
               <th class="p-3">Type</th>
               <th class="p-3">From</th>
               <th class="p-3">To</th>
@@ -238,9 +245,10 @@
           <div>
             <input
               id="empId"
-              onkeyup="fetchEmployeeName()"
+              readonly
+              disabled
               placeholder="Employee ID"
-              class="border p-3 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="border p-3 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-100 cursor-not-allowed"
             />
           </div>
 
@@ -329,7 +337,92 @@
 
     <script>
       let leaves = [];
+      let allEmployees = [];
       let currentEmployeeName = "";
+      let currentUser = null;
+
+      const authorityOrder = {
+        Owner: 1,
+        Admin: 2,
+        Administration: 3,
+        Employee: 4,
+      };
+
+      async function loadCurrentUser() {
+        try {
+          const res = await fetch("/api/me", { credentials: "include" });
+          if (!res.ok) throw new Error("Not authenticated");
+          currentUser = await res.json();
+        } catch (err) {
+          console.error("Failed to load user:", err);
+          window.location.href = "login.html";
+        }
+      }
+
+      async function loadEmployees() {
+        try {
+          const res = await fetch("/api/employees");
+          allEmployees = await res.json();
+        } catch (err) {
+          console.error("Failed to load employees:", err);
+        }
+      }
+
+      function canAccessEmployee(employeeAuthority, employeeId) {
+        if (!currentUser) return false;
+
+        if (currentUser.employee_id === employeeId) return true;
+
+        const currentAuth = currentUser.authority;
+        const targetAuth = employeeAuthority;
+
+        if (currentAuth === "Owner") return true;
+
+        if (currentAuth === "Admin") {
+          return targetAuth === "Administration" || targetAuth === "Employee";
+        }
+
+        if (currentAuth === "Administration") {
+          return targetAuth === "Employee";
+        }
+
+        return false;
+      }
+
+      function canTakeAction(employeeAuthority, employeeId) {
+        if (!currentUser) return false;
+
+        // User cannot take action on their own leave
+        if (currentUser.employee_id === employeeId) return false;
+
+        const currentAuth = currentUser.authority;
+        const targetAuth = employeeAuthority;
+
+        if (currentAuth === "Owner") return true;
+
+        if (currentAuth === "Admin") {
+          return targetAuth === "Administration" || targetAuth === "Employee";
+        }
+
+        if (currentAuth === "Administration") {
+          return targetAuth === "Employee";
+        }
+
+        return false;
+      }
+
+      function getEmployeeAuthority(employeeId) {
+        const emp = allEmployees.find((e) => e.employee_id === employeeId);
+        return emp ? emp.authority : "Employee";
+      }
+
+      // Get accessible leaves based on user authority
+      function getAccessibleLeaves() {
+        return leaves.filter((leave) => {
+          const empAuthority = getEmployeeAuthority(leave.employee_id);
+          return canAccessEmployee(empAuthority, leave.employee_id);
+        });
+      }
 
       async function fetchLeaves() {
         try {
@@ -352,26 +445,53 @@
 
         let count = 0;
         while (start <= end) {
-          if (start.getDay() !== 0) count++; // Exclude Sundays
+          if (start.getDay() !== 0) count++;
           start.setDate(start.getDate() + 1);
         }
         return count;
       }
+
       function formatDate(dateString) {
         const d = new Date(dateString);
-
         const day = String(d.getDate()).padStart(2, "0");
         const month = String(d.getMonth() + 1).padStart(2, "0");
         const year = d.getFullYear();
-
         return `${day}-${month}-${year}`;
       }
 
       function openLeaveModal() {
+        // Auto-fill Employee ID with logged-in user's ID
+        const empIdInput = document.getElementById("empId");
+        if (currentUser && currentUser.employee_id) {
+          empIdInput.value = currentUser.employee_id;
+          // Auto-fetch employee name
+          fetchEmployeeNameForModal(currentUser.employee_id);
+        }
         document.getElementById("leaveModal").classList.remove("hidden");
-        // Clear previous name when opening modal
-        document.getElementById("employeeNameDisplay").innerHTML = "";
-        currentEmployeeName = "";
+      }
+
+      async function fetchEmployeeNameForModal(empId) {
+        const nameDisplay = document.getElementById("employeeNameDisplay");
+
+        try {
+          const res = await fetch(`/api/employees/${empId}`);
+          if (res.ok) {
+            const employee = await res.json();
+            currentEmployeeName =
+              employee.employee_name || employee.name || "Employee Found";
+            nameDisplay.innerHTML = `✓ Applying leave for: <strong>${currentEmployeeName}</strong>`;
+            nameDisplay.className =
+              "text-sm text-green-600 font-medium min-h-[24px]";
+          } else {
+            nameDisplay.innerHTML = "❌ Employee not found";
+            nameDisplay.className =
+              "text-sm text-red-600 font-medium min-h-[24px]";
+          }
+        } catch (err) {
+          nameDisplay.innerHTML = "Error checking Employee ID";
+          nameDisplay.className =
+            "text-sm text-red-600 font-medium min-h-[24px]";
+        }
       }
 
       function closeLeaveModal() {
@@ -383,75 +503,41 @@
       }
 
       async function fetchEmployeeName() {
-        const empId = document.getElementById("empId").value.trim();
-        const nameDisplay = document.getElementById("employeeNameDisplay");
-
-        if (empId.length < 2) {
-          nameDisplay.innerHTML = "";
-          currentEmployeeName = "";
-          return;
-        }
-
-        try {
-          const res = await fetch(`/api/employees/${empId}`);
-          if (res.ok) {
-            const employee = await res.json();
-            currentEmployeeName =
-              employee.employee_name || employee.name || "Employee Found";
-            nameDisplay.innerHTML = `✓ <strong>${currentEmployeeName}</strong>`;
-            nameDisplay.className =
-              "text-sm text-green-600 font-medium min-h-[24px]";
-          } else {
-            nameDisplay.innerHTML = "❌ Employee not found";
-            nameDisplay.className =
-              "text-sm text-red-600 font-medium min-h-[24px]";
-            currentEmployeeName = "";
-          }
-        } catch (err) {
-          nameDisplay.innerHTML = "Error checking Employee ID";
-          nameDisplay.className =
-            "text-sm text-red-600 font-medium min-h-[24px]";
-          currentEmployeeName = "";
-        }
+        // This function is kept but not used since input is disabled
+        // Keeping for compatibility
       }
+
       function updateStats() {
         const filter = document.getElementById("timeFilter").value;
-
         const now = new Date();
 
-        // 📅 Start of week (Monday)
         const startOfWeek = new Date(now);
         const day = now.getDay();
         const diff = day === 0 ? -6 : 1 - day;
         startOfWeek.setDate(now.getDate() + diff);
         startOfWeek.setHours(0, 0, 0, 0);
 
-        // 📅 Start of month
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-        // 📅 Start of year
         const startOfYear = new Date(now.getFullYear(), 0, 1);
 
         let startDate = null;
-
         if (filter === "week") startDate = startOfWeek;
         if (filter === "month") startDate = startOfMonth;
         if (filter === "year") startDate = startOfYear;
 
-        let filtered = leaves;
+        // Get accessible leaves based on user authority
+        let accessibleLeaves = getAccessibleLeaves();
+
+        let filtered = accessibleLeaves;
 
         if (filter !== "all") {
-          filtered = leaves.filter((l) => {
+          filtered = accessibleLeaves.filter((l) => {
             const from = new Date(l.from_date);
             const to = new Date(l.to_date);
-
-            // ✅ CONDITION:
-            // Include leave if it overlaps with selected period
             return to >= startDate && from <= now;
           });
         }
 
-        // 📊 Counts
         const total = filtered.length;
         const approved = filtered.filter((l) => l.status === "Approved").length;
         const pending = filtered.filter((l) => l.status === "Pending").length;
@@ -462,6 +548,7 @@
         document.getElementById("pendingCount").textContent = pending;
         document.getElementById("rejectedCount").textContent = rejected;
       }
+
       async function addLeave() {
         const empId = document.getElementById("empId").value.trim();
         const leaveType = document.getElementById("leaveType").value;
@@ -494,116 +581,165 @@
 
           closeLeaveModal();
           clearForm();
-          fetchLeaves(); // Refresh table
+          fetchLeaves();
         } catch (err) {
           console.error(err);
           alert("Error submitting leave");
         }
       }
 
-      function renderLeaves(filtered = leaves) {
-        const tbody = document.getElementById("leaveTable");
+      function renderLeaves() {
+        // Get accessible leaves based on user authority
+        let accessibleLeaves = getAccessibleLeaves();
 
-        // ✅ Step 1: Group by employee_id (keep latest)
-        const map = {};
-
-        filtered.forEach((l) => {
-          if (!map[l.employee_id]) {
-            map[l.employee_id] = l;
+        // Group by employee_id and keep the latest leave per employee
+        const employeeLatestMap = {};
+        accessibleLeaves.forEach((leave) => {
+          if (!employeeLatestMap[leave.employee_id]) {
+            employeeLatestMap[leave.employee_id] = leave;
           } else {
             if (
-              new Date(l.applied_at) > new Date(map[l.employee_id].applied_at)
+              new Date(leave.applied_at) >
+              new Date(employeeLatestMap[leave.employee_id].applied_at)
             ) {
-              map[l.employee_id] = l;
+              employeeLatestMap[leave.employee_id] = leave;
             }
           }
         });
 
-        const uniqueLeaves = Object.values(map);
+        let uniqueLeaves = Object.values(employeeLatestMap);
 
-        // ✅ Step 2: Render only one row per employee
+        // Sort: First by authority (Owner > Admin > Administration > Employee)
+        // Then within same authority, show latest applied first
+        uniqueLeaves.sort((a, b) => {
+          const authA = getEmployeeAuthority(a.employee_id);
+          const authB = getEmployeeAuthority(b.employee_id);
+          const orderA = authorityOrder[authA] || 5;
+          const orderB = authorityOrder[authB] || 5;
+
+          if (orderA !== orderB) {
+            return orderA - orderB;
+          }
+
+          // Same authority - show latest applied first
+          return new Date(b.applied_at) - new Date(a.applied_at);
+        });
+
+        const tbody = document.getElementById("leaveTable");
         tbody.innerHTML = uniqueLeaves
-          .map(
-            (l) => `
-      <tr class="border-b hover:bg-blue-50 hover:text-blue-600 cursor-pointer transition"
-          onclick="openHistory('${l.employee_id}')">
-        
-        <td class="p-3">${l.employee_id}</td>
+          .map((l) => {
+            const empAuthority = getEmployeeAuthority(l.employee_id);
+            const canAction = canTakeAction(empAuthority, l.employee_id);
+            const isSelf = currentUser?.employee_id === l.employee_id;
 
-        <td class="p-3 ">
-          ${l.employee_name || "N/A"}
-        </td>
-
-        <td class="p-3">${l.leave_type}</td>
-
-        <td class="p-3">${formatDate(l.from_date)}</td>
-
-        <td class="p-3">${formatDate(l.to_date)}</td>
-
-        <td class="p-3 font-semibold">
-          ${calculateDays(l.from_date, l.to_date)}
-        </td>
-
-        <td class="p-3 ${
-          l.status === "Approved"
-            ? "text-green-600 font-medium"
-            : l.status === "Rejected"
-              ? "text-red-600 font-medium"
-              : "text-yellow-600"
-        }">
-          ${l.status || "Pending"}
-        </td>
-
-        <td class="p-3">
-          <button 
-            onclick="event.stopPropagation(); updateStatus(${l.id}, 'Approved')" 
-            class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 text-xs rounded mr-1 transition">
-            Approve
-          </button>
-
-          <button 
-            onclick="event.stopPropagation(); updateStatus(${l.id}, 'Rejected')" 
-            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-xs rounded transition">
-            Reject
-          </button>
-        </td>
-
-      </tr>
-    `,
-          )
+            return `
+              <tr class="border-b hover:bg-blue-50 hover:text-blue-600 cursor-pointer transition"
+                  onclick="openHistory('${l.employee_id}')">
+                <td class="p-3">${l.employee_id}</td>
+                <td class="p-3">${l.employee_name || "N/A"}</td>
+                <td class="p-3">${empAuthority}</td>
+                <td class="p-3">${l.leave_type}</td>
+                <td class="p-3">${formatDate(l.from_date)}</td>
+                <td class="p-3">${formatDate(l.to_date)}</td>
+                <td class="p-3 font-semibold">${calculateDays(l.from_date, l.to_date)}</td>
+                <td class="p-3 ${
+                  l.status === "Approved"
+                    ? "text-green-600 font-medium"
+                    : l.status === "Rejected"
+                      ? "text-red-600 font-medium"
+                      : "text-yellow-600"
+                }">
+                  ${l.status || "Pending"}
+                </td>
+                <td class="p-3">
+                  ${
+                    !isSelf && canAction
+                      ? `
+                    <button 
+                      onclick="event.stopPropagation(); updateStatus(${l.id}, 'Approved')" 
+                      class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 text-xs rounded mr-1 transition">
+                      Approve
+                    </button>
+                    <button 
+                      onclick="event.stopPropagation(); updateStatus(${l.id}, 'Rejected')" 
+                      class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-xs rounded transition">
+                      Reject
+                    </button>
+                  `
+                      : isSelf
+                        ? `<span class="text-gray-400 text-xs">No Action</span>`
+                        : `<span class="text-gray-400 text-xs">No Access</span>`
+                  }
+                </td>
+              </tr>
+            `;
+          })
           .join("");
       }
 
       function openHistory(empId) {
-        const empLeaves = leaves.filter((l) => l.employee_id === empId);
+        const empAuthority = getEmployeeAuthority(empId);
+
+        // Check if user can access this employee's history
+        if (!canAccessEmployee(empAuthority, empId)) {
+          alert(
+            "❌ You don't have permission to view this employee's leave history",
+          );
+          return;
+        }
+
+        // Filter leaves for this employee
+        let empLeaves = leaves.filter((l) => l.employee_id === empId);
+
+        // Sort by status priority: Pending first, then Approved, then Rejected
+        // And within same status, show latest first
+        const statusPriority = { Pending: 1, Approved: 2, Rejected: 3 };
+        empLeaves.sort((a, b) => {
+          if (statusPriority[a.status] !== statusPriority[b.status]) {
+            return statusPriority[a.status] - statusPriority[b.status];
+          }
+          return new Date(b.applied_at) - new Date(a.applied_at);
+        });
+
         const historyTitle = document.getElementById("historyTitle");
         historyTitle.textContent = `Leave History - ${empId}`;
 
         const tbody = document.getElementById("historyTable");
         tbody.innerHTML = empLeaves
-          .map(
-            (l) => `
-        <tr class="border-b hover:bg-blue-50 hover:text-blue-600 cursor-pointer transition">
-          <td class="p-3">${l.leave_type}</td>
-          <td class="p-3">${formatDate(l.from_date)}</td>
-          <td class="p-3">${formatDate(l.to_date)}</td>
-          <td class="p-3">${calculateDays(l.from_date, l.to_date)}</td>
-          <td class="p-3 ${
-            l.status === "Approved"
-              ? "text-green-600"
-              : l.status === "Rejected"
-                ? "text-red-600"
-                : "text-yellow-600"
-          }">${l.status || "Pending"}</td>
-          <td class="p-3">
-            <button onclick="updateStatus(${l.id}, 'Approved')" 
-                    class="bg-green-500 text-white px-3 py-1 text-xs rounded mr-1">Approve</button>
-            <button onclick="updateStatus(${l.id}, 'Rejected')" 
-                    class="bg-red-500 text-white px-3 py-1 text-xs rounded">Reject</button>
-          </td>
-        </tr>
-      `,
-          )
+          .map((l) => {
+            const canAction = canTakeAction(empAuthority, empId);
+            const isSelf = currentUser?.employee_id === empId;
+
+            return `
+              <tr class="border-b">
+                <td class="p-3">${l.leave_type}</td>
+                <td class="p-3">${formatDate(l.from_date)}</td>
+                <td class="p-3">${formatDate(l.to_date)}</td>
+                <td class="p-3">${calculateDays(l.from_date, l.to_date)}</td>
+                <td class="p-3 ${
+                  l.status === "Approved"
+                    ? "text-green-600"
+                    : l.status === "Rejected"
+                      ? "text-red-600"
+                      : "text-yellow-600"
+                }">${l.status || "Pending"}</td>
+                <td class="p-3">
+                  ${
+                    !isSelf && canAction
+                      ? `
+                    <button onclick="updateStatus(${l.id}, 'Approved')" 
+                      class="bg-green-500 text-white px-3 py-1 text-xs rounded mr-1">Approve</button>
+                    <button onclick="updateStatus(${l.id}, 'Rejected')" 
+                      class="bg-red-500 text-white px-3 py-1 text-xs rounded">Reject</button>
+                  `
+                      : isSelf
+                        ? `<span class="text-gray-400 text-xs">No Action</span>`
+                        : `<span class="text-gray-400 text-xs">No Access</span>`
+                  }
+                </td>
+              </tr>
+            `;
+          })
           .join("");
 
         document.getElementById("historyModal").classList.remove("hidden");
@@ -628,20 +764,106 @@
           .getElementById("searchBox")
           .value.toLowerCase()
           .trim();
-        if (!val) {
-          renderLeaves(leaves);
-          return;
+
+        // Get accessible leaves based on user authority
+        let accessibleLeaves = getAccessibleLeaves();
+
+        // Group by employee and keep latest
+        const employeeLatestMap = {};
+        accessibleLeaves.forEach((leave) => {
+          if (!employeeLatestMap[leave.employee_id]) {
+            employeeLatestMap[leave.employee_id] = leave;
+          } else {
+            if (
+              new Date(leave.applied_at) >
+              new Date(employeeLatestMap[leave.employee_id].applied_at)
+            ) {
+              employeeLatestMap[leave.employee_id] = leave;
+            }
+          }
+        });
+
+        let uniqueLeaves = Object.values(employeeLatestMap);
+
+        // Apply search filter
+        let filtered = uniqueLeaves;
+        if (val) {
+          filtered = uniqueLeaves.filter(
+            (l) =>
+              (l.employee_id || "").toLowerCase().includes(val) ||
+              (l.employee_name || "").toLowerCase().includes(val) ||
+              (getEmployeeAuthority(l.employee_id) || "")
+                .toLowerCase()
+                .includes(val),
+          );
         }
-        const filtered = leaves.filter(
-          (l) =>
-            (l.employee_id || "").toLowerCase().includes(val) ||
-            (l.employee_name || "").toLowerCase().includes(val),
-        );
-        renderLeaves(filtered);
+
+        // Sort by authority and then by applied date
+        filtered.sort((a, b) => {
+          const authA = getEmployeeAuthority(a.employee_id);
+          const authB = getEmployeeAuthority(b.employee_id);
+          const orderA = authorityOrder[authA] || 5;
+          const orderB = authorityOrder[authB] || 5;
+
+          if (orderA !== orderB) {
+            return orderA - orderB;
+          }
+          return new Date(b.applied_at) - new Date(a.applied_at);
+        });
+
+        const tbody = document.getElementById("leaveTable");
+        tbody.innerHTML = filtered
+          .map((l) => {
+            const empAuthority = getEmployeeAuthority(l.employee_id);
+            const canAction = canTakeAction(empAuthority, l.employee_id);
+            const isSelf = currentUser?.employee_id === l.employee_id;
+
+            return `
+              <tr class="border-b hover:bg-blue-50 hover:text-blue-600 cursor-pointer transition"
+                  onclick="openHistory('${l.employee_id}')">
+                <td class="p-3">${l.employee_id}</td>
+                <td class="p-3">${l.employee_name || "N/A"}</td>
+                <td class="p-3">${empAuthority}</td>
+                <td class="p-3">${l.leave_type}</td>
+                <td class="p-3">${formatDate(l.from_date)}</td>
+                <td class="p-3">${formatDate(l.to_date)}</td>
+                <td class="p-3 font-semibold">${calculateDays(l.from_date, l.to_date)}</td>
+                <td class="p-3 ${
+                  l.status === "Approved"
+                    ? "text-green-600 font-medium"
+                    : l.status === "Rejected"
+                      ? "text-red-600 font-medium"
+                      : "text-yellow-600"
+                }">
+                  ${l.status || "Pending"}
+                </td>
+                <td class="p-3">
+                  ${
+                    !isSelf && canAction
+                      ? `
+                    <button 
+                      onclick="event.stopPropagation(); updateStatus(${l.id}, 'Approved')" 
+                      class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 text-xs rounded mr-1 transition">
+                      Approve
+                    </button>
+                    <button 
+                      onclick="event.stopPropagation(); updateStatus(${l.id}, 'Rejected')" 
+                      class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-xs rounded transition">
+                      Reject
+                    </button>
+                  `
+                      : isSelf
+                        ? `<span class="text-gray-400 text-xs">No Action</span>`
+                        : `<span class="text-gray-400 text-xs">No Access</span>`
+                  }
+                </td>
+              </tr>
+            `;
+          })
+          .join("");
       }
 
       function clearForm() {
-        document.getElementById("empId").value = "";
         document.getElementById("leaveType").value = "";
         document.getElementById("fromDate").value = "";
         document.getElementById("toDate").value = "";
@@ -649,8 +871,10 @@
         currentEmployeeName = "";
       }
 
-      function initializePage() {
-        fetchLeaves();
+      async function initializePage() {
+        await loadCurrentUser();
+        await loadEmployees();
+        await fetchLeaves();
         document.getElementById("main-content").classList.add("ready");
       }
 

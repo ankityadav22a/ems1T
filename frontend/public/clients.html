@@ -326,7 +326,7 @@
 
        <!-- RIGHT ACTIONS -->
       <div class="flex gap-3">
-        <button onclick="deleteClient()" class="bg-red-100 text-red-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-200">
+        <button id="deleteClientBtn" onclick="deleteClient()" class="bg-red-100 text-red-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-200">
          Delete Client
          </button>
         <button
@@ -369,6 +369,24 @@
     <script>
       let clients = [];
       let currentClientId = null;
+      let currentUser = null;
+
+      async function loadCurrentUser() {
+        try {
+          const res = await fetch("/api/me", { credentials: "include" });
+          if (!res.ok) throw new Error("Not authenticated");
+          currentUser = await res.json();
+        } catch (err) {
+          console.error("Failed to load user:", err);
+          window.location.href = "login.html";
+        }
+      }
+
+      function canDeleteClient() {
+        if (!currentUser) return false;
+        return currentUser.authority === "Owner" || currentUser.authority === "Admin";
+      }
+
       async function loadClients() {
   try {
     const res = await fetch("/api/clients");
@@ -438,6 +456,16 @@
 
         document.getElementById("addProjBtn").onclick = () =>
           openAddProjectOnly(clientId);
+        
+        // Show/hide delete button based on user authority
+        const deleteBtn = document.getElementById("deleteClientBtn");
+        if (deleteBtn) {
+          if (canDeleteClient()) {
+            deleteBtn.style.display = "inline-block";
+          } else {
+            deleteBtn.style.display = "none";
+          }
+        }
 
         const list = document.getElementById("projectList");
         list.innerHTML =
@@ -611,6 +639,10 @@
   }
 }
 async function deleteClient() {
+  if (!canDeleteClient()) {
+    alert("❌ You don't have permission to delete clients");
+    return;
+  }
   if (!confirm("Delete this client?")) return;
 
   try {
@@ -652,6 +684,7 @@ async function deleteClient() {
 
       // ── Exact same reveal logic as Notice page ─────────────────────────────
      async function initializePage() {
+        await loadCurrentUser();
         await loadClients();
         document.getElementById("main-content").classList.add("ready");
 

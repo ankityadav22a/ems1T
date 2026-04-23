@@ -1,4 +1,4 @@
-<!doctype html>
+in this code it do not show payroll chart data fix it <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -343,7 +343,6 @@
           }
         }, 16);
       }
-
       function formatDate(dateStr) {
         if (!dateStr) return "N/A";
 
@@ -355,7 +354,6 @@
 
         return `${day}/${month}/${year}`;
       }
-
       // ✅ FORMAT NUMBER (K, Lakh, Crore)
       function formatIndianNumber(num) {
         if (num >= 10000000) return Math.round(num / 10000000) + " Cr";
@@ -363,7 +361,6 @@
         if (num >= 1000) return Math.round(num / 1000) + " K";
         return num.toString();
       }
-
       async function loadDashboardData() {
         try {
           // 1. Get basic data
@@ -406,12 +403,9 @@
           const totalDocs = documents.length;
           const totalClients = clients.length;
 
-          // 3. Payroll (Yearly) - FIXED: Aggregate all payroll data for charts
+          // 3. Payroll (Yearly) - FIXED endpoint
           let yearlyPayrollRaw = 0;
           const currentYear = new Date().getFullYear();
-
-          // Store all payroll data for charts
-          window.fullPayrollData = [];
 
           const payrollPromises = employees.map((emp) =>
             fetch(`/api/payroll/employee/${emp.employee_id}`)
@@ -424,21 +418,9 @@
           payrollResults.forEach((records) => {
             records.forEach((p) => {
               if (p.from_date) {
-                const date = new Date(p.from_date);
-                const year = date.getFullYear();
-                const month = date.getMonth();
-                const netAmount = Number(p.net || 0);
-
-                // Add to fullPayrollData for charts
-                window.fullPayrollData.push({
-                  year: year,
-                  month: month,
-                  total: netAmount,
-                });
-
-                // Calculate yearly total
+                const year = new Date(p.from_date).getFullYear();
                 if (year === currentYear) {
-                  yearlyPayrollRaw += netAmount;
+                  yearlyPayrollRaw += Number(p.net || 0);
                 }
               }
             });
@@ -481,12 +463,21 @@
 
           // Init charts after data is ready
           initCharts();
-          initPayrollChart("month");
+          initPayrollChart();
         } catch (err) {
           console.error("Dashboard load error:", err);
           // Optional: show user-friendly message
           // alert("Failed to load dashboard data. Please check console.");
         }
+      }
+      function formatDate(dateStr) {
+        if (!dateStr) return "N/A";
+        const date = new Date(dateStr);
+        return date.toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        });
       }
 
       function renderRecentEmployees(employees) {
@@ -541,7 +532,7 @@
           <!-- Info -->
           <div class="flex-1 min-w-0">
             <p class="font-semibold text-lg text-white truncate">
-              ${emp.employee_name || emp.name || ""}
+              ${emp.name || ""} ${emp.employee_name || ""}
             </p>
             <p class="text-sm text-gray-400 mt-0.5">
               ${emp.designation || "Employee"} • ${emp.department || "N/A"}
@@ -572,21 +563,14 @@
           container.innerHTML += cardHTML;
         });
       }
-
       function preparePayrollChart(type = "month") {
-        if (!window.fullPayrollData || window.fullPayrollData.length === 0) {
-          return { labels: [], data: [] };
-        }
+        const now = new Date();
+        const currentYear = now.getFullYear();
 
         let labels = [];
         let data = [];
 
         if (type === "month") {
-          // Get current year or use the latest year with data
-          const years = [...new Set(window.fullPayrollData.map((p) => p.year))];
-          const currentYear =
-            years.length > 0 ? Math.max(...years) : new Date().getFullYear();
-
           const months = Array(12).fill(0);
 
           window.fullPayrollData.forEach((p) => {
@@ -611,7 +595,6 @@
           ];
           data = months.map((v) => v);
         } else {
-          // Yearly aggregation
           const yearly = {};
 
           window.fullPayrollData.forEach((p) => {
@@ -630,26 +613,9 @@
       function initPayrollChart(filterType = "month") {
         const { labels, data } = preparePayrollChart(filterType);
         const canvas = document.getElementById("payrollBar");
-
-        if (!canvas) return;
+        const wrapper = canvas.parentElement;
 
         if (window.payrollChart) window.payrollChart.destroy();
-
-        if (labels.length === 0 || data.length === 0) {
-          // Show empty state
-          const ctx = canvas.getContext("2d");
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = "#9ca3af";
-          ctx.font = "14px Arial";
-          ctx.textAlign = "center";
-          ctx.fillText(
-            "No payroll data available",
-            canvas.width / 2,
-            canvas.height / 2,
-          );
-          return;
-        }
-
         const maxVal = Math.max(...data.map(Number));
 
         // dynamic scaling
@@ -660,23 +626,18 @@
         else if (maxVal > 10000) step = 10000;
 
         const suggestedMax = Math.ceil(maxVal / step) * step;
-
         window.payrollChart = new Chart(canvas, {
           type: "line",
           data: {
             labels,
             datasets: [
               {
-                label: filterType === "month" ? "Payroll (₹)" : "Payroll (₹)",
+                label: "Payroll (₹ Lakhs)",
                 data,
                 borderColor: "#22d3ee",
-                backgroundColor: "rgba(34, 211, 238, 0.1)",
                 tension: 0.4,
                 fill: true,
                 pointRadius: 4,
-                pointBackgroundColor: "#22d3ee",
-                pointBorderColor: "#ffffff",
-                pointBorderWidth: 2,
               },
             ],
           },
@@ -738,79 +699,59 @@
           alert("Module opened!");
         }
       }
-
       function initCharts() {
         // 🛑 Destroy old charts if reloaded (prevents duplicate canvas issue)
         if (window.deptChart) window.deptChart.destroy();
+        if (window.payrollChart) window.payrollChart.destroy();
 
         // =========================
         // 📊 DEPARTMENT PIE CHART
         // =========================
-        if (window.deptLabels && window.deptLabels.length > 0) {
-          window.deptChart = new Chart(document.getElementById("deptPie"), {
-            type: "doughnut",
-            data: {
-              labels: window.deptLabels,
-              datasets: [
-                {
-                  data: window.deptData,
-                  backgroundColor: [
-                    "#22d3ee",
-                    "#a78bfa",
-                    "#f472b6",
-                    "#fbbf24",
-                    "#4ade80",
-                    "#60a5fa",
-                    "#fb923c",
-                    "#c084fc",
-                  ],
-                  borderColor: "#111827",
-                  borderWidth: 6,
-                },
-              ],
-            },
-            options: {
-              cutout: "72%",
-              plugins: {
-                legend: {
-                  position: "bottom",
-                  labels: {
-                    color: "#e5e7eb",
-                    padding: 18,
-                    font: { size: 13 },
-                  },
+        window.deptChart = new Chart(document.getElementById("deptPie"), {
+          type: "doughnut",
+          data: {
+            labels: window.deptLabels || [
+              "IT",
+              "HR",
+              "Sales",
+              "Finance",
+              "Marketing",
+              "Operations",
+            ],
+            datasets: [
+              {
+                data: window.deptData || [1, 1, 1, 1, 1, 1], // fallback
+                backgroundColor: [
+                  "#22d3ee",
+                  "#a78bfa",
+                  "#f472b6",
+                  "#fbbf24",
+                  "#4ade80",
+                  "#60a5fa",
+                ],
+                borderColor: "#111827",
+                borderWidth: 6,
+              },
+            ],
+          },
+          options: {
+            cutout: "72%",
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  color: "#e5e7eb",
+                  padding: 18,
+                  font: { size: 13 },
                 },
               },
             },
-          });
-        } else {
-          // Fallback chart
-          window.deptChart = new Chart(document.getElementById("deptPie"), {
-            type: "doughnut",
-            data: {
-              labels: ["No Data"],
-              datasets: [
-                {
-                  data: [1],
-                  backgroundColor: ["#374151"],
-                  borderColor: "#111827",
-                  borderWidth: 6,
-                },
-              ],
-            },
-            options: {
-              cutout: "72%",
-              plugins: {
-                legend: {
-                  position: "bottom",
-                  labels: {
-                    color: "#e5e7eb",
-                  },
-                },
-              },
-            },
-          });
-        }
+          },
+        });
+
+        // =========================
+        // 💰 PAYROLL BAR CHART
+        // =========================
       }
 
       function initializeDashboard() {
@@ -831,7 +772,6 @@
         setTimeout(initializeDashboard, 400);
         await loadDashboardData();
       });
-
       document
         .getElementById("payrollFilter")
         ?.addEventListener("change", (e) => {

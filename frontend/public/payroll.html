@@ -72,7 +72,6 @@
         id="cardContainer"
         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
       >
-        <!-- skeletons unchanged -->
         <div
           class="bg-white p-6 rounded shadow border border-gray-200 animate-pulse"
         >
@@ -88,7 +87,7 @@
       </div>
     </div>
 
-    <!-- Modals unchanged -->
+    <!-- Modals -->
     <div
       id="formModal"
       class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[60] p-4"
@@ -98,8 +97,8 @@
         <input id="empId" class="hidden" />
         <div class="space-y-3">
           <div>
-            <label class="text-sm">Base Salary</label>
-            <input
+            <label class="text-sm">Base Salary</label
+            ><input
               id="basic"
               type="number"
               class="border p-2 w-full bg-gray-100"
@@ -107,24 +106,24 @@
             />
           </div>
           <div>
-            <label class="text-sm">Allowance</label>
-            <input id="allow" type="number" class="border p-2 w-full" />
+            <label class="text-sm">Allowance</label
+            ><input id="allow" type="number" class="border p-2 w-full" />
           </div>
           <div>
-            <label class="text-sm">Deduction</label>
-            <input id="deduct" type="number" class="border p-2 w-full" />
+            <label class="text-sm">Deduction</label
+            ><input id="deduct" type="number" class="border p-2 w-full" />
           </div>
           <div>
-            <label class="text-sm">Bonus</label>
-            <input id="bonus" type="number" class="border p-2 w-full" />
+            <label class="text-sm">Bonus</label
+            ><input id="bonus" type="number" class="border p-2 w-full" />
           </div>
           <div>
-            <label class="text-sm">From</label>
-            <input id="fromDate" type="date" class="border p-2 w-full" />
+            <label class="text-sm">From</label
+            ><input id="fromDate" type="date" class="border p-2 w-full" />
           </div>
           <div>
-            <label class="text-sm">To</label>
-            <input id="toDate" type="date" class="border p-2 w-full" />
+            <label class="text-sm">To</label
+            ><input id="toDate" type="date" class="border p-2 w-full" />
           </div>
         </div>
         <div class="mt-6 flex justify-end gap-3">
@@ -179,100 +178,166 @@
       let payroll = [];
       let employees = [];
       let filteredEmployees = [];
+      let currentUser = null;
 
-      function getLatestPayroll(id) {
+      const authorityOrder = {
+        Owner: 1,
+        Admin: 2,
+        Administration: 3,
+        Employee: 4,
+      };
+
+      async function loadCurrentUser() {
+        try {
+          const res = await fetch("/api/me", { credentials: "include" });
+          if (!res.ok) throw new Error("Not authenticated");
+          currentUser = await res.json();
+        } catch (err) {
+          console.error("Failed to load user:", err);
+          window.location.href = "login.html";
+        }
+      }
+
+      function canAccessEmployee(employeeAuthority, employeeId) {
+        if (!currentUser) return false;
+        if (currentUser.employee_id === employeeId) return true;
+
+        const currentAuth = currentUser.authority;
+        const targetAuth = employeeAuthority;
+
+        if (currentAuth === "Owner") return true;
+        if (currentAuth === "Admin") {
+          return targetAuth === "Administration" || targetAuth === "Employee";
+        }
+        if (currentAuth === "Administration") {
+          return targetAuth === "Employee";
+        }
+        return false;
+      }
+
+      function canAddPayroll(employeeId) {
+        // Logged-in user cannot add payroll for their own card - NO ADD BUTTON for self
+        if (currentUser?.employee_id === employeeId) return false;
+        return true;
+      }
+
+      function getLatestPayroll(employeeId) {
         const empPayrolls = payroll
-          .filter((e) => e.employee_id === id)
+          .filter((e) => e.employee_id === employeeId)
           .sort((a, b) => new Date(b.from_date) - new Date(a.from_date));
-
-        return empPayrolls[0]; // latest
+        return empPayrolls[0];
       }
 
       async function loadPayroll() {
         payroll = [];
         for (let emp of employees) {
-          const res = await fetch(`/api/payroll/${emp.id}`);
-          const data = await res.json();
-          payroll.push(...data);
+          if (!canAccessEmployee(emp.authority, emp.id)) continue;
+          try {
+            const res = await fetch(`/api/payroll/employee/${emp.id}`);
+            const data = await res.json();
+            if (Array.isArray(data)) payroll.push(...data);
+          } catch (err) {
+            console.error(`Failed to load payroll for ${emp.id}:`, err);
+          }
         }
         renderCards();
       }
 
       async function loadEmployees() {
         const res = await fetch("/api/employees");
-        employees = await res.json();
+        const data = await res.json();
 
-        employees = employees.map((e) => ({
+        employees = data.map((e) => ({
           id: e.employee_id,
           name: e.employee_name,
           dept: e.department,
           post: e.role,
+          salary: e.salary,
+          join_date: e.join_date,
+          authority: e.authority,
         }));
 
         filteredEmployees = [...employees];
       }
 
       async function openForm(id) {
-        document.getElementById("empId").value = id;
-
-        const res = await fetch(`/api/employees/${id}`);
-        const emp = await res.json();
-
-        if (emp && emp.salary !== undefined) {
-          document.getElementById("basic").value = emp.salary;
+        const emp = employees.find((e) => e.id === id);
+        if (!emp) return;
+        if (!canAccessEmployee(emp.authority, emp.id)) {
+          alert(
+            "❌ You don't have permission to add payroll for this employee",
+          );
+          return;
+        }
+        if (!canAddPayroll(id)) {
+          alert("❌ You cannot add payroll for your own profile");
+          return;
         }
 
-        document.getElementById("formModal").classList.remove("hidden");
-        // 🔹 Get payroll history
-        const payRes = await fetch(`/api/payroll/${id}`);
+        document.getElementById("empId").value = id;
+        const res = await fetch(`/api/employees/${id}`);
+        const empData = await res.json();
+
+        if (empData && empData.salary !== undefined)
+          document.getElementById("basic").value = empData.salary;
+
+        const payRes = await fetch(`/api/payroll/employee/${id}`);
         const payrolls = await payRes.json();
 
         let from, to;
-
-        if (payrolls.length === 0) {
-          // 🟢 FIRST PAYROLL
-          from = new Date(emp.join_date);
+        if (!payrolls || payrolls.length === 0) {
+          from = new Date(empData.join_date);
         } else {
-          // 🔵 NEXT PAYROLL
-          const last = payrolls[0]; // already sorted DESC
+          const last = payrolls[0];
           from = new Date(last.to_date);
           from.setDate(from.getDate() + 1);
         }
-
-        // ➕ Add 1 month
         to = new Date(from);
         to.setMonth(to.getMonth() + 1);
-
-        // ✅ Format YYYY-MM-DD
         const format = (d) => d.toISOString().split("T")[0];
 
         document.getElementById("fromDate").value = format(from);
         document.getElementById("toDate").value = format(to);
-
-        // 🔓 Keep editable (no readonly)
-        document.getElementById("fromDate").removeAttribute("readonly");
-        document.getElementById("toDate").removeAttribute("readonly");
-
         document.getElementById("formModal").classList.remove("hidden");
       }
 
       function renderCards() {
         const cardContainer = document.getElementById("cardContainer");
-        cardContainer.innerHTML = filteredEmployees
+        const accessibleEmployees = filteredEmployees.filter((emp) =>
+          canAccessEmployee(emp.authority, emp.id),
+        );
+
+        // Sort: Owner first, then Admin, then Administration, then Employee
+        accessibleEmployees.sort((a, b) => {
+          const orderA = authorityOrder[a.authority] || 5;
+          const orderB = authorityOrder[b.authority] || 5;
+          return orderA - orderB;
+        });
+
+        if (!accessibleEmployees.length) {
+          cardContainer.innerHTML =
+            '<div class="col-span-full text-center py-12 text-gray-500">No employees accessible with your authority level</div>';
+          return;
+        }
+
+        cardContainer.innerHTML = accessibleEmployees
           .map((emp) => {
             let latest = getLatestPayroll(emp.id);
-            return `<div onclick='goToProfile("${emp.id}")'
-            class="bg-white p-4 rounded shadow border border-gray-200 cursor-pointer hover:shadow-lg transition">
+            const isSelf = currentUser?.employee_id === emp.id;
+            const canAdd = canAddPayroll(emp.id);
+
+            return `<div onclick='goToProfile("${emp.id}")' class="bg-white p-4 rounded shadow border border-gray-200 cursor-pointer hover:shadow-lg transition">
             <h2 class="text-xl font-bold">${emp.name}</h2>
             <p class="text-sm text-gray-500">ID: ${emp.id} | ${emp.dept}</p>
             <p class="text-sm text-gray-600">${emp.post}</p>
+            <p class="text-xs text-gray-400 mt-1">Authority: ${emp.authority}</p>
             <div class="mt-4 p-2 bg-gray-50 rounded">
-                <p class="text-sm">Base: <span class="font-semibold text-blue-700">₹${latest ? latest.base : 0}</span></p>
-                <p class="text-lg font-bold text-green-600">Net: ₹${latest ? latest.net : 0}</p>
+              <p class="text-sm">Base: <span class="font-semibold text-blue-700">₹${latest ? latest.base : emp.salary || 0}</span></p>
+              <p class="text-lg font-bold text-green-600">Net: ₹${latest ? latest.net : 0}</p>
             </div>
             <div class="mt-4 flex gap-2">
-              <button onclick="openForm('${emp.id}')" class="flex-1 bg-blue-600 text-white px-3 py-1.5 rounded text-sm">Add</button>
-              <button onclick="openView('${emp.id}')" class="flex-1 bg-gray-700 text-white px-3 py-1.5 rounded text-sm">View</button>
+              ${!isSelf && canAdd ? `<button onclick="event.stopPropagation(); openForm('${emp.id}')" class="flex-1 bg-blue-600 text-white px-3 py-1.5 rounded text-sm">Add</button>` : `<div class="flex-1"></div>`}
+              <button onclick="event.stopPropagation(); openView('${emp.id}')" class="flex-1 bg-gray-700 text-white px-3 py-1.5 rounded text-sm">View</button>
             </div>
           </div>`;
           })
@@ -300,7 +365,8 @@
         min = parseInt(min);
         max = max === "above" ? Infinity : parseInt(max);
         filteredEmployees = employees.filter((emp) => {
-          let net = getLatestPayroll(emp.id)?.net || 0;
+          let latest = getLatestPayroll(emp.id);
+          let net = latest ? latest.net : 0;
           return net >= min && (max === Infinity || net <= max);
         });
         renderCards();
@@ -312,13 +378,26 @@
 
       async function savePayroll() {
         let id = document.getElementById("empId").value;
+        const emp = employees.find((e) => e.id === id);
+        if (!emp || !canAccessEmployee(emp.authority, emp.id)) {
+          alert(
+            "❌ You don't have permission to add payroll for this employee",
+          );
+          closeForm();
+          return;
+        }
+        if (!canAddPayroll(id)) {
+          alert("❌ You cannot add payroll for your own profile");
+          closeForm();
+          return;
+        }
 
         const data = {
           employee_id: id,
-          base: +document.getElementById("basic").value || 0,
-          allowance: +document.getElementById("allow").value || 0,
-          deduction: +document.getElementById("deduct").value || 0,
-          bonus: +document.getElementById("bonus").value || 0,
+          base: parseInt(document.getElementById("basic").value) || 0,
+          allowance: parseInt(document.getElementById("allow").value) || 0,
+          deduction: parseInt(document.getElementById("deduct").value) || 0,
+          bonus: parseInt(document.getElementById("bonus").value) || 0,
           from_date: document.getElementById("fromDate").value,
           to_date: document.getElementById("toDate").value,
         };
@@ -328,55 +407,55 @@
           return;
         }
 
-        const res = await fetch("/api/payroll", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
-
-        const result = await res.json();
-
-        if (!res.ok) {
-          alert(result.error);
-          return;
+        try {
+          const res = await fetch("/api/payroll", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+          const result = await res.json();
+          if (!res.ok) {
+            alert(result.error || "Failed to save payroll");
+            return;
+          }
+          await loadPayroll();
+          closeForm();
+        } catch (err) {
+          console.error("Save payroll error:", err);
+          alert("Error saving payroll");
         }
-
-        await loadPayroll();
-        closeForm();
       }
+
       function formatDate(dateStr) {
+        if (!dateStr) return "N/A";
         const d = new Date(dateStr);
-
-        const day = String(d.getDate()).padStart(2, "0");
-        const month = String(d.getMonth() + 1).padStart(2, "0");
-        const year = d.getFullYear();
-
-        return `${day}-${month}-${year}`;
+        return `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`;
       }
 
       async function openView(id) {
-        const res = await fetch(`/api/payroll/${id}`);
-        const data = await res.json();
-
-        document.getElementById("viewTable").innerHTML = data.length
-          ? data
-              .map(
-                (e) => `
-      <tr class="border-b">
-        <td class="p-2">₹${e.base}</td>
-        <td class="p-2">₹${e.allowance}</td>
-        <td class="p-2">₹${e.deduction}</td>
-        <td class="p-2">₹${e.bonus}</td>
-        <td class="p-2 text-green-600 font-bold">₹${e.net}</td>
-       <td class="p-2 text-xs">
-  ${formatDate(e.from_date)} to ${formatDate(e.to_date)}
-</td>
-      </tr>`,
-              )
-              .join("")
-          : `<tr><td colspan="6" class="p-4 text-gray-400">No Records Found</td></tr>`;
-
-        document.getElementById("viewModal").classList.remove("hidden");
+        const emp = employees.find((e) => e.id === id);
+        if (!emp || !canAccessEmployee(emp.authority, emp.id)) {
+          alert(
+            "❌ You don't have permission to view payroll for this employee",
+          );
+          return;
+        }
+        try {
+          const res = await fetch(`/api/payroll/employee/${id}`);
+          const data = await res.json();
+          document.getElementById("viewTable").innerHTML = data.length
+            ? data
+                .map(
+                  (e) => `
+            <tr class="border-b"><td class="p-2">₹${e.base}</td><td class="p-2">₹${e.allowance}</td><td class="p-2">₹${e.deduction}</td><td class="p-2">₹${e.bonus}</td><td class="p-2 text-green-600 font-bold">₹${e.net}</td><td class="p-2 text-xs">${formatDate(e.from_date)} to ${formatDate(e.to_date)}</td>`,
+                )
+                .join("")
+            : `<tr><td colspan="6" class="p-4 text-gray-400 text-center">No Records Found</td>`;
+          document.getElementById("viewModal").classList.remove("hidden");
+        } catch (err) {
+          console.error("Error loading payroll history:", err);
+          alert("Error loading payroll history");
+        }
       }
 
       function closeView() {
@@ -384,10 +463,10 @@
       }
 
       async function initializePage() {
+        await loadCurrentUser();
         await loadEmployees();
         await loadPayroll();
         document.getElementById("main-content").classList.add("ready");
-
         setTimeout(() => {
           const link = document.querySelector('a[href="payroll.html"]');
           if (link) {
@@ -396,16 +475,11 @@
           }
         }, 400);
       }
+
       function goToProfile(id, empObj = null) {
-        // store where user came from
         localStorage.setItem("profileFrom", "payroll.html");
-
-        // store selected employee (like employee.html does)
-        if (empObj) {
+        if (empObj)
           localStorage.setItem("selectedEmployee", JSON.stringify(empObj));
-        }
-
-        // open profile page
         window.location.href = `profile.html?id=${id}`;
       }
 

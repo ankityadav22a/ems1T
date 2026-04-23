@@ -2,6 +2,127 @@
 -- EMS Database Schema - Fixed Version
 -- Run this script in your 'test' database (public schema)
 -- =============================================
+CREATE TABLE IF NOT EXISTS employees (
+    id SERIAL PRIMARY KEY,  -- ✅ NEW PRIMARY KEY
+    employee_id VARCHAR UNIQUE NOT NULL,  -- ✅ frontend ID
+    employee_name VARCHAR(100) NOT NULL,
+    role VARCHAR(50),
+    work_mode VARCHAR(20),
+    department VARCHAR(50),
+    join_date DATE,
+    password TEXT NOT NULL,
+    authority VARCHAR(20) DEFAULT 'Employee',
+    email VARCHAR(100) UNIQUE NOT NULL,
+    phone VARCHAR(20),
+    address TEXT,
+    about TEXT,
+    salary NUMERIC(10,2) CHECK (salary >= 0)
+);
+-- 🔍 Search by employee_id (login / lookup)
+CREATE INDEX IF NOT EXISTS idx_employees_employee_id 
+ON employees(employee_id);
+
+-- 🔍 Search by name (UI search)
+CREATE INDEX IF NOT EXISTS idx_employees_name 
+ON employees(employee_name);
+
+-- 🏢 Department filtering
+CREATE INDEX IF NOT EXISTS idx_employees_department 
+ON employees(department);
+
+-- 📅 Joining date sorting / filtering
+CREATE INDEX IF NOT EXISTS idx_employees_join_date 
+ON employees(join_date DESC);
+
+-- ⚙️ Authority + role (admin panel filters)
+CREATE INDEX IF NOT EXISTS idx_employees_authority_role 
+ON employees(authority, role);
+
+-- 🔍 Work mode filtering
+CREATE INDEX IF NOT EXISTS idx_employees_work_mode 
+ON employees(work_mode);
+
+-- 💰 Salary filtering (optional analytics)
+CREATE INDEX IF NOT EXISTS idx_employees_salary 
+ON employees(salary);
+CREATE TABLE IF NOT EXISTS  leaves (
+    id SERIAL PRIMARY KEY,
+    employee_ref INT NOT NULL,  -- ✅ FK to ID
+    leave_type TEXT,
+    from_date DATE NOT NULL,
+    to_date DATE NOT NULL,
+    days INTEGER,
+    status VARCHAR(20) DEFAULT 'Pending',
+    applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_employee 
+      FOREIGN KEY(employee_ref) 
+      REFERENCES employees(id) 
+      ON DELETE CASCADE
+);
+-- 🔗 FK index (VERY IMPORTANT for joins)
+CREATE INDEX IF NOT EXISTS idx_leaves_employee_ref 
+ON leaves(employee_ref);
+
+-- 📅 Date range filtering
+CREATE INDEX IF NOT EXISTS idx_leaves_date_range 
+ON leaves(from_date, to_date);
+
+-- 📊 Status filtering (Pending / Approved)
+CREATE INDEX IF NOT EXISTS idx_leaves_status 
+ON leaves(status);
+
+-- ⏱ Latest leaves (dashboard)
+CREATE INDEX IF NOT EXISTS idx_leaves_applied_at 
+ON leaves(applied_at DESC);
+
+-- 🔗 Employee + status (user dashboard)
+CREATE INDEX IF NOT EXISTS idx_leaves_emp_status 
+ON leaves(employee_ref, status);
+
+-- 🔗 Employee + date (history queries)
+CREATE INDEX IF NOT EXISTS idx_leaves_emp_date 
+ON leaves(employee_ref, from_date, to_date);
+CREATE TABLE IF NOT EXISTS payroll (
+    id SERIAL PRIMARY KEY,
+    employee_ref INT NOT NULL,  -- ✅ FIXED
+    base INTEGER DEFAULT 0,
+    allowance INTEGER DEFAULT 0,
+    deduction INTEGER DEFAULT 0,
+    bonus INTEGER DEFAULT 0,
+    net INTEGER,
+    from_date DATE NOT NULL,
+    to_date DATE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_employee_payroll
+      FOREIGN KEY (employee_ref)
+      REFERENCES employees(id)
+      ON DELETE CASCADE
+);
+-- 🔗 FK index (MOST IMPORTANT)
+CREATE INDEX IF NOT EXISTS idx_payroll_employee_ref 
+ON payroll(employee_ref);
+
+-- 📅 Date range filtering
+CREATE INDEX IF NOT EXISTS idx_payroll_date_range 
+ON payroll(from_date, to_date);
+
+-- ⏱ Latest payroll first
+CREATE INDEX IF NOT EXISTS idx_payroll_created_at 
+ON payroll(created_at DESC);
+
+-- 🔗 Employee + date range (OVERLAP CHECK)
+CREATE INDEX IF NOT EXISTS idx_payroll_emp_date 
+ON payroll(employee_ref, from_date, to_date);
+
+-- 📊 Dashboard (latest salary per employee)
+CREATE INDEX IF NOT EXISTS idx_payroll_emp_created 
+ON payroll(employee_ref, created_at DESC);
+
+-- 💰 Net salary filtering
+CREATE INDEX IF NOT EXISTS idx_payroll_net 
+ON payroll(net);
 
 CREATE TABLE IF NOT EXISTS clients (
     id VARCHAR(10) PRIMARY KEY,
@@ -41,92 +162,6 @@ CREATE INDEX IF NOT EXISTS idx_notices_author ON notices(author);
 CREATE INDEX IF NOT EXISTS idx_notices_type ON notices(type);
 CREATE INDEX IF NOT EXISTS idx_notices_url ON notices(url);
 
--- Employees Table
-CREATE TABLE IF NOT EXISTS employees (
-    employee_id VARCHAR PRIMARY KEY,
-    employee_name VARCHAR(100) NOT NULL,
-    role VARCHAR(50),
-    work_mode VARCHAR(20),
-    department VARCHAR(50),
-    join_date DATE,
-    password TEXT NOT NULL,
-    authority VARCHAR(20) DEFAULT 'Employee',
-    email VARCHAR(100) UNIQUE NOT NULL,
-    address TEXT,
-    salary NUMERIC(10,2) CHECK (salary >= 0)
-);
-
-CREATE INDEX IF NOT EXISTS idx_employees_email ON employees(email);
-CREATE INDEX IF NOT EXISTS idx_employees_dept ON employees(department);
-CREATE INDEX IF NOT EXISTS idx_employees_name ON employees(employee_name);
-CREATE INDEX IF NOT EXISTS idx_employees_join_date ON employees(join_date);
-CREATE INDEX IF NOT EXISTS idx_employees_work_auth ON employees(work_mode, authority);
-
--- Leaves Table (Fixed)
-CREATE TABLE IF NOT EXISTS leaves (
-    id SERIAL PRIMARY KEY,
-    employee_id VARCHAR NOT NULL,
-    leave_type TEXT,
-    from_date DATE NOT NULL,
-    to_date DATE NOT NULL,
-    days INTEGER,
-    status VARCHAR(20) DEFAULT 'Pending',
-    applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_employee 
-      FOREIGN KEY(employee_id) 
-      REFERENCES employees(employee_id) 
-      ON DELETE CASCADE
-);
-
--- Indexes for leaves
-CREATE INDEX IF NOT EXISTS idx_leaves_employee_id ON leaves(employee_id);
-CREATE INDEX IF NOT EXISTS idx_leaves_date_range ON leaves(from_date, to_date);
-CREATE INDEX IF NOT EXISTS idx_leaves_status ON leaves(status);
-CREATE INDEX IF NOT EXISTS idx_leaves_applied_at ON leaves(applied_at);
-CREATE INDEX IF NOT EXISTS idx_leaves_emp_status ON leaves(employee_id, status);
-CREATE INDEX IF NOT EXISTS idx_leaves_emp_date ON leaves(employee_id, from_date, to_date);
-
-CREATE TABLE IF NOT EXISTS payroll (
-    id SERIAL PRIMARY KEY,
-    employee_id VARCHAR NOT NULL,
-    base INTEGER DEFAULT 0,
-    allowance INTEGER DEFAULT 0,
-    deduction INTEGER DEFAULT 0,
-    bonus INTEGER DEFAULT 0,
-    net INTEGER,
-    from_date DATE NOT NULL,
-    to_date DATE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_employee_payroll
-      FOREIGN KEY (employee_id)
-      REFERENCES employees(employee_id)
-      ON DELETE CASCADE
-);
--- 🔍 Employee based search (MOST IMPORTANT)
-CREATE INDEX IF NOT EXISTS idx_payroll_employee_id 
-ON payroll(employee_id);
-
--- 📅 Date range filtering (overlap + reports)
-CREATE INDEX IF NOT EXISTS idx_payroll_date_range 
-ON payroll(from_date, to_date);
-
--- ⏱ Sorting by latest payroll
-CREATE INDEX IF NOT EXISTS idx_payroll_created_at 
-ON payroll(created_at);
-
--- 🔗 Employee + date range (VERY IMPORTANT for overlap check)
-CREATE INDEX IF NOT EXISTS idx_payroll_emp_date 
-ON payroll(employee_id, from_date, to_date);
-
--- 📊 Employee + latest records (for dashboard/cards)
-CREATE INDEX IF NOT EXISTS idx_payroll_emp_created 
-ON payroll(employee_id, created_at DESC);
-
--- 💰 Net salary filtering (used in your frontend filter)
-CREATE INDEX IF NOT EXISTS idx_payroll_net 
-ON payroll(net);
 
 
 CREATE TABLE IF NOT EXISTS projects (
@@ -196,35 +231,34 @@ ON tasks(project_id, status);
 CREATE INDEX IF NOT EXISTS idx_tasks_project_deadline 
 ON tasks(project_id, deadline);
 
-
 CREATE TABLE IF NOT EXISTS project_team (
   id SERIAL PRIMARY KEY,
 
   project_id INT REFERENCES projects(project_id) ON DELETE CASCADE,
 
-  employee_id TEXT REFERENCES employees(employee_id) ON DELETE CASCADE, -- ✅ LINKED
+  employee_ref INT NOT NULL,  -- ✅ FIXED
 
-  work TEXT
+  work TEXT,
+
+  CONSTRAINT fk_employee_project
+    FOREIGN KEY (employee_ref)
+    REFERENCES employees(id)
+    ON DELETE CASCADE
 );
--- 🔍 Employee based search (MOST IMPORTANT)
-CREATE INDEX IF NOT EXISTS idx_project_team_employee_id 
-ON project_team(employee_id);
+CREATE INDEX IF NOT EXISTS idx_project_team_employee_ref 
+ON project_team(employee_ref);
 
--- 🔗 Project based team fetch
 CREATE INDEX IF NOT EXISTS idx_project_team_project_id 
 ON project_team(project_id);
 
--- 🔗 Employee + Project (VERY IMPORTANT for joins)
 CREATE INDEX IF NOT EXISTS idx_project_team_emp_proj 
-ON project_team(employee_id, project_id);
+ON project_team(employee_ref, project_id);
 
--- 📊 Work/role filtering (e.g., Developer, Manager)
 CREATE INDEX IF NOT EXISTS idx_project_team_work 
 ON project_team(work);
 
--- 🚀 Employee dashboard (latest assignments first)
 CREATE INDEX IF NOT EXISTS idx_project_team_emp_proj_desc 
-ON project_team(employee_id, project_id DESC);
+ON project_team(employee_ref, project_id DESC);
 
 CREATE TABLE IF NOT EXISTS expenses (
   expense_id SERIAL PRIMARY KEY,

@@ -1,3 +1,5 @@
+// load-layout.js - Complete layout and sidebar management
+
 async function uploadData(url, data) {
   try {
     const response = await fetch(url, {
@@ -15,28 +17,112 @@ async function uploadData(url, data) {
   }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  fetch("layout.html")
-    .then((res) => res.text())
-    .then((data) => {
-      document.getElementById("nav-placeholder").innerHTML = data;
-      handleResize(); // Force hide on mobile load
+// Load sidebar menu based on user role
+async function loadSidebarMenu() {
+  try {
+    const res = await fetch("/api/me", { credentials: "include" });
+    if (!res.ok) {
+      if (
+        !window.location.pathname.includes("login.html") &&
+        !window.location.pathname.includes("Authorization.html")
+      ) {
+        window.location.href = "login.html";
+      }
+      return;
+    }
 
-      // Remove any persistent 'active' color logic
-      const menuLinks = document.querySelectorAll("#sidebar a");
-      menuLinks.forEach((link) => {
-        // Remove bg-blue-600 or similar on click
-        link.addEventListener("click", (e) => {
-          menuLinks.forEach((l) =>
-            l.classList.remove("bg-blue-600", "font-semibold"),
-          );
-          // Do NOT add any active class
-        });
+    const user = await res.json();
+    const authority = user.authority;
+
+    const menuItems = {
+      Employee: [
+        { name: "Dashboard", link: "index.html", icon: "📊" },
+        { name: "Profile", link: "profile.html", icon: "👤" },
+        { name: "Documents", link: "document.html", icon: "📄" },
+        { name: "Notices", link: "notice.html", icon: "📢" },
+        { name: "Settings", link: "settings.html", icon: "⚙️" },
+      ],
+      Administration: [
+        { name: "Dashboard", link: "index.html", icon: "📊" },
+        { name: "Profile", link: "profile.html", icon: "👤" },
+        { name: "Employees", link: "employee.html", icon: "👥" },
+        { name: "Payroll", link: "payroll.html", icon: "💰" },
+        { name: "Clients", link: "clients.html", icon: "🏢" },
+        { name: "Projects", link: "projects.html", icon: "📁" },
+        { name: "Leaves", link: "leaves.html", icon: "🏖️" },
+        { name: "Documents", link: "document.html", icon: "📄" },
+        { name: "Notices", link: "notice.html", icon: "📢" },
+        { name: "Settings", link: "settings.html", icon: "⚙️" },
+      ],
+      Admin: [
+        { name: "Dashboard", link: "index.html", icon: "📊" },
+        { name: "Profile", link: "profile.html", icon: "👤" },
+        { name: "Employees", link: "employee.html", icon: "👥" },
+        { name: "Payroll", link: "payroll.html", icon: "💰" },
+        { name: "Clients", link: "clients.html", icon: "🏢" },
+        { name: "Projects", link: "projects.html", icon: "📁" },
+        { name: "Leaves", link: "leaves.html", icon: "🏖️" },
+        { name: "Documents", link: "document.html", icon: "📄" },
+        { name: "Notices", link: "notice.html", icon: "📢" },
+        { name: "Authorization", link: "Authorization.html", icon: "🔒" },
+        { name: "Settings", link: "settings.html", icon: "⚙️" },
+      ],
+      Owner: [
+        { name: "Dashboard", link: "index.html", icon: "📊" },
+        { name: "Profile", link: "profile.html", icon: "👤" },
+        { name: "Employees", link: "employee.html", icon: "👥" },
+        { name: "Payroll", link: "payroll.html", icon: "💰" },
+        { name: "Clients", link: "clients.html", icon: "🏢" },
+        { name: "Projects", link: "projects.html", icon: "📁" },
+        { name: "Leaves", link: "leaves.html", icon: "🏖️" },
+        { name: "Documents", link: "document.html", icon: "📄" },
+        { name: "Notices", link: "notice.html", icon: "📢" },
+        { name: "Authorization", link: "Authorization.html", icon: "🔒" },
+        { name: "Settings", link: "settings.html", icon: "⚙️" },
+      ],
+    };
+
+    const items = menuItems[authority] || menuItems.Employee;
+    const sidebarMenu = document.getElementById("sidebarMenu");
+
+    if (sidebarMenu) {
+      sidebarMenu.innerHTML = items
+        .map(
+          (item) => `
+        <li>
+          <a href="${item.link}" class="block px-4 py-2 hover:bg-blue-600 rounded transition-colors">
+            <span class="mr-2">${item.icon}</span> ${item.name}
+          </a>
+        </li>
+      `,
+        )
+        .join("");
+
+      // Highlight current page
+      const currentPage = window.location.pathname.split("/").pop();
+      const links = sidebarMenu.querySelectorAll("a");
+      links.forEach((link) => {
+        const href = link.getAttribute("href");
+        if (
+          href === currentPage ||
+          (currentPage === "" && href === "index.html")
+        ) {
+          link.classList.add("bg-blue-600", "font-semibold");
+        }
       });
-    })
-    .catch((err) => console.error("Layout load error:", err));
-});
+    }
+  } catch (err) {
+    console.error("Failed to load sidebar:", err);
+    if (
+      !window.location.pathname.includes("login.html") &&
+      !window.location.pathname.includes("Authorization.html")
+    ) {
+      window.location.href = "login.html";
+    }
+  }
+}
 
+// Global functions for sidebar toggle
 function toggleSidebar() {
   const sidebar = document.getElementById("sidebar");
   const overlay = document.getElementById("overlay");
@@ -61,4 +147,23 @@ function handleResize() {
   }
 }
 
-window.addEventListener("resize", handleResize);
+// Initialize everything when DOM is ready
+document.addEventListener("DOMContentLoaded", async function () {
+  // Load layout HTML
+  try {
+    const response = await fetch("layout.html");
+    const layoutHtml = await response.text();
+    document.getElementById("nav-placeholder").innerHTML = layoutHtml;
+
+    // After layout is loaded, setup sidebar and load menu
+    handleResize();
+
+    // Add resize listener
+    window.addEventListener("resize", handleResize);
+
+    // Load sidebar menu based on user role
+    await loadSidebarMenu();
+  } catch (err) {
+    console.error("Layout load error:", err);
+  }
+});

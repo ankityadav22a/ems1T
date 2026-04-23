@@ -49,6 +49,7 @@
 
         <button
           onclick="openAddModal()"
+          id="addEmployeeBtn"
           class="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 shadow"
         >
           + Add Employee
@@ -127,11 +128,6 @@
             placeholder="Enter Department"
             class="border p-2 rounded hidden col-span-2"
           />
-          <!-- <input
-            id="project"
-            placeholder="Project"
-            class="border p-2 rounded"
-          /> -->
           <input id="role" placeholder="Role" class="border p-2 rounded" />
 
           <select id="mode" class="border p-2 rounded">
@@ -179,11 +175,100 @@
       const API = "http://localhost:3000/api/employees";
       let employees = [];
       let editId = null;
+      let currentUser = null;
+
+      const authorityOrder = {
+        Owner: 1,
+        Admin: 2,
+        Administration: 3,
+        Employee: 4,
+      };
+
+      async function loadCurrentUser() {
+        try {
+          const res = await fetch("/api/me", { credentials: "include" });
+          if (!res.ok) throw new Error("Not authenticated");
+          currentUser = await res.json();
+
+          if (currentUser.authority === "Employee") {
+            document.getElementById("addEmployeeBtn").style.display = "none";
+          }
+        } catch (err) {
+          console.error("Failed to load user:", err);
+          window.location.href = "login.html";
+        }
+      }
+
+      function canAccessEmployee(employeeAuthority, employeeId) {
+        if (!currentUser) return false;
+
+        if (currentUser.employee_id === employeeId) return true;
+
+        const currentAuth = currentUser.authority;
+        const targetAuth = employeeAuthority;
+
+        // Owner can see everyone
+        if (currentAuth === "Owner") return true;
+
+        // Admin can see: Administration, Employee (NOT other Admins)
+        if (currentAuth === "Admin") {
+          return targetAuth === "Administration" || targetAuth === "Employee";
+        }
+
+        // Administration can see Employee only
+        if (currentAuth === "Administration") {
+          return targetAuth === "Employee";
+        }
+
+        // Employee can only see themselves (already handled above)
+        return false;
+      }
+
+      function canEditEmployee(employeeAuthority, employeeId) {
+        if (!currentUser) return false;
+
+        // Logged-in user cannot edit their own card - NO BUTTONS for self
+        if (currentUser.employee_id === employeeId) return false;
+
+        const currentAuth = currentUser.authority;
+        const targetAuth = employeeAuthority;
+
+        // Owner can edit everyone EXCEPT other Owners (same authority)
+        if (currentAuth === "Owner") {
+          // If target is also Owner, don't show edit/delete buttons
+          if (targetAuth === "Owner") {
+            return false;
+          }
+          return true;
+        }
+
+        // Admin can edit: Administration, Employee (NOT other Admins)
+        if (currentAuth === "Admin") {
+          return targetAuth === "Administration" || targetAuth === "Employee";
+        }
+
+        // Administration can edit Employee only
+        if (currentAuth === "Administration") {
+          return targetAuth === "Employee";
+        }
+
+        // Employee cannot edit others
+        return false;
+      }
+
       function openAddModal() {
-        editId = null; // ✅ important
-        clearForm(); // ✅ clear only for new
+        if (
+          currentUser.authority !== "Owner" &&
+          currentUser.authority !== "Admin"
+        ) {
+          alert("❌ You don't have permission to add employees");
+          return;
+        }
+        editId = null;
+        clearForm();
         openModal();
       }
+
       function openModal() {
         document.getElementById("modal").classList.remove("hidden");
         document.getElementById("modalTitle").textContent = editId
@@ -207,7 +292,6 @@
         }
       }
 
-      /* ✅ FETCH EMPLOYEES */
       async function fetchEmployees() {
         try {
           const res = await fetch(API);
@@ -225,6 +309,10 @@
           document.getElementById("salaryFilter")?.value || "";
 
         let filtered = employees.filter((emp) => {
+          if (!canAccessEmployee(emp.authority, emp.employee_id)) {
+            return false;
+          }
+
           const matchesSearch =
             (emp.employee_name || "").toLowerCase().includes(q) ||
             (emp.department || "").toLowerCase().includes(q) ||
@@ -247,6 +335,13 @@
           return matchesSearch && matchesSalary;
         });
 
+        // Sort: Owner first, then Admin, then Administration, then Employee
+        filtered.sort((a, b) => {
+          const orderA = authorityOrder[a.authority] || 5;
+          const orderB = authorityOrder[b.authority] || 5;
+          return orderA - orderB;
+        });
+
         container.innerHTML =
           filtered.length === 0
             ? `<p class="col-span-full text-center text-gray-500 py-10">No employees found</p>`
@@ -259,11 +354,14 @@
                         ? "bg-yellow-100 text-yellow-700"
                         : "bg-blue-100 text-blue-700";
 
+                  const canEdit = canEditEmployee(
+                    emp.authority,
+                    emp.employee_id,
+                  );
+                  const isSelf = currentUser?.employee_id === emp.employee_id;
+
                   return `
-           <div
-  onclick="goToProfile('${emp.employee_id}')"
-  class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition cursor-pointer"
->
+           <div onclick="goToProfile('${emp.employee_id}')" class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition cursor-pointer">
               <div class="flex justify-between mb-4">
                 <span class="text-xs font-bold bg-gray-100 px-3 py-1 rounded">
                   ${emp.employee_id}
@@ -280,42 +378,33 @@
                 <p><strong>Dept:</strong> ${emp.department}</p>
                 <p><strong>Salary:</strong> ₹${emp.salary}</p>
                 <p><strong>Authority:</strong>
-        <span class="px-2 py-1 rounded bg-purple-100 text-purple-700 text-xs">
-          ${emp.authority || "Employee"}
-        </span>
-      </p>
+                  <span class="px-2 py-1 rounded bg-purple-100 text-purple-700 text-xs">
+                    ${emp.authority || "Employee"}
+                  </span>
+                </p>
               </div>
 
               <div class="mt-5 pt-4 border-t text-xs text-gray-500">
-                Joined: ${
-                  emp.join_date
-                    ? new Date(emp.join_date).toLocaleDateString("en-CA")
-                    : "N/A"
-                }
+                Joined: ${emp.join_date ? new Date(emp.join_date).toLocaleDateString("en-CA") : "N/A"}
               </div>
 
-             <div class="mt-4 flex gap-2">
-  <button
-    onclick="event.stopPropagation(); editEmployee('${emp.employee_id}')"
-    class="flex-1 bg-yellow-100 text-yellow-700 py-2 rounded-lg text-sm font-semibold hover:bg-yellow-200"
-  >
-    Edit
-  </button>
-
-  <button
-    onclick="event.stopPropagation(); deleteEmployee('${emp.employee_id}')"
-    class="flex-1 bg-red-100 text-red-700 py-2 rounded-lg text-sm font-semibold hover:bg-red-200"
-  >
-    Delete
-  </button>
-</div>
-
+              <div class="mt-4 flex gap-2">
+                ${
+                  !isSelf && canEdit
+                    ? `
+                  <button onclick="event.stopPropagation(); editEmployee('${emp.employee_id}')" class="flex-1 bg-yellow-100 text-yellow-700 py-2 rounded-lg text-sm font-semibold hover:bg-yellow-200">Edit</button>
+                  <button onclick="event.stopPropagation(); deleteEmployee('${emp.employee_id}')" class="flex-1 bg-red-100 text-red-700 py-2 rounded-lg text-sm font-semibold hover:bg-red-200">Delete</button>
+                `
+                    : isSelf
+                      ? `<span class="flex-1 text-center text-gray-400 text-sm py-2"></span>`
+                      : `<span class="flex-1 text-center text-gray-400 text-sm py-2">No Access</span>`
+                }
+              </div>
             </div>`;
                 })
                 .join("");
       }
 
-      /* ✅ SAVE (CREATE + UPDATE) */
       async function saveEmployee() {
         const name = document.getElementById("name")?.value.trim();
         const email = document.getElementById("email")?.value.trim();
@@ -409,10 +498,14 @@
         }
       }
 
-      /* ✅ FIXED EDIT FUNCTION */
       function editEmployee(id) {
         const emp = employees.find((e) => e.employee_id === id);
         if (!emp) return;
+
+        if (!canEditEmployee(emp.authority, emp.employee_id)) {
+          alert("❌ You don't have permission to edit this employee");
+          return;
+        }
 
         editId = id;
         openModal();
@@ -444,8 +537,15 @@
         }
       }
 
-      /* ✅ DELETE */
       async function deleteEmployee(id) {
+        const emp = employees.find((e) => e.employee_id === id);
+        if (!emp) return;
+
+        if (!canEditEmployee(emp.authority, emp.employee_id)) {
+          alert("❌ You don't have permission to delete this employee");
+          return;
+        }
+
         if (!confirm("Delete this employee?")) return;
 
         try {
@@ -457,6 +557,7 @@
           alert("Delete failed");
         }
       }
+
       function goToProfile(id) {
         localStorage.setItem("profileFrom", window.location.pathname);
         window.location.href = `profile.html?id=${encodeURIComponent(id)}`;
@@ -467,11 +568,13 @@
           .querySelectorAll("#modal input")
           .forEach((i) => (i.value = ""));
         document.getElementById("mode").value = "";
+        document.getElementById("department").value = "";
+        document.getElementById("otherDept").classList.add("hidden");
       }
 
-      /* ✅ LOAD FROM API */
-      document.addEventListener("DOMContentLoaded", () => {
-        fetchEmployees();
+      document.addEventListener("DOMContentLoaded", async () => {
+        await loadCurrentUser();
+        await fetchEmployees();
         document.getElementById("main-content").classList.add("ready");
       });
     </script>
