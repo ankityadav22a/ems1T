@@ -1,0 +1,34 @@
+<service>
+	<id>emsbackendservice.exe</id>
+	<name>EMS Backend Service</name>
+	<description>Employee Management System - Backend API Server</description>
+	<executable>C:\Program Files\nodejs\node.exe</executable>
+	<argument>--harmony</argument>
+	<argument>--max-old-space-size=4096</argument>
+	<argument>C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js</argument>
+	<argument>--file</argument>
+	<argument>C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js</argument>
+	<argument>--scriptoptions=</argument>
+	<argument>--log</argument>
+	<argument>EMS Backend Service wrapper</argument>
+	<argument>--grow</argument>
+	<argument>0.25</argument>
+	<argument>--wait</argument>
+	<argument>1</argument>
+	<argument>--maxrestarts</argument>
+	<argument>3</argument>
+	<argument>--abortonerror</argument>
+	<argument>n</argument>
+	<argument>--stopparentfirst</argument>
+	<argument>undefined</argument>
+	<logmode>rotate</logmode>
+	<logpath>C:\Users\HP\OneDrive\Documents\GitHub\ems1T\logs</logpath>
+	<stoptimeout>30sec</stoptimeout>
+	<env name="NODE_ENV" value="production"/>
+	<serviceaccount>
+		<domain>LAPTOP-J4OULV6A</domain>
+		<user>LocalSystem</user>
+		<password></password>
+	</serviceaccount>
+	<workingdirectory>C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend</workingdirectory>
+</service>

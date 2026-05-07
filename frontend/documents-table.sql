@@ -2,6 +2,7 @@
 -- EMS Database Schema - Fixed Version
 -- Run this script in your 'test' database (public schema)
 -- =============================================
+
 CREATE TABLE IF NOT EXISTS employees (
     id SERIAL PRIMARY KEY,  -- ✅ NEW PRIMARY KEY
     employee_id VARCHAR UNIQUE NOT NULL,  -- ✅ frontend ID
@@ -16,6 +17,7 @@ CREATE TABLE IF NOT EXISTS employees (
     phone VARCHAR(20),
     address TEXT,
     about TEXT,
+    image_url VARCHAR(500),
     salary NUMERIC(10,2) CHECK (salary >= 0)
 );
 -- 🔍 Search by employee_id (login / lookup)
@@ -83,6 +85,7 @@ ON leaves(employee_ref, status);
 -- 🔗 Employee + date (history queries)
 CREATE INDEX IF NOT EXISTS idx_leaves_emp_date 
 ON leaves(employee_ref, from_date, to_date);
+
 CREATE TABLE IF NOT EXISTS payroll (
     id SERIAL PRIMARY KEY,
     employee_ref INT NOT NULL,  -- ✅ FIXED
@@ -139,6 +142,7 @@ CREATE TABLE IF NOT EXISTS documents (
     name VARCHAR(255) NOT NULL,
     type VARCHAR(100),
     employee VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     file_url TEXT UNIQUE    
 );
 

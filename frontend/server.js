@@ -1521,9 +1521,14 @@ app.delete("/api/clients/:id", async (req, res) => {
 });
 
 // IMPORTANT: Static files middleware LAST (after all API routes)
+// Change this line:
 app.use(express.static(path.join(__dirname, "public")));
-app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
+// To this (serving HTML files from frontend folder):
+app.use(express.static(path.join(__dirname))); // Serves HTML from frontend folder
+
+// And update uploads path:
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.listen(PORT, () => {
   console.log(`Server is running on port http://localhost:${PORT}`);
 });

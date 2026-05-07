@@ -1,0 +1,4 @@
+2026-05-06 16:47:13 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-06 16:47:13 - Started 225244
+2026-05-07 07:32:27 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-07 07:32:27 - Started 6596
