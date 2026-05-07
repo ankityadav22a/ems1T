@@ -1,2 +1,4 @@
 [dotenv@17.3.1] injecting env (7) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
 Server is running on port http://localhost:3000
+[dotenv@17.3.1] injecting env (7) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+Server is running on port http://localhost:3000
