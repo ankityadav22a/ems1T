@@ -2,11 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
     <title>Document Management | EMS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-
     <style>
+      /* smooth fade-in for content */
       #main-content {
         opacity: 0;
         transition: opacity 0.4s ease;
@@ -32,22 +35,63 @@
           background-position: -200% 0;
         }
       }
+
+      /* ----- CRITICAL FIX: Horizontal scroll for table on mobile ----- */
+      .table-responsive-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+        border-radius: 0.5rem;
+      }
+
+      /* ensure table doesn't break inside wrapper, maintain full min-width */
+      .document-table {
+        min-width: 640px; /* gives comfortable horizontal scroll before shrinking too much */
+        width: 100%;
+        white-space: nowrap; /* prevents cell content from wrapping (optional for action buttons) */
+      }
+
+      /* but we want action buttons and text to be readable, so slight adjustments */
+      .document-table td,
+      .document-table th {
+        white-space: normal; /* allow wrapping inside cells if needed, but min-width ensures scroll */
+        vertical-align: middle;
+      }
+
+      /* optional: improve action buttons layout on small screens while keeping scroll */
+      .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: nowrap;
+      }
+
+      /* fine-tune for very tiny devices: keep scrollbar visible for usability */
+      @media (max-width: 480px) {
+        .document-table {
+          min-width: 560px;
+        }
+        .p-4 {
+          padding: 0.75rem 0.75rem;
+        }
+      }
     </style>
   </head>
 
   <body class="bg-gray-100">
     <div id="nav-placeholder"></div>
 
-    <div id="main-content" class="md:ml-56 pt-20 p-8">
-      <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">Document Management</h1>
+    <div id="main-content" class="md:ml-56 pt-20 p-4 sm:p-6 md:p-8">
+      <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">
+          Document Management
+        </h1>
       </div>
 
       <div class="mb-6">
         <button
           id="uploadBtn"
           onclick="openDocumentModal()"
-          class="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 transition"
+          class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition shadow-sm"
         >
           + Upload Document
         </button>
@@ -59,42 +103,45 @@
           id="searchInput"
           onkeyup="searchDocument()"
           placeholder="Search by Document Name or ID..."
-          class="w-full p-3 pl-10 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 outline-none"
+          class="w-full p-3 pl-10 border rounded-xl shadow-sm focus:ring-2 focus:ring-blue-400 outline-none"
         />
         <span class="absolute left-3 top-3.5 text-gray-400">🔍</span>
       </div>
 
+      <!-- MAIN FIX: Responsive wrapper with horizontal scrollbar on mobile -->
       <div
-        class="bg-white rounded shadow overflow-hidden border border-gray-200"
+        class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden"
       >
-        <table class="w-full text-left">
-          <thead class="bg-gray-800 text-white">
-            <tr>
-              <th class="p-4">Document</th>
-              <th class="p-4">Type</th>
-              <th class="p-4">Employee</th>
-              <th class="p-4">Action</th>
-            </tr>
-          </thead>
-          <tbody id="documentTable" class="divide-y divide-gray-100"></tbody>
-        </table>
+        <div class="table-responsive-wrapper">
+          <table class="document-table w-full text-left border-collapse">
+            <thead class="bg-gray-800 text-white">
+              <tr>
+                <th class="p-4">Document</th>
+                <th class="p-4">Type</th>
+                <th class="p-4">Employee</th>
+                <th class="p-4">Action</th>
+              </tr>
+            </thead>
+            <tbody id="documentTable" class="divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
     <!-- Upload Modal -->
     <div
       id="documentModal"
-      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[70]"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[70] p-4"
     >
-      <div class="bg-white p-6 rounded shadow w-[90%] max-w-xl relative">
+      <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-xl relative">
         <button
           onclick="closeDocumentModal()"
-          class="absolute top-2 right-3 text-gray-500 hover:text-black text-xl"
+          class="absolute top-3 right-4 text-gray-500 hover:text-black text-xl font-bold transition"
         >
           ✖
         </button>
 
-        <h2 class="text-lg font-semibold mb-4 text-blue-900 border-b pb-2">
+        <h2 class="text-xl font-semibold mb-4 text-blue-900 border-b pb-2">
           Upload New Document
         </h2>
 
@@ -103,14 +150,14 @@
             id="docName"
             type="text"
             placeholder="Document Name"
-            class="border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+            class="border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
           />
 
           <div>
             <select
               id="category"
               onchange="checkOtherCategory()"
-              class="border p-2 rounded w-full bg-white"
+              class="border p-2 rounded-lg w-full bg-white"
             >
               <option>New Project</option>
               <option>Ongoing Project</option>
@@ -122,7 +169,7 @@
               id="otherCategory"
               type="text"
               placeholder="Enter Document Type"
-              class="border p-2 rounded mt-2 w-full hidden"
+              class="border p-2 rounded-lg mt-2 w-full hidden"
             />
           </div>
 
@@ -130,20 +177,20 @@
             id="employee"
             type="text"
             placeholder="Employee Name"
-            class="border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+            class="border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
           />
 
           <input
             id="fileUrl"
             type="url"
             placeholder="Enter file URL (cloud link)"
-            class="border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+            class="border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
           />
         </div>
 
         <button
           onclick="addDocument()"
-          class="mt-6 bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 transition w-full"
+          class="mt-6 bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition w-full shadow"
         >
           Upload Document
         </button>
@@ -153,19 +200,19 @@
     <!-- Duplicate Document Popup -->
     <div
       id="popupModal"
-      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[60]"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[60] p-4"
     >
-      <div class="bg-white w-[90%] md:w-[400px] rounded-xl shadow-2xl p-6">
+      <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6">
         <h2 class="text-xl font-bold text-red-600 mb-4 flex items-center gap-2">
           <span>⚠️</span> Document Already Exists
         </h2>
         <div
           id="popupContent"
-          class="text-gray-700 mb-6 bg-gray-50 p-3 rounded"
+          class="text-gray-700 mb-6 bg-gray-50 p-4 rounded-xl break-words"
         ></div>
         <button
           onclick="closePopup()"
-          class="bg-blue-600 text-white px-4 py-2 rounded-lg w-full font-bold hover:bg-blue-700"
+          class="bg-blue-600 text-white px-4 py-2 rounded-xl w-full font-bold hover:bg-blue-700 transition"
         >
           Close
         </button>
@@ -190,20 +237,22 @@
       }
 
       function openDocumentModal() {
-        document
-          .getElementById("documentModal")
-          .classList.replace("hidden", "flex");
+        const modal = document.getElementById("documentModal");
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
       }
+
       function applyAuthorityUI() {
-        if (currentUser.authority === "Employee") {
-          document.getElementById("uploadBtn").style.display = "none";
+        if (currentUser && currentUser.authority === "Employee") {
+          const uploadBtn = document.getElementById("uploadBtn");
+          if (uploadBtn) uploadBtn.style.display = "none";
         }
       }
 
       function closeDocumentModal() {
-        document
-          .getElementById("documentModal")
-          .classList.replace("flex", "hidden");
+        const modal = document.getElementById("documentModal");
+        modal.classList.remove("flex");
+        modal.classList.add("hidden");
       }
 
       function checkOtherCategory() {
@@ -259,6 +308,9 @@
           document.getElementById("employee").value = "";
           document.getElementById("fileUrl").value = "";
           document.getElementById("otherCategory").value = "";
+          document.getElementById("category").value = "New Project";
+          const otherCat = document.getElementById("otherCategory");
+          if (otherCat) otherCat.style.display = "none";
 
           alert("✅ Document uploaded successfully!");
         } catch (err) {
@@ -269,40 +321,61 @@
 
       function renderDocuments(data) {
         const tbody = document.getElementById("documentTable");
+        if (!tbody) return;
 
-        tbody.innerHTML = data.length
-          ? data
-              .map((d) => {
-                const canDelete = currentUser.authority !== "Employee";
+        if (!data.length) {
+          tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-400">No documents found.</td></tr>`;
+          return;
+        }
 
-                return `
-        <tr class="hover:bg-blue-50 transition">
-          <td class="p-4 font-medium">${d.name}</td>
-          <td class="p-4">
-            <span class="bg-gray-200 px-2 py-1 rounded text-xs uppercase font-bold">${d.type}</span>
-          </td>
-          <td class="p-4 text-gray-600">${d.employee}</td>
-          <td class="p-4 flex gap-2">
-            <button onclick="openDocument('${d.file_url.replace(/'/g, "\\'")}')" 
-              class="bg-green-500 text-white px-3 py-1 rounded shadow hover:bg-green-600">
-              Open
-            </button>
+        const canDelete = currentUser && currentUser.authority !== "Employee";
 
-            ${
-              canDelete
-                ? `<button onclick="deleteDocument(${d.id})"
-                    class="bg-red-500 text-white px-3 py-1 rounded shadow hover:bg-red-600">
-                    Delete
-                  </button>`
-                : ""
-            }
-          </td>
-        </tr>
-      `;
-              })
-              .join("")
-          : `<tr><td colspan="4" class="p-8 text-center text-gray-400">No documents found.</td></tr>`;
+        tbody.innerHTML = data
+          .map((d) => {
+            // Safely escape file_url for onclick to avoid breaking quotes
+            const safeFileUrl = d.file_url
+              ? d.file_url.replace(/'/g, "\\'")
+              : "#";
+            return `
+              <tr class="hover:bg-blue-50 transition duration-150">
+                <td class="p-4 font-medium text-gray-800 break-words">${escapeHtml(d.name)}</td>
+                <td class="p-4">
+                  <span class="bg-gray-200 px-2 py-1 rounded-lg text-xs uppercase font-semibold">${escapeHtml(d.type)}</span>
+                </td>
+                <td class="p-4 text-gray-600">${escapeHtml(d.employee)}</td>
+                <td class="p-4">
+                  <div class="action-buttons">
+                    <button onclick="openDocument('${safeFileUrl}')" 
+                      class="bg-green-500 text-white px-3 py-1.5 rounded-lg shadow hover:bg-green-600 transition text-sm font-medium">
+                      Open
+                    </button>
+                    ${
+                      canDelete
+                        ? `<button onclick="deleteDocument(${d.id})"
+                        class="bg-red-500 text-white px-3 py-1.5 rounded-lg shadow hover:bg-red-600 transition text-sm font-medium">
+                        Delete
+                      </button>`
+                        : ""
+                    }
+                  </div>
+                </td>
+              </tr>
+            `;
+          })
+          .join("");
       }
+
+      // Helper to prevent XSS
+      function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>]/g, function (m) {
+          if (m === "&") return "&amp;";
+          if (m === "<") return "&lt;";
+          if (m === ">") return "&gt;";
+          return m;
+        });
+      }
+
       async function deleteDocument(id) {
         if (!confirm("Delete this document?")) return;
 
@@ -325,32 +398,51 @@
           .value.toLowerCase();
         const filtered = documents.filter(
           (doc) =>
-            doc.name.toLowerCase().includes(input) ||
-            doc.employee.toLowerCase().includes(input),
+            (doc.name && doc.name.toLowerCase().includes(input)) ||
+            (doc.employee && doc.employee.toLowerCase().includes(input)),
         );
         renderDocuments(filtered);
       }
 
       function openDocument(url) {
+        if (!url || url === "#") {
+          alert("Invalid document link");
+          return;
+        }
         window.open(url, "_blank", "noopener,noreferrer");
       }
 
       function showPopup(doc) {
-        document.getElementById("popupContent").innerHTML = `
-        <p><strong>Name:</strong> ${doc.name}</p>
-        <p><strong>Employee:</strong> ${doc.employee}</p>
-        <p class="mt-2 text-xs text-blue-600 break-all">${doc.file_url}</p>
-      `;
-        document
-          .getElementById("popupModal")
-          .classList.replace("hidden", "flex");
+        const popupContent = document.getElementById("popupContent");
+        if (popupContent) {
+          popupContent.innerHTML = `
+            <p class="mb-2"><strong class="text-gray-800">Name:</strong> ${escapeHtml(doc.name)}</p>
+            <p class="mb-2"><strong class="text-gray-800">Employee:</strong> ${escapeHtml(doc.employee)}</p>
+            <p class="mt-2 text-xs text-blue-700 break-all"><strong>File URL:</strong> ${escapeHtml(doc.file_url)}</p>
+          `;
+        }
+        const modal = document.getElementById("popupModal");
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
       }
 
       function closePopup() {
-        document
-          .getElementById("popupModal")
-          .classList.replace("flex", "hidden");
+        const modal = document.getElementById("popupModal");
+        modal.classList.remove("flex");
+        modal.classList.add("hidden");
       }
+
+      // Additional touch for iOS safe areas & ensure modals handle escape key
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          if (
+            document.getElementById("documentModal").classList.contains("flex")
+          )
+            closeDocumentModal();
+          if (document.getElementById("popupModal").classList.contains("flex"))
+            closePopup();
+        }
+      });
 
       document.addEventListener("DOMContentLoaded", async () => {
         try {
@@ -362,15 +454,20 @@
           if (!res.ok) throw new Error("Not logged in");
 
           currentUser = await res.json();
+          console.log("Logged in user:", currentUser);
 
-          console.log("Logged in user:", currentUser); // 🔍 debug
-
-          applyAuthorityUI(); // 🔥 next step
+          applyAuthorityUI(); // hide upload for employees
 
           // Load documents
-          fetchDocuments();
+          await fetchDocuments();
 
           document.getElementById("main-content").classList.add("ready");
+
+          // Additional: reflow check for scroll wrapper consistency (minor)
+          const wrapper = document.querySelector(".table-responsive-wrapper");
+          if (wrapper && wrapper.scrollWidth > wrapper.clientWidth) {
+            // ensures scroll is visible if needed; no extra action.
+          }
         } catch (err) {
           console.error(err);
           alert("Session expired, please login again");

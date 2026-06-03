@@ -286,25 +286,19 @@
       <div
         class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden"
       >
-        <!-- Top Bar -->
         <div class="h-2 bg-blue-600 w-full"></div>
-
-        <!-- Scrollable Content -->
         <div class="flex-1 overflow-y-auto p-6 md:p-8">
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <!-- LEFT SIDE -->
             <div class="lg:col-span-7">
               <div class="flex items-center gap-3 mb-2 flex-wrap">
                 <span
                   id="modalStatusBadge"
                   class="px-3 py-1 rounded-full text-xs font-black uppercase"
                 ></span>
-
                 <h2
                   id="modalTitle"
                   class="text-2xl md:text-3xl font-black text-slate-900"
                 ></h2>
-
                 <button
                   onclick="editProject()"
                   class="ml-auto bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1 rounded text-xs font-bold"
@@ -324,7 +318,6 @@
                 >
                 <div id="modalClientId" class="font-black"></div>
               </div>
-
               <p
                 id="modalDuration"
                 class="text-blue-600 font-bold text-sm mb-4"
@@ -333,7 +326,6 @@
               <h3 class="text-sm font-bold text-slate-400 uppercase mb-2">
                 Roadmap & Timeline
               </h3>
-
               <div class="bg-slate-50 p-3 rounded-xl mb-4 h-[220px]">
                 <canvas id="roadmapChart"></canvas>
               </div>
@@ -341,7 +333,6 @@
               <h3 class="text-sm font-bold text-slate-400 uppercase mb-2">
                 Project Brief
               </h3>
-
               <p id="modalDesc" class="text-slate-600 mb-4"></p>
               <div class="mb-4">
                 <h3 class="text-sm font-bold text-slate-400 uppercase mb-2">
@@ -352,7 +343,6 @@
                   class="text-xs bg-slate-800 text-white p-3 rounded-lg font-mono"
                 ></p>
               </div>
-
               <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <div class="bg-slate-50 p-3 rounded-xl">
                   <span class="text-[10px] text-slate-400 font-bold"
@@ -360,14 +350,12 @@
                   >
                   <div id="modalBudget" class="font-black"></div>
                 </div>
-
                 <div class="bg-slate-50 p-3 rounded-xl">
                   <span class="text-[10px] text-slate-400 font-bold"
                     >Staff</span
                   >
                   <div id="modalEmpReq" class="font-black"></div>
                 </div>
-
                 <div class="bg-slate-50 p-3 rounded-xl">
                   <span class="text-[10px] text-slate-400 font-bold"
                     >Progress</span
@@ -380,7 +368,6 @@
               </div>
             </div>
 
-            <!-- RIGHT SIDE -->
             <div class="lg:col-span-5 space-y-4">
               <div>
                 <h3 class="text-sm font-bold text-slate-400 uppercase mb-2">
@@ -391,7 +378,6 @@
                   class="space-y-2 max-h-40 overflow-y-auto"
                 ></div>
               </div>
-
               <div>
                 <h3 class="text-sm font-bold text-slate-400 uppercase mb-2">
                   Team
@@ -401,8 +387,6 @@
                   class="space-y-2 max-h-40 overflow-y-auto"
                 ></div>
               </div>
-
-              <!-- Expenses Summary -->
               <div class="border-t border-slate-100 pt-4">
                 <div class="flex justify-between items-center mb-2">
                   <label
@@ -508,7 +492,6 @@
           const res = await fetch("/api/projects");
           if (!res.ok) throw new Error("Failed to load projects");
           const data = await res.json();
-
           projects = data.map((p) => ({
             id: p.project_id,
             name: p.project_name,
@@ -532,7 +515,6 @@
                 }))
               : [],
           }));
-
           renderProjects();
         } catch (err) {
           console.error(err);
@@ -543,10 +525,7 @@
       function formatDate(dateStr) {
         if (!dateStr) return "N/A";
         const d = new Date(dateStr);
-        const day = String(d.getDate()).padStart(2, "0");
-        const month = String(d.getMonth() + 1).padStart(2, "0");
-        const year = d.getFullYear();
-        return `${day}-${month}-${year}`;
+        return `${d.getDate().toString().padStart(2, "0")}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getFullYear()}`;
       }
 
       function calculateProgress(tasks) {
@@ -564,25 +543,20 @@
         const min = parseInt(document.getElementById("minBudget")?.value) || 0;
         const max =
           parseInt(document.getElementById("maxBudget")?.value) || Infinity;
-
-        const filtered = projects.filter((p) => {
-          const matchesSearch =
-            p.name.toLowerCase().includes(q) ||
-            (p.client_id || "").toLowerCase().includes(q);
-
-          const matchesBudget = p.budget >= min && p.budget <= max;
-
-          return matchesSearch && matchesBudget;
-        });
+        const filtered = projects.filter(
+          (p) =>
+            (p.name.toLowerCase().includes(q) ||
+              (p.client_id || "").toLowerCase().includes(q)) &&
+            p.budget >= min &&
+            p.budget <= max,
+        );
         const grid = document.getElementById("projectGrid");
         let totalPortfolioSpent = 0;
-
         grid.innerHTML = filtered
           .map((p) => {
             const progress = calculateProgress(p.tasks);
             const spent = p.bills.reduce((acc, b) => acc + (b.cost || 0), 0);
             totalPortfolioSpent += spent;
-
             const status = calculateProjectStatus(p.tasks) || "Upcoming";
             const statusTheme =
               {
@@ -590,40 +564,17 @@
                 Complete: "bg-emerald-100 text-emerald-700",
                 Halted: "bg-rose-100 text-rose-700",
               }[status] || "bg-blue-100 text-blue-700";
-
-            return `
-                <div onclick="openProject('${p.name.replace(/'/g, "\\'")}')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer group">
-                  <div class="flex justify-between items-start mb-6">
-                    <div class="${statusTheme} px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter">${status}</div>
-                    <div class="text-[10px] font-bold text-slate-400 uppercase">#${p.priority} Priority</div>
-                  </div>
-                  <h3 class="text-xl font-black text-slate-800 mb-2 group-hover:text-blue-600 transition-colors">${p.name}</h3>
-                  <p class="text-xs text-slate-400 mb-6 line-clamp-2">${p.description || ""}</p>
-                  <div class="space-y-4 mb-6">
-                    <div class="flex justify-between text-[11px] font-bold uppercase tracking-widest text-slate-500">
-                      <span>Utilization</span>
-                      <span class="text-slate-800">$${spent} <span class="text-slate-300">/ $${p.budget}</span></span>
-                    </div>
-                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                      <div class="bg-blue-600 h-full transition-all duration-700" style="width:${progress}%"></div>
-                    </div>
-                  </div>
-                  <div class="flex justify-between items-center border-t border-slate-50 pt-4">
-                    <div class="flex -space-x-2">
-                      ${p.employees
-                        .slice(0, 4)
-                        .map(
-                          (e) =>
-                            `<div class="w-7 h-7 rounded-full bg-slate-200 border-2 border-white flex items-center justify-center text-[10px] font-bold">${(e || "?")[0]}</div>`,
-                        )
-                        .join("")}
-                    </div>
-                    <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">${progress}% Ready</span>
-                  </div>
-                </div>`;
+            return `<div onclick="openProject('${p.name.replace(/'/g, "\\'")}')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer group"><div class="flex justify-between items-start mb-6"><div class="${statusTheme} px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter">${status}</div><div class="text-[10px] font-bold text-slate-400 uppercase">#${p.priority} Priority</div></div><h3 class="text-xl font-black text-slate-800 mb-2 group-hover:text-blue-600 transition-colors">${p.name}</h3><p class="text-xs text-slate-400 mb-6 line-clamp-2">${p.description || ""}</p><div class="space-y-4 mb-6"><div class="flex justify-between text-[11px] font-bold uppercase tracking-widest text-slate-500"><span>Utilization</span><span class="text-slate-800">$${spent} <span class="text-slate-300">/ $${p.budget}</span></span></div><div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div class="bg-blue-600 h-full transition-all duration-700" style="width:${progress}%"></div></div></div><div class="flex justify-between items-center border-t border-slate-50 pt-4"><div class="flex -space-x-2">${p.employees
+              .slice(0, 4)
+              .map(
+                (e) =>
+                  `<div class="w-7 h-7 rounded-full bg-slate-200 border-2 border-white flex items-center justify-center text-[10px] font-bold">${(e || "?")[0]}</div>`,
+              )
+              .join(
+                "",
+              )}</div><span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">${progress}% Ready</span></div></div>`;
           })
           .join("");
-
         document.getElementById("portfolioCost").innerText =
           totalPortfolioSpent.toLocaleString();
       }
@@ -632,13 +583,8 @@
         const modal = document.getElementById("createProjectModal");
         modal.classList.toggle("hidden");
         modal.classList.toggle("flex");
-
-        // Reset form when closing
-        if (modal.classList.contains("hidden")) {
-          resetCreateForm();
-        }
+        if (modal.classList.contains("hidden")) resetCreateForm();
       }
-
       function resetCreateForm() {
         isEditing = false;
         editingProjectId = null;
@@ -659,80 +605,44 @@
         document.getElementById("empInputsContainer").innerHTML = "";
         document.getElementById("expenseInputsContainer").innerHTML = "";
       }
-
       function addTaskRow(data = null) {
         const container = document.getElementById("taskInputsContainer");
         const div = document.createElement("div");
         div.className = "task-row flex gap-2";
-        div.innerHTML = `
-              <input type="text" placeholder="Task Name" class="flex-grow border p-2 rounded-lg bg-slate-50 text-xs t-name" value="${data ? data.title || data.name || "" : ""}">
-              <input type="date" class="w-32 border p-2 rounded-lg bg-slate-50 text-xs t-date" value="${data ? formatDateForInput(data.deadline) : ""}">
-              <select class="w-28 border p-2 rounded-lg bg-slate-50 text-xs t-status">
-                <option value="Upcoming" ${data?.status === "Upcoming" ? "selected" : ""}>Upcoming</option>
-                <option value="Ongoing" ${data?.status === "Ongoing" ? "selected" : ""}>Ongoing</option>
-                <option value="Complete" ${data?.status === "Complete" ? "selected" : ""}>Complete</option>
-              </select>
-              <button onclick="this.parentElement.remove()" class="text-rose-500 hover:bg-rose-50 px-2 rounded-lg">✕</button>
-            `;
+        div.innerHTML = `<input type="text" placeholder="Task Name" class="flex-grow border p-2 rounded-lg bg-slate-50 text-xs t-name" value="${data ? data.title || data.name || "" : ""}"><input type="date" class="w-32 border p-2 rounded-lg bg-slate-50 text-xs t-date" value="${data ? formatDateForInput(data.deadline) : ""}"><select class="w-28 border p-2 rounded-lg bg-slate-50 text-xs t-status"><option value="Upcoming" ${data?.status === "Upcoming" ? "selected" : ""}>Upcoming</option><option value="Ongoing" ${data?.status === "Ongoing" ? "selected" : ""}>Ongoing</option><option value="Complete" ${data?.status === "Complete" ? "selected" : ""}>Complete</option></select><button onclick="this.parentElement.remove()" class="text-rose-500 hover:bg-rose-50 px-2 rounded-lg">✕</button>`;
         container.appendChild(div);
       }
-
       function formatDateForInput(dateStr) {
         if (!dateStr) return "";
         return new Date(dateStr).toISOString().split("T")[0];
       }
-
       function addEmpRow(data = null) {
         const container = document.getElementById("empInputsContainer");
         const div = document.createElement("div");
         div.className = "emp-row flex gap-2";
-        div.innerHTML = `
-          <input
-            type="text"
-            placeholder="Employee ID"
-            class="w-40 border p-2 rounded-lg bg-white text-xs e-id"
-            value="${data ? data.employee_id || data.id || "" : ""}"
-            onblur="fetchEmployeeName(this)"
-          />
-          <span class="flex-grow p-2 text-xs font-bold text-blue-600 e-name">
-            ${data ? data.employee_name || data.name || "" : ""}
-          </span>
-          <input
-            type="text"
-            placeholder="Work/Role"
-            class="w-28 border p-2 rounded-lg bg-white text-xs e-pos"
-            value="${data ? data.work || "" : ""}"
-          />
-          <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-500 px-1">✕</button>
-        `;
+        div.innerHTML = `<input type="text" placeholder="Employee ID" class="w-40 border p-2 rounded-lg bg-white text-xs e-id" value="${data ? data.employee_id || data.id || "" : ""}" onblur="fetchEmployeeName(this)"/><span class="flex-grow p-2 text-xs font-bold text-blue-600 e-name">${data ? data.employee_name || data.name || "" : ""}</span><input type="text" placeholder="Work/Role" class="w-28 border p-2 rounded-lg bg-white text-xs e-pos" value="${data ? data.work || "" : ""}"/><button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-rose-500 px-1">✕</button>`;
         container.appendChild(div);
       }
-
       async function fetchEmployeeName(input) {
         const empId = input.value.trim();
         if (!empId) return;
-
         const row = input.closest(".emp-row");
         const nameField = row.querySelector(".e-name");
-
         try {
           const res = await fetch(`/api/employees/${empId}`);
-          if (!res.ok) throw new Error("Employee not found");
+          if (!res.ok) throw new Error();
           const data = await res.json();
           nameField.innerText = data.employee_name || data.name || "Not Found";
         } catch (err) {
           nameField.innerText = "Not Found";
-          console.error("Employee fetch failed:", err);
         }
       }
-
       async function addNewProject() {
         const name = document.getElementById("newProjName").value.trim();
         if (!name) {
           alert("Project name is required!");
           return;
         }
-
         const client_id = document
           .getElementById("newProjClientId")
           .value.trim();
@@ -743,7 +653,6 @@
         const startDate = document.getElementById("newProjStart").value;
         const deadlineDate = document.getElementById("newProjDeadline").value;
         const resources = document.getElementById("newProjResources").value;
-
         const tasks = Array.from(document.querySelectorAll(".task-row")).map(
           (row) => ({
             title: row.querySelector(".t-name").value,
@@ -751,23 +660,19 @@
             status: row.querySelector(".t-status").value,
           }),
         );
-
         const team = Array.from(document.querySelectorAll(".emp-row"))
           .filter((row) => row.querySelector(".e-id").value.trim())
           .map((row) => ({
             employee_id: row.querySelector(".e-id").value.trim(),
             work: row.querySelector(".e-pos").value,
           }));
-
         const expenses = Array.from(
           document.querySelectorAll(".expense-row"),
         ).map((row) => ({
           name: row.querySelector(".ex-name").value,
           cost: parseFloat(row.querySelector(".ex-cost").value) || 0,
         }));
-
         const projectStatus = calculateProjectStatus(tasks);
-
         const payload = {
           project_name: name,
           priority,
@@ -782,36 +687,27 @@
           expenses,
           client_id: client_id || null,
         };
-
         try {
           let res;
-          if (isEditing && editingProjectId) {
+          if (isEditing && editingProjectId)
             res = await fetch(`/api/projects/${editingProjectId}`, {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(payload),
             });
-          } else {
+          else
             res = await fetch("/api/projects", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(payload),
             });
-          }
-
-          if (!res.ok) {
-            const errorData = await res.json().catch(() => ({}));
-            throw new Error(errorData.error || `HTTP error ${res.status}`);
-          }
-
+          if (!res.ok) throw new Error();
           toggleCreateModal();
           await loadProjectsFromDB();
         } catch (err) {
-          console.error(err);
-          alert("❌ Project saving error:\n" + err.message);
+          alert("❌ Project saving error");
         }
       }
-
       function calculateProjectStatus(tasks) {
         if (!tasks || tasks.length === 0) return "Upcoming";
         const allComplete = tasks.every((t) => t.status === "Complete");
@@ -820,17 +716,13 @@
         if (anyOngoing) return "Ongoing";
         return "Upcoming";
       }
-
       function editProject() {
         const p = projects.find((proj) => proj.name === activeProjectName);
         if (!p) return;
-
         closeModal();
         toggleCreateModal();
-
         isEditing = true;
         editingProjectId = p.id;
-
         document.getElementById("createModalTitle").innerText = "Edit Project";
         document.getElementById("submitProjectBtn").innerText = "Save Changes";
         document.getElementById("newProjName").value = p.name;
@@ -845,12 +737,8 @@
           p.deadline,
         );
         document.getElementById("newProjResources").value = p.resources || "";
-
-        // Clear and repopulate tasks
         document.getElementById("taskInputsContainer").innerHTML = "";
         (p.tasks || []).forEach((t) => addTaskRow(t));
-
-        // Clear and repopulate team
         document.getElementById("empInputsContainer").innerHTML = "";
         (p.team || []).forEach((emp) =>
           addEmpRow({
@@ -859,8 +747,6 @@
             work: emp.work,
           }),
         );
-
-        // Clear and repopulate expenses
         const expenseContainer = document.getElementById(
           "expenseInputsContainer",
         );
@@ -874,28 +760,15 @@
         activeProjectName = name;
         const p = projects.find((proj) => proj.name === name);
         if (!p) return;
-
-        // Show/hide delete button based on user authority
         const deleteBtn = document.getElementById("deleteProjectBtn");
-        if (deleteBtn) {
-          if (canDeleteProject()) {
-            deleteBtn.style.display = "inline-block";
-          } else {
-            deleteBtn.style.display = "none";
-          }
-        }
-
-        const badge = document.getElementById("modalStatusBadge");
+        if (deleteBtn)
+          deleteBtn.style.display = canDeleteProject()
+            ? "inline-block"
+            : "none";
         const status = calculateProjectStatus(p.tasks) || "Upcoming";
+        const badge = document.getElementById("modalStatusBadge");
         badge.innerText = status;
-        badge.className = `px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
-          status === "Ongoing"
-            ? "bg-amber-100 text-amber-700"
-            : status === "Complete"
-              ? "bg-emerald-100 text-emerald-700"
-              : "bg-blue-100 text-blue-700"
-        }`;
-
+        badge.className = `px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${status === "Ongoing" ? "bg-amber-100 text-amber-700" : status === "Complete" ? "bg-emerald-100 text-emerald-700" : "bg-blue-100 text-blue-700"}`;
         document.getElementById("modalTitle").innerText = p.name;
         document.getElementById("modalClientId").innerText =
           p.client_id || "N/A";
@@ -908,52 +781,30 @@
           `$${p.budget.toLocaleString()}`;
         document.getElementById("modalResources").innerText =
           p.resources || "No resources listed";
-
         const progress = calculateProgress(p.tasks);
         document.getElementById("modalProgressText").innerText = `${progress}%`;
-
         document.getElementById("modalTasks").innerHTML = (p.tasks || [])
           .map(
-            (t) => `
-              <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
-                <span class="text-sm font-bold text-slate-700">${t.title}</span>
-                <span class="text-[10px] font-black uppercase px-2 py-1 rounded ${t.status === "Complete" ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-500"}">${t.status}</span>
-              </div>
-            `,
+            (t) =>
+              `<div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100"><span class="text-sm font-bold text-slate-700">${t.title}</span><span class="text-[10px] font-black uppercase px-2 py-1 rounded ${t.status === "Complete" ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-500"}">${t.status}</span></div>`,
           )
           .join("");
-
         document.getElementById("modalEmployees").innerHTML = (p.team || [])
           .filter((emp) => emp && emp.employee_id)
           .map(
-            (emp) => `
-              <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
-                <div>
-                  <span class="text-sm font-bold text-slate-700">${emp.employee_name || "Unknown"}</span>
-                  <span class="text-xs text-slate-400 ml-2">${emp.employee_id || ""}</span>
-                </div>
-                <span class="text-[10px] font-black uppercase px-2 py-1 rounded bg-blue-100 text-blue-700">
-                  ${emp.work || "No Role"}
-                </span>
-              </div>
-            `,
+            (emp) =>
+              `<div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100"><div><span class="text-sm font-bold text-slate-700">${emp.employee_name || "Unknown"}</span><span class="text-xs text-slate-400 ml-2">${emp.employee_id || ""}</span></div><span class="text-[10px] font-black uppercase px-2 py-1 rounded bg-blue-100 text-blue-700">${emp.work || "No Role"}</span></div>`,
           )
           .join("");
-
         const spent = p.bills.reduce((acc, b) => acc + (b.cost || 0), 0);
         document.getElementById("modalBillsList").innerHTML = (p.bills || [])
           .map(
-            (b) => `
-              <tr class="border-b border-slate-50">
-                <td class="py-2 text-slate-600">${b.desc || b.name || "N/A"}</td>
-                <td class="py-2 text-right font-bold text-slate-800">$${b.cost || 0}</td>
-              </tr>
-            `,
+            (b) =>
+              `<tr class="border-b border-slate-50"><td class="py-2 text-slate-600">${b.desc || b.name || "N/A"}</td><td class="py-2 text-right font-bold text-slate-800">$${b.cost || 0}</td></tr>`,
           )
           .join("");
         document.getElementById("modalTotalSpent").innerText =
           `$${spent.toLocaleString()}`;
-
         initChart(p);
         document
           .getElementById("projectModal")
@@ -962,174 +813,51 @@
 
       async function deleteProject() {
         if (!canDeleteProject()) {
-          alert("❌ You don't have permission to delete projects");
+          alert("❌ No permission");
           return;
         }
-        if (!confirm("Delete this project?")) return;
-
+        if (!confirm("Delete project?")) return;
         const p = projects.find((proj) => proj.name === activeProjectName);
         if (!p) return;
-
         try {
-          const res = await fetch(`/api/projects/${p.id}`, {
-            method: "DELETE",
-          });
-          if (!res.ok) throw new Error("Delete failed");
-
+          await fetch(`/api/projects/${p.id}`, { method: "DELETE" });
           closeModal();
           await loadProjectsFromDB();
         } catch (err) {
-          console.error(err);
-          alert("Failed to delete project: " + err.message);
+          alert("Failed to delete");
         }
-      }
-
-      function initChart(project) {
-        const ctx = document.getElementById("roadmapChart").getContext("2d");
-        if (roadmapChart) roadmapChart.destroy();
-
-        const sortedTasks = [...project.tasks].sort((a, b) => {
-          const order = { Complete: 1, Ongoing: 2, Upcoming: 3 };
-          return order[a.status] - order[b.status];
-        });
-
-        const labels = ["Start", ...sortedTasks.map((t) => t.title)];
-        const step = 100 / (sortedTasks.length || 1);
-        let cumulative = 0;
-
-        const dataValues = [
-          0,
-          ...sortedTasks.map((t) => {
-            if (t.status === "Complete") {
-              cumulative += step;
-            } else if (t.status === "Ongoing") {
-              cumulative += step / 2;
-            }
-            return cumulative;
-          }),
-        ];
-
-        roadmapChart = new Chart(ctx, {
-          type: "line",
-          data: {
-            labels: labels,
-            datasets: [
-              {
-                data: dataValues,
-                borderWidth: 5,
-                fill: false,
-                tension: 0.4,
-                pointRadius: 6,
-                pointHoverRadius: 8,
-                pointBackgroundColor: "#fff",
-                pointBorderWidth: 3,
-                borderColor: (context) => {
-                  const chart = context.chart;
-                  const { ctx, chartArea } = chart;
-                  if (!chartArea) return "#0ea5e9";
-                  const gradient = ctx.createLinearGradient(
-                    chartArea.left,
-                    0,
-                    chartArea.right,
-                    0,
-                  );
-                  gradient.addColorStop(0, "#10b981");
-                  gradient.addColorStop(0.5, "#0ea5e9");
-                  gradient.addColorStop(1, "#ef4444");
-                  return gradient;
-                },
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                enabled: true,
-                mode: "index",
-                intersect: false,
-                callbacks: {
-                  label: function (context) {
-                    const index = context.dataIndex - 1;
-                    if (index < 0) return "Project Start";
-                    const currentTask = sortedTasks[index];
-                    return [
-                      `Current: ${currentTask.title}`,
-                      `Progress: ${context.raw}%`,
-                      `Deadline: ${formatDate(currentTask.deadline) || "N/A"}`,
-                    ];
-                  },
-                },
-              },
-            },
-            scales: {
-              y: {
-                min: 0,
-                max: 100,
-                ticks: {
-                  stepSize: 100 / (sortedTasks.length || 1),
-                  callback: (value) => Math.round(value) + "%",
-                  font: { size: 10, weight: "bold" },
-                },
-                grid: { color: "#f1f5f9" },
-              },
-              x: {
-                grid: { display: false },
-                ticks: {
-                  font: { size: 10, weight: "bold" },
-                },
-              },
-            },
-          },
-        });
       }
 
       function addExpenseRow(data = null) {
         const container = document.getElementById("expenseInputsContainer");
         if (!container) return;
-
         const div = document.createElement("div");
         div.className = "expense-row flex gap-2";
-        div.innerHTML = `
-          <input type="text" placeholder="Expense Name"
-            class="flex-grow border p-2 rounded-lg bg-slate-50 text-xs ex-name"
-            value="${data ? data.desc || data.name || "" : ""}">
-          <input type="number" placeholder="Cost"
-            class="w-28 border p-2 rounded-lg bg-slate-50 text-xs ex-cost"
-            value="${data ? data.cost || "" : ""}">
-          <button onclick="this.parentElement.remove()" class="text-rose-500 px-2">✕</button>
-        `;
+        div.innerHTML = `<input type="text" placeholder="Expense Name" class="flex-grow border p-2 rounded-lg bg-slate-50 text-xs ex-name" value="${data ? data.desc || data.name || "" : ""}"><input type="number" placeholder="Cost" class="w-28 border p-2 rounded-lg bg-slate-50 text-xs ex-cost" value="${data ? data.cost || "" : ""}"><button onclick="this.parentElement.remove()" class="text-rose-500 px-2">✕</button>`;
         container.appendChild(div);
       }
-
       function showBillPopup() {
         document
           .getElementById("billPopup")
           .classList.replace("hidden", "flex");
       }
-
       function hideBillPopup() {
         document
           .getElementById("billPopup")
           .classList.replace("flex", "hidden");
       }
-
       function closeModal() {
         document
           .getElementById("projectModal")
           .classList.replace("flex", "hidden");
       }
-
       function submitBill() {
         const desc = document.getElementById("billName").value;
         const cost = parseFloat(document.getElementById("billAmount").value);
         if (!desc || !cost) {
-          alert("Please enter both description and amount");
+          alert("Enter description & amount");
           return;
         }
-
         const p = projects.find((proj) => proj.name === activeProjectName);
         if (p) {
           p.bills.push({ desc, cost });
@@ -1141,7 +869,183 @@
         document.getElementById("billAmount").value = "";
       }
 
-      // Initialize
+      // FIXED: Chart with proper progress display
+      // Complete tasks: show actual cumulative progress from graph
+      // Ongoing tasks: show actual cumulative progress from graph
+      // Upcoming tasks: show 0%
+      function initChart(project) {
+        const ctx = document.getElementById("roadmapChart").getContext("2d");
+        if (roadmapChart) roadmapChart.destroy();
+
+        const tasks = project.tasks || [];
+        if (tasks.length === 0) {
+          roadmapChart = new Chart(ctx, {
+            type: "line",
+            data: {
+              labels: ["Start"],
+              datasets: [
+                {
+                  data: [0],
+                  borderColor: "#94a3b8",
+                  borderWidth: 3,
+                  pointRadius: 5,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                tooltip: { callbacks: { label: () => "No tasks defined" } },
+              },
+            },
+          });
+          return;
+        }
+
+        // Sort tasks by status order: Complete, Ongoing, Upcoming
+        const sortedTasks = [...tasks].sort((a, b) => {
+          const order = { Complete: 1, Ongoing: 2, Upcoming: 3 };
+          return order[a.status] - order[b.status];
+        });
+
+        const labels = [
+          "Start",
+          ...sortedTasks.map((t) =>
+            t.title.length > 22 ? t.title.slice(0, 19) + "..." : t.title,
+          ),
+        ];
+        const step = 100 / (sortedTasks.length || 1);
+        let cumulative = 0;
+        const dataPoints = [0];
+
+        for (let i = 0; i < sortedTasks.length; i++) {
+          const task = sortedTasks[i];
+          let increment = 0;
+          if (task.status === "Complete") increment = step;
+          else if (task.status === "Ongoing") increment = step / 2;
+          else increment = 0;
+          cumulative += increment;
+          dataPoints.push(cumulative);
+        }
+
+        // Store task progress values for tooltip
+        const taskProgressValues = [...dataPoints];
+
+        // Create segment colors based on the RIGHT point's status (the task at index i+1)
+        const segmentColors = [];
+        for (let i = 0; i < sortedTasks.length; i++) {
+          const task = sortedTasks[i];
+          if (task.status === "Complete") segmentColors.push("#10b981");
+          else if (task.status === "Ongoing") segmentColors.push("#3b82f6");
+          else segmentColors.push("#ef4444");
+        }
+
+        // Build dataset with segment styling
+        const dataset = {
+          data: dataPoints,
+          borderWidth: 4,
+          fill: false,
+          tension: 0.3,
+          pointRadius: 6,
+          pointHoverRadius: 9,
+          pointBackgroundColor: "#ffffff",
+          pointBorderWidth: 3,
+          segment: {
+            borderColor: (ctx) => {
+              const index = ctx.p0DataIndex;
+              if (index >= 0 && index < segmentColors.length) {
+                return segmentColors[index];
+              }
+              return "#94a3b8";
+            },
+          },
+        };
+
+        // Add point border colors matching task status
+        dataset.pointBorderColor = (ctx) => {
+          const index = ctx.dataIndex;
+          if (index === 0) return "#eab308";
+          const task = sortedTasks[index - 1];
+          if (!task) return "#94a3b8";
+          if (task.status === "Complete") return "#10b981";
+          if (task.status === "Ongoing") return "#3b82f6";
+          return "#ef4444";
+        };
+
+        roadmapChart = new Chart(ctx, {
+          type: "line",
+          data: { labels: labels, datasets: [dataset] },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                enabled: true,
+                mode: "index",
+                intersect: false,
+                callbacks: {
+                  label: function (context) {
+                    const index = context.dataIndex;
+                    if (index === 0) return "🚀 Project Start: 0%";
+                    const task = sortedTasks[index - 1];
+                    if (!task) return "";
+
+                    // Get actual progress from graph data
+                    let taskProgress = Math.round(taskProgressValues[index]);
+
+                    // For Upcoming tasks, show 0%
+                    if (task.status === "Upcoming") {
+                      taskProgress = 0;
+                    }
+                    // For Complete and Ongoing tasks, show actual cumulative progress
+
+                    const statusIcon =
+                      task.status === "Complete"
+                        ? "✅"
+                        : task.status === "Ongoing"
+                          ? "⚡"
+                          : "⏳";
+                    return [
+                      `📋 ${task.title}`,
+                      `📊 Progress: ${taskProgress}%`,
+                      `📅 Deadline: ${formatDate(task.deadline) || "N/A"}`,
+                      `🏷️ Status: ${statusIcon} ${task.status}`,
+                    ];
+                  },
+                },
+              },
+            },
+            scales: {
+              y: {
+                min: 0,
+                max: 100,
+                title: {
+                  display: true,
+                  text: "Completion %",
+                  font: { size: 10, weight: "bold" },
+                },
+                ticks: {
+                  stepSize: 20,
+                  callback: (value) => Math.round(value) + "%",
+                  font: { size: 9 },
+                },
+                grid: { color: "#e2e8f0" },
+              },
+              x: {
+                grid: { display: false },
+                ticks: {
+                  font: { size: 9, weight: "bold" },
+                  maxRotation: 35,
+                  minRotation: 30,
+                },
+              },
+            },
+          },
+        });
+      }
+
       document.addEventListener("DOMContentLoaded", async () => {
         await loadCurrentUser();
         await loadProjectsFromDB();

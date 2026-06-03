@@ -2,3 +2,221 @@
 2026-05-06 16:47:13 - Started 225244
 2026-05-07 07:32:27 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
 2026-05-07 07:32:27 - Started 6596
+2026-05-08 09:23:12 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-08 09:23:13 - Started 6660
+2026-05-08 09:58:06 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-08 09:58:06 - Started 6508
+2026-05-08 09:59:06 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-08 09:59:06 - Started 6688
+2026-05-08 11:37:55 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-08 11:37:55 - Started 6896
+2026-05-09 21:25:26 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-09 21:25:26 - Started 7068
+2026-05-10 21:34:26 - Stopping emsbackendservice.exe
+2026-05-10 21:34:26 - ProcessKill 7068
+2026-05-10 21:34:26 - Shutdown exception
+Message:Class not registered
+
+Stacktrace:   at System.Runtime.InteropServices.Marshal.ThrowExceptionForHRInternal(Int32 errorCode, IntPtr errorInfo)
+   at System.Management.ManagementScope.InitializeGuts(Object o)
+   at System.Management.ManagementScope.Initialize()
+   at System.Management.ManagementObjectSearcher.Initialize()
+   at System.Management.ManagementObjectSearcher.Get()
+   at winsw.WrapperService.GetChildPids(Int32 pid)
+   at winsw.WrapperService.StopProcessAndChildren(Int32 pid)
+   at winsw.WrapperService.StopIt()
+   at winsw.WrapperService.OnShutdown()
+2026-05-10 21:35:09 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-10 21:35:09 - Started 8308
+2026-05-11 12:13:29 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-11 12:13:29 - Started 7344
+2026-05-12 10:01:58 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-12 10:01:58 - Started 6592
+2026-05-13 03:11:25 - Stopping emsbackendservice.exe
+2026-05-13 03:11:25 - ProcessKill 6592
+2026-05-13 03:11:25 - Shutdown exception
+Message:A system shutdown is in progress.
+
+Stacktrace:   at System.Runtime.InteropServices.Marshal.ThrowExceptionForHRInternal(Int32 errorCode, IntPtr errorInfo)
+   at System.Management.ManagementScope.InitializeGuts(Object o)
+   at System.Management.ManagementScope.Initialize()
+   at System.Management.ManagementObjectSearcher.Initialize()
+   at System.Management.ManagementObjectSearcher.Get()
+   at winsw.WrapperService.GetChildPids(Int32 pid)
+   at winsw.WrapperService.StopProcessAndChildren(Int32 pid)
+   at winsw.WrapperService.StopIt()
+   at winsw.WrapperService.OnShutdown()
+2026-05-13 03:12:09 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-13 03:12:09 - Started 8464
+2026-05-13 03:13:02 - Stopping emsbackendservice.exe
+2026-05-13 03:13:02 - ProcessKill 8464
+2026-05-13 03:13:02 - Shutdown exception
+Message:Class not registered
+
+Stacktrace:   at System.Runtime.InteropServices.Marshal.ThrowExceptionForHRInternal(Int32 errorCode, IntPtr errorInfo)
+   at System.Management.ManagementScope.InitializeGuts(Object o)
+   at System.Management.ManagementScope.Initialize()
+   at System.Management.ManagementObjectSearcher.Initialize()
+   at System.Management.ManagementObjectSearcher.Get()
+   at winsw.WrapperService.GetChildPids(Int32 pid)
+   at winsw.WrapperService.StopProcessAndChildren(Int32 pid)
+   at winsw.WrapperService.StopIt()
+   at winsw.WrapperService.OnShutdown()
+2026-05-13 03:13:36 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-13 03:13:36 - Started 7896
+2026-05-13 03:13:45 - Stopping emsbackendservice.exe
+2026-05-13 03:13:45 - ProcessKill 7896
+2026-05-13 03:13:46 - Shutdown exception
+Message:Class not registered
+
+Stacktrace:   at System.Runtime.InteropServices.Marshal.ThrowExceptionForHRInternal(Int32 errorCode, IntPtr errorInfo)
+   at System.Management.ManagementScope.InitializeGuts(Object o)
+   at System.Management.ManagementScope.Initialize()
+   at System.Management.ManagementObjectSearcher.Initialize()
+   at System.Management.ManagementObjectSearcher.Get()
+   at winsw.WrapperService.GetChildPids(Int32 pid)
+   at winsw.WrapperService.StopProcessAndChildren(Int32 pid)
+   at winsw.WrapperService.StopIt()
+   at winsw.WrapperService.OnShutdown()
+2026-05-13 03:14:22 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-13 03:14:22 - Started 7948
+2026-05-13 03:14:31 - Stopping emsbackendservice.exe
+2026-05-13 03:14:31 - ProcessKill 7948
+2026-05-13 03:14:31 - Shutdown exception
+Message:Class not registered
+
+Stacktrace:   at System.Runtime.InteropServices.Marshal.ThrowExceptionForHRInternal(Int32 errorCode, IntPtr errorInfo)
+   at System.Management.ManagementScope.InitializeGuts(Object o)
+   at System.Management.ManagementScope.Initialize()
+   at System.Management.ManagementObjectSearcher.Initialize()
+   at System.Management.ManagementObjectSearcher.Get()
+   at winsw.WrapperService.GetChildPids(Int32 pid)
+   at winsw.WrapperService.StopProcessAndChildren(Int32 pid)
+   at winsw.WrapperService.StopIt()
+   at winsw.WrapperService.OnShutdown()
+2026-05-13 09:31:59 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-13 09:31:59 - Started 8276
+2026-05-14 10:05:26 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-14 10:05:26 - Started 6568
+2026-05-16 09:05:08 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-16 09:05:08 - Started 6784
+2026-05-18 03:59:55 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-18 03:59:55 - Started 6676
+2026-05-21 10:10:43 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-21 10:10:43 - Started 6560
+2026-05-21 23:46:44 - Stopping emsbackendservice.exe
+2026-05-21 23:46:44 - ProcessKill 6560
+2026-05-21 23:46:45 - Shutdown exception
+Message:Class not registered
+
+Stacktrace:   at System.Runtime.InteropServices.Marshal.ThrowExceptionForHRInternal(Int32 errorCode, IntPtr errorInfo)
+   at System.Management.ManagementScope.InitializeGuts(Object o)
+   at System.Management.ManagementScope.Initialize()
+   at System.Management.ManagementObjectSearcher.Initialize()
+   at System.Management.ManagementObjectSearcher.Get()
+   at winsw.WrapperService.GetChildPids(Int32 pid)
+   at winsw.WrapperService.StopProcessAndChildren(Int32 pid)
+   at winsw.WrapperService.StopIt()
+   at winsw.WrapperService.OnShutdown()
+2026-05-21 23:47:19 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-21 23:47:19 - Started 7044
+2026-05-22 09:49:47 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-22 09:49:47 - Started 7196
+2026-05-23 11:34:04 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-23 11:34:04 - Started 7144
+2026-05-23 13:56:22 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-23 13:56:22 - Started 6968
+2026-05-24 10:32:20 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-24 10:32:20 - Started 7048
+2026-05-24 10:34:08 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-24 10:34:08 - Started 6804
+2026-05-24 12:32:36 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-24 12:32:36 - Started 6608
+2026-05-24 14:33:31 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-24 14:33:31 - Started 6300
+2026-05-24 14:37:01 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-24 14:37:01 - Started 6792
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             2026-05-24 14:42:12 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-24 14:42:12 - Started 6920
+2026-05-24 14:47:36 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-24 14:47:36 - Started 6596
+2026-05-24 15:00:56 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-24 15:00:56 - Started 6624
+2026-05-24 16:44:21 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-24 16:44:21 - Started 6720
+2026-05-24 16:45:45 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-24 16:45:45 - Started 6448
+2026-05-24 21:37:20 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-24 21:37:20 - Started 6672
+2026-05-24 21:38:49 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-24 21:38:49 - Started 6656
+2026-05-24 21:47:01 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-24 21:47:01 - Started 6888
+2026-05-24 22:04:10 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-24 22:04:10 - Started 6892
+2026-05-24 22:25:00 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-24 22:25:00 - Started 6904
+2026-05-24 22:34:52 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-24 22:34:52 - Started 6744
+2026-05-24 22:50:47 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-24 22:50:47 - Started 6980
+2026-05-25 10:03:27 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-25 10:03:27 - Started 6516
+2026-05-25 10:04:25 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-25 10:04:25 - Started 7492
+2026-05-25 10:10:20 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-25 10:10:20 - Started 7340
+2026-05-25 10:31:07 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-25 10:31:07 - Started 7280
+2026-05-25 10:42:48 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-25 10:42:48 - Started 6404
+2026-05-29 10:55:52 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-29 10:55:52 - Started 7148
+2026-05-29 10:56:37 - Stopping emsbackendservice.exe
+2026-05-29 10:56:37 - ProcessKill 7148
+2026-05-29 10:56:37 - Shutdown exception
+Message:A system shutdown is in progress.
+
+Stacktrace:   at System.Runtime.InteropServices.Marshal.ThrowExceptionForHRInternal(Int32 errorCode, IntPtr errorInfo)
+   at System.Management.ManagementScope.InitializeGuts(Object o)
+   at System.Management.ManagementScope.Initialize()
+   at System.Management.ManagementObjectSearcher.Initialize()
+   at System.Management.ManagementObjectSearcher.Get()
+   at winsw.WrapperService.GetChildPids(Int32 pid)
+   at winsw.WrapperService.StopProcessAndChildren(Int32 pid)
+   at winsw.WrapperService.StopIt()
+   at winsw.WrapperService.OnShutdown()
+2026-05-29 10:57:12 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-29 10:57:12 - Started 7192
+2026-05-29 10:57:25 - Stopping emsbackendservice.exe
+2026-05-29 10:57:25 - ProcessKill 7192
+2026-05-29 10:57:25 - Shutdown exception
+Message:A system shutdown is in progress.
+
+Stacktrace:   at System.Runtime.InteropServices.Marshal.ThrowExceptionForHRInternal(Int32 errorCode, IntPtr errorInfo)
+   at System.Management.ManagementScope.InitializeGuts(Object o)
+   at System.Management.ManagementScope.Initialize()
+   at System.Management.ManagementObjectSearcher.Initialize()
+   at System.Management.ManagementObjectSearcher.Get()
+   at winsw.WrapperService.GetChildPids(Int32 pid)
+   at winsw.WrapperService.StopProcessAndChildren(Int32 pid)
+   at winsw.WrapperService.StopIt()
+   at winsw.WrapperService.OnShutdown()
+2026-05-29 10:57:59 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-29 10:57:59 - Started 6896
+2026-05-29 10:58:15 - Stopping emsbackendservice.exe
+2026-05-29 10:58:15 - ProcessKill 6896
+2026-05-29 10:58:15 - Shutdown exception
+Message:A system shutdown is in progress.
+
+Stacktrace:   at System.Runtime.InteropServices.Marshal.ThrowExceptionForHRInternal(Int32 errorCode, IntPtr errorInfo)
+   at System.Management.ManagementScope.InitializeGuts(Object o)
+   at System.Management.ManagementScope.Initialize()
+   at System.Management.ManagementObjectSearcher.Initialize()
+   at System.Management.ManagementObjectSearcher.Get()
+   at winsw.WrapperService.GetChildPids(Int32 pid)
+   at winsw.WrapperService.StopProcessAndChildren(Int32 pid)
+   at winsw.WrapperService.StopIt()
+   at winsw.WrapperService.OnShutdown()
+2026-05-29 10:58:51 - Starting C:\Program Files\nodejs\node.exe  --harmony --max-old-space-size=4096 C:\Users\HP\OneDrive\Documents\GitHub\ems1T\node_modules\node-windows\lib\wrapper.js --file C:\Users\HP\OneDrive\Documents\GitHub\ems1T\frontend\server.js --scriptoptions= --log "EMS Backend Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2026-05-29 10:58:52 - Started 8196

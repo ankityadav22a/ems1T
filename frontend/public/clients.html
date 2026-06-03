@@ -2,11 +2,12 @@
 <html lang="en" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Clients</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Clients | EMS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Anti-FOUC / flash prevention (exact same as Notice page) -->
     <style>
       #main-content {
         opacity: 0;
@@ -33,30 +34,186 @@
           background-position: -200% 0;
         }
       }
+
+      /* Mobile responsive fixes for modals & buttons */
+      @media (max-width: 640px) {
+        /* View modal - better spacing & button stacking */
+        .view-modal-header {
+          flex-direction: column !important;
+          align-items: flex-start !important;
+          gap: 1rem !important;
+        }
+        .view-modal-actions {
+          width: 100%;
+          justify-content: space-between !important;
+          flex-wrap: wrap;
+        }
+        .view-modal-actions button {
+          flex: 1;
+          justify-content: center;
+          font-size: 0.85rem;
+          padding: 0.5rem 0.75rem;
+        }
+        /* Project items - stack actions vertically on very small screens if needed */
+        .project-item {
+          flex-direction: column !important;
+          align-items: stretch !important;
+        }
+        .project-actions {
+          justify-content: flex-end !important;
+          margin-top: 0.75rem !important;
+        }
+        /* Modal width & internal scroll */
+        #viewModal > div {
+          max-width: 95%;
+          margin: 0 auto;
+        }
+        .modal-project-list {
+          padding-left: 1rem;
+          padding-right: 1rem;
+        }
+      }
+
+      /* Better touch targets for buttons */
+      button {
+        touch-action: manipulation;
+      }
+
+      /* Ensure project action buttons have enough spacing */
+      .project-actions button {
+        min-width: 44px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Prevent modal overflow on landscape */
+      #viewModal .bg-white {
+        max-height: 95vh;
+      }
+
+      /* ===== EXTRA LARGE CLOSE/CROSS BUTTON - Desktop ===== */
+      .close-modal-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        font-size: 40px;
+        font-weight: 400;
+        line-height: 1;
+        border-radius: 9999px;
+        transition: all 0.2s ease;
+        background-color: transparent;
+        color: #6b7280;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+
+      .close-modal-btn:hover {
+        background-color: #f3f4f6;
+        color: #1f2937;
+      }
+
+      /* ===== MASSIVE CROSS BUTTON ON MOBILE - Much Larger! ===== */
+      @media (max-width: 640px) {
+        .close-modal-btn {
+          width: 46px !important;
+          height: 46px !important;
+          font-size: 48px !important;
+        }
+      }
+
+      /* View modal close button - desktop size */
+      .view-header-close {
+        width: 52px;
+        height: 52px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        font-weight: 400;
+        border-radius: 9999px;
+        transition: all 0.2s ease;
+        background: transparent;
+        color: #6b7280;
+        line-height: 1;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+
+      .view-header-close:hover {
+        background-color: #f3f4f6;
+        color: #374151;
+      }
+
+      /* ===== EXTRA MASSIVE CROSS BUTTON ON MOBILE - Very Large & Easy to Tap ===== */
+      @media (max-width: 640px) {
+        .view-header-close {
+          width: 46px !important;
+          height: 46px !important;
+          font-size: 48px !important;
+          background-color: rgba(0, 0, 0, 0.05) !important;
+        }
+        .view-header-close:active {
+          background-color: rgba(0, 0, 0, 0.15) !important;
+          transform: scale(0.96);
+        }
+      }
+
+      /* Also ensure form modal close button is extra large on mobile */
+      @media (max-width: 640px) {
+        #formModal .close-modal-btn {
+          width: 46px !important;
+          height: 46px !important;
+          font-size: 48px !important;
+        }
+      }
+
+      /* Prevent any accidental text selection on buttons */
+      button,
+      .close-modal-btn,
+      .view-header-close {
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      /* Make close button stand out more on mobile with a subtle background */
+      @media (max-width: 640px) {
+        .close-modal-btn {
+          background-color: rgba(0, 0, 0, 0.04);
+          border-radius: 50%;
+        }
+        .close-modal-btn:active {
+          background-color: rgba(0, 0, 0, 0.12);
+          transform: scale(0.96);
+        }
+      }
     </style>
   </head>
 
   <body class="bg-gray-100 font-sans">
-    <!-- Layout injection point -->
     <div id="nav-placeholder"></div>
 
-    <!-- Main content – hidden until ready -->
     <div
       id="main-content"
-      class="md:ml-56 pt-20 p-6 transition-all duration-300"
+      class="md:ml-56 pt-20 p-4 sm:p-6 transition-all duration-300"
     >
       <div
         class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8"
       >
         <div>
-          <h1 class="text-3xl font-extrabold text-gray-900">Clients</h1>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900">
+            Clients
+          </h1>
           <p class="text-gray-500 text-sm mt-1">
             Manage client relationships and project history
           </p>
         </div>
         <button
           onclick="openNewClientForm()"
-          class="bg-blue-600 text-white px-6 py-3 rounded-xl shadow-md hover:bg-blue-700 transition-all font-semibold whitespace-nowrap"
+          class="bg-blue-600 text-white px-5 py-2.5 rounded-xl shadow-md hover:bg-blue-700 transition-all font-semibold whitespace-nowrap text-sm sm:text-base"
         >
           + Register New Client
         </button>
@@ -67,84 +224,88 @@
           id="search"
           onkeyup="renderCards()"
           placeholder="Search by ID, Name, Company or Location..."
-          class="p-3.5 rounded-xl border border-gray-300 w-full max-w-md outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+          class="p-3 rounded-xl border border-gray-300 w-full max-w-md outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
         />
       </div>
 
-      <!-- Card grid with immediate skeletons -->
       <div
         id="cardContainer"
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6"
       >
-        <!-- Skeleton placeholders (shown instantly) -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-          <div class="flex items-start gap-5 animate-pulse">
-            <div class="bg-gray-200 w-20 h-20 rounded-2xl"></div>
+        <!-- Skeletons -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+          <div class="flex items-start gap-4 animate-pulse">
+            <div class="bg-gray-200 w-16 h-16 rounded-2xl"></div>
             <div class="flex-1 space-y-3">
-              <div class="skeleton h-7 w-4/5 rounded"></div>
-              <div class="skeleton h-5 w-3/5 rounded"></div>
-              <div class="skeleton h-4 w-2/3 rounded"></div>
+              <div class="skeleton h-6 w-4/5 rounded"></div>
+              <div class="skeleton h-4 w-3/5 rounded"></div>
+              <div class="skeleton h-3 w-2/3 rounded"></div>
             </div>
           </div>
-          <div class="mt-6 border-t pt-4">
-            <div class="skeleton h-12 w-full rounded-xl"></div>
-          </div>
-        </div>
-        <!-- Repeat skeleton 2 more times -->
-        <div
-          class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 hidden sm:block"
-        >
-          <div class="flex items-start gap-5 animate-pulse">
-            <div class="bg-gray-200 w-20 h-20 rounded-2xl"></div>
-            <div class="flex-1 space-y-3">
-              <div class="skeleton h-7 w-4/5 rounded"></div>
-              <div class="skeleton h-5 w-3/5 rounded"></div>
-              <div class="skeleton h-4 w-2/3 rounded"></div>
-            </div>
-          </div>
-          <div class="mt-6 border-t pt-4">
-            <div class="skeleton h-12 w-full rounded-xl"></div>
+          <div class="mt-5 border-t pt-3">
+            <div class="skeleton h-10 w-full rounded-xl"></div>
           </div>
         </div>
         <div
-          class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 hidden lg:block"
+          class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 hidden sm:block"
         >
-          <div class="flex items-start gap-5 animate-pulse">
-            <div class="bg-gray-200 w-20 h-20 rounded-2xl"></div>
+          <div class="flex items-start gap-4 animate-pulse">
+            <div class="bg-gray-200 w-16 h-16 rounded-2xl"></div>
             <div class="flex-1 space-y-3">
-              <div class="skeleton h-7 w-4/5 rounded"></div>
-              <div class="skeleton h-5 w-3/5 rounded"></div>
-              <div class="skeleton h-4 w-2/3 rounded"></div>
+              <div class="skeleton h-6 w-4/5 rounded"></div>
+              <div class="skeleton h-4 w-3/5 rounded"></div>
+              <div class="skeleton h-3 w-2/3 rounded"></div>
             </div>
           </div>
-          <div class="mt-6 border-t pt-4">
-            <div class="skeleton h-12 w-full rounded-xl"></div>
+          <div class="mt-5 border-t pt-3">
+            <div class="skeleton h-10 w-full rounded-xl"></div>
+          </div>
+        </div>
+        <div
+          class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 hidden lg:block"
+        >
+          <div class="flex items-start gap-4 animate-pulse">
+            <div class="bg-gray-200 w-16 h-16 rounded-2xl"></div>
+            <div class="flex-1 space-y-3">
+              <div class="skeleton h-6 w-4/5 rounded"></div>
+              <div class="skeleton h-4 w-3/5 rounded"></div>
+              <div class="skeleton h-3 w-2/3 rounded"></div>
+            </div>
+          </div>
+          <div class="mt-5 border-t pt-3">
+            <div class="skeleton h-10 w-full rounded-xl"></div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- New Client / Add Project Modal -->
+    <!-- New Client / Edit / Add Project Modal -->
     <div
       id="formModal"
-      class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-[80] p-4 backdrop-blur-sm"
+      class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-[80] p-3 sm:p-4 backdrop-blur-sm"
     >
       <div
-        class="bg-white p-7 sm:p-8 rounded-2xl w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto"
+        class="bg-white p-5 sm:p-7 rounded-2xl w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto"
       >
-        <h2
-          id="modalTitle"
-          class="text-xl font-bold mb-6 text-gray-800 border-b pb-4"
-        >
-          Client Registration
-        </h2>
+        <div class="flex justify-between items-center border-b pb-3 mb-4">
+          <h2 id="modalTitle" class="text-xl font-bold text-gray-800">
+            Client Registration
+          </h2>
+          <button
+            onclick="closeForm()"
+            class="close-modal-btn"
+            aria-label="Close"
+          >
+            ✖
+          </button>
+        </div>
         <input id="targetClientId" type="hidden" />
         <input id="editProjectIdx" type="hidden" />
 
         <div class="space-y-5">
           <div id="clientInfoFields" class="space-y-4">
-            <div class="flex gap-3">
-              <div class="w-1/3">
+            <div class="flex flex-col sm:flex-row gap-3">
+              <div class="sm:w-1/3">
                 <label
                   class="text-xs font-bold text-gray-500 uppercase tracking-tight"
                   >System ID</label
@@ -223,7 +384,8 @@
           </div>
 
           <div
-            id="projectFields" class="bg-blue-50/70 p-5 rounded-xl border border-blue-100 space-y-4"
+            id="projectFields"
+            class="bg-blue-50/70 p-5 rounded-xl border border-blue-100 space-y-4"
           >
             <h3
               class="text-xs font-bold text-blue-700 uppercase tracking-wider"
@@ -268,25 +430,25 @@
                 class="border p-2.5 rounded-lg w-full text-sm"
               />
               <input
-  id="shortDescription"
-  type="text"
-  placeholder="Short Description"
-  class="border p-2.5 rounded-lg w-full text-sm bg-white"
-/>
+                id="shortDescription"
+                type="text"
+                placeholder="Short Description"
+                class="border p-2.5 rounded-lg w-full text-sm bg-white"
+              />
             </div>
           </div>
         </div>
 
-        <div class="mt-8 flex justify-end gap-4">
+        <div class="mt-7 flex flex-col sm:flex-row justify-end gap-3">
           <button
             onclick="closeForm()"
-            class="px-6 py-2.5 text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition"
+            class="px-5 py-2.5 text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition"
           >
             Cancel
           </button>
           <button
             onclick="saveData()"
-            class="bg-blue-600 text-white px-8 py-2.5 rounded-lg shadow hover:bg-blue-700 font-semibold transition"
+            class="bg-blue-600 text-white px-6 py-2.5 rounded-lg shadow hover:bg-blue-700 font-semibold transition"
           >
             Save
           </button>
@@ -294,76 +456,119 @@
       </div>
     </div>
 
-    <!-- View Client Modal -->
+    <!-- View Client Modal - MASSIVE CROSS BUTTON for mobile -->
     <div
       id="viewModal"
-      class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-[70] p-4 backdrop-blur-sm"
+      class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-[70] p-3 sm:p-4 backdrop-blur-sm"
     >
-     <div
-     class="bg-white rounded-2xl w-full max-w-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
-     <!-- HEADER -->
-     <div class="flex justify-between items-start border-b p-6">
-       <div class="flex gap-5 items-center">
+      <div
+        class="bg-white rounded-2xl w-full max-w-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
+      >
+        <!-- HEADER: responsive with MASSIVE close button -->
         <div
-          id="v_projCount_big"
-           class="bg-blue-600 text-white w-16 h-16 rounded-xl flex flex-col items-center justify-center shadow-md">
-           <span class="text-2xl font-black" id="v_count">0</span>
-           <span class="text-[9px] uppercase font-bold mt-0.5">
-             Projects
-           </span>
+          class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b p-5 sm:p-6"
+        >
+          <div class="flex gap-4 items-center w-full sm:w-auto">
+            <div
+              id="v_projCount_big"
+              class="bg-blue-600 text-white w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex flex-col items-center justify-center shadow-md flex-shrink-0"
+            >
+              <span class="text-xl sm:text-2xl font-black" id="v_count">0</span>
+              <span class="text-[8px] sm:text-[9px] uppercase font-bold mt-0.5"
+                >Projects</span
+              >
+            </div>
+            <div class="min-w-0 flex-1">
+              <h2
+                id="v_name"
+                class="text-xl sm:text-2xl font-extrabold text-gray-900 truncate"
+              ></h2>
+              <p
+                id="v_company"
+                class="text-blue-600 font-semibold text-sm mt-0.5 truncate"
+              ></p>
+              <p id="v_contact" class="text-xs text-gray-500 mt-1 truncate"></p>
+            </div>
+          </div>
+
+          <!-- ACTION BUTTONS with MASSIVE X BUTTON on mobile -->
+          <div
+            class="flex flex-wrap gap-3 w-full sm:w-auto justify-start sm:justify-end items-center view-modal-actions"
+          >
+            <button
+              id="deleteClientBtn"
+              onclick="deleteClient()"
+              class="bg-red-100 text-red-700 px-4 py-2.5 rounded-lg text-sm font-bold hover:bg-red-200 transition flex items-center gap-1.5 shadow-sm"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
+              Delete
+            </button>
+            <button
+              onclick="editClientDetails()"
+              class="bg-yellow-100 text-yellow-700 px-4 py-2.5 rounded-lg text-sm font-bold hover:bg-yellow-200 transition flex items-center gap-1.5 shadow-sm"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                />
+              </svg>
+              Edit
+            </button>
+            <!-- MASSIVE X BUTTON - 70x70 on mobile with 62px font! -->
+            <button
+              onclick="closeView()"
+              class="view-header-close"
+              aria-label="Close modal"
+            >
+              &times;
+            </button>
+          </div>
         </div>
 
-        <div>
-          <h2
-            id="v_name"
-            class="text-2xl font-extrabold text-gray-900"
-           ></h2>
-           <p id="v_company" class="text-blue-600 font-semibold mt-0.5"></p>
-            <p id="v_contact" class="text-sm text-gray-500 mt-1"></p>
-         </div>
-      </div>
-      
-
-       <!-- RIGHT ACTIONS -->
-      <div class="flex gap-3">
-        <button id="deleteClientBtn" onclick="deleteClient()" class="bg-red-100 text-red-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-200">
-         Delete Client
-         </button>
-        <button
-          onclick="editClientDetails()"
-          class="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-yellow-200">
-          Edit
-        </button>
-
-        <button
-          onclick="closeView()"
-          class="text-gray-400 hover:text-gray-600 text-3xl leading-none"
+        <!-- ACTION BAR -->
+        <div
+          class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 px-5 py-4 border-b bg-gray-50"
         >
-          &times;
-        </button>
+          <h3
+            class="text-sm font-extrabold text-gray-800 uppercase tracking-tight"
+          >
+            📁 Projects
+          </h3>
+          <button
+            id="addProjBtn"
+            class="bg-gray-800 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-600 transition text-center"
+          >
+            + New Project
+          </button>
+        </div>
+
+        <!-- SCROLLABLE PROJECT LIST -->
+        <div
+          id="projectList"
+          class="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4 modal-project-list"
+        ></div>
       </div>
     </div>
-
-    <!-- ACTION BAR -->
-    <div class="flex justify-between items-center px-6 py-4 border-b">
-      <h3 class="text-sm font-extrabold text-gray-800 uppercase tracking-tight">
-       Projects
-      </h3>
-
-       <button
-         id="addProjBtn"
-         class="bg-gray-800 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-blue-600 transition"
-         >
-          + New Project
-       </button>
-     </div>
-
-     <!-- SCROLLABLE CONTENT -->
-    <div
-      id="projectList"
-      class="flex-1 overflow-y-auto px-6 py-4 space-y-4"
-    ></div>
-  </div>
 
     <script src="load-layout.js"></script>
     <script>
@@ -384,18 +589,21 @@
 
       function canDeleteClient() {
         if (!currentUser) return false;
-        return currentUser.authority === "Owner" || currentUser.authority === "Admin";
+        return (
+          currentUser.authority === "Owner" || currentUser.authority === "Admin"
+        );
       }
 
       async function loadClients() {
-  try {
-    const res = await fetch("/api/clients");
-    clients = await res.json();
-    renderCards();
-  } catch (err) {
-    console.error("Fetch clients error:", err);
-  }
-}
+        try {
+          const res = await fetch("/api/clients");
+          clients = await res.json();
+          renderCards();
+        } catch (err) {
+          console.error("Fetch clients error:", err);
+        }
+      }
+
       function renderCards() {
         const container = document.getElementById("cardContainer");
         const q = document.getElementById("search").value.toLowerCase().trim();
@@ -412,28 +620,27 @@
           filtered.length === 0
             ? `<div class="col-span-full py-16 text-center text-gray-500 italic">No clients found matching your search.</div>`
             : filtered
-               .map(
-                 (c) => `
+                .map(
+                  (c) => `
                  <div onclick="viewClientProjects('${c.id}')"
-                    class="bg-white p-6 rounded-2xl shadow border border-gray-200 hover:shadow-xl hover:border-blue-200 transition-all duration-300 group cursor-pointer">
+                    class="bg-white p-5 rounded-2xl shadow border border-gray-200 hover:shadow-xl hover:border-blue-200 transition-all duration-300 group cursor-pointer">
 
                     <div class="flex justify-end mb-2">
-                        <span class="text-xs bg-gray-100 text-gray-600 font-bold px-3 py-1 rounded-full uppercase tracking-tight">${c.id}</span>
+                        <span class="text-xs bg-gray-100 text-gray-600 font-bold px-3 py-1 rounded-full uppercase tracking-tight">${escapeHtml(c.id)}</span>
                      </div>
 
-                   <div class="flex items-start gap-5">
-                     <div class="bg-blue-50 text-blue-700 w-20 h-20 rounded-2xl flex flex-col items-center justify-center border border-blue-100 flex-shrink-0">
-                      <span class="text-3xl font-black">${c.projects.length}</span>
-                      <span class="text-[10px] font-bold uppercase mt-1 tracking-wide">Projects</span>
+                   <div class="flex items-start gap-4">
+                     <div class="bg-blue-50 text-blue-700 w-16 h-16 rounded-2xl flex flex-col items-center justify-center border border-blue-100 flex-shrink-0">
+                      <span class="text-2xl font-black">${c.projects.length}</span>
+                      <span class="text-[9px] font-bold uppercase mt-1 tracking-wide">Projects</span>
                     </div>
 
                      <div class="flex-1 min-w-0">
-                        <h2 class="text-xl font-extrabold text-gray-900 truncate">${c.name}</h2>
-                        <p class="text-blue-600 font-semibold text-sm mt-0.5">${c.company}</p>
-                        <p class="text-xs text-gray-500 mt-2">${c.location}</p>
+                        <h2 class="text-lg sm:text-xl font-extrabold text-gray-900 truncate">${escapeHtml(c.name)}</h2>
+                        <p class="text-blue-600 font-semibold text-sm mt-0.5 truncate">${escapeHtml(c.company)}</p>
+                        <p class="text-xs text-gray-500 mt-2 truncate">${escapeHtml(c.location)}</p>
                        </div>
                    </div>
-
                 </div>
           `,
                 )
@@ -447,64 +654,62 @@
       function viewClientProjects(clientId) {
         const c = clients.find((cl) => cl.id === clientId);
         if (!c) return;
-         currentClientId = clientId; 
+        currentClientId = clientId;
         document.getElementById("v_name").textContent = c.name;
         document.getElementById("v_company").textContent = c.company;
         document.getElementById("v_count").textContent = c.projects.length;
         document.getElementById("v_contact").textContent =
-          ` ${c.location} | ${c.email} | ${c.phone} `;
+          `${c.location} | ${c.email} | ${c.phone}`;
 
         document.getElementById("addProjBtn").onclick = () =>
           openAddProjectOnly(clientId);
-        
-        // Show/hide delete button based on user authority
+
         const deleteBtn = document.getElementById("deleteClientBtn");
         if (deleteBtn) {
-          if (canDeleteClient()) {
-            deleteBtn.style.display = "inline-block";
-          } else {
-            deleteBtn.style.display = "none";
-          }
+          deleteBtn.style.display = canDeleteClient() ? "inline-flex" : "none";
         }
 
         const list = document.getElementById("projectList");
-        list.innerHTML =
-          c.projects
-            .map((p, idx) => {
-              const colors = {
-                Completed: "bg-green-100 text-green-700 border-green-200",
-                Ongoing: "bg-blue-100  text-blue-700 border-blue-200",
-                "Not Started": "bg-gray-100  text-gray-600 border-gray-200",
-                Pending: "bg-yellow-100 text-yellow-700 border-yellow-200",
-              };
-              return `
-            <div class="p-5 rounded-xl border ${colors[p.status] || "border-gray-200"} bg-white flex justify-between items-start gap-4 shadow-sm">
-              <div class="flex-1">
-                <div class="flex items-center gap-3 mb-2 flex-wrap">
-                  <h3 class="font-bold text-gray-800">${p.name}</h3>
-                  <span class="text-xs font-bold px-3 py-1 rounded-full ${colors[p.status]?.split(" ")[0] || "bg-gray-100"} uppercase">${p.status}</span>
-                </div>
-                <div class="text-sm text-gray-600 space-x-4">
-                  <span>Budget: <strong class="text-gray-800">$${p.budget}</strong></span>
-                  <span>Deadline: <strong class="text-gray-800">${p.deadline}</strong></span>
-                </div>
-                 <div class="text-gray-500 italic">
-    ${p.short_description || "No description"}
-  </div>
-              </div>
-              
-              <div class="flex gap-2 flex-shrink-0">
-                <button onclick="editSingleProject('${clientId}', ${idx})" class="p-2.5 bg-gray-100 rounded-lg hover:bg-blue-100 text-gray-600 hover:text-blue-700 transition">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                </button>
-                <button onclick="removeProject('${clientId}', ${idx})" class="p-2.5 bg-gray-100 rounded-lg hover:bg-red-100 text-gray-600 hover:text-red-700 transition">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                </button>
-              </div>
-            </div>`;
-            })
-            .join("") ||
-          `<p class="text-center text-gray-500 py-10">No projects yet for this client.</p>`;
+        list.innerHTML = c.projects.length
+          ? c.projects
+              .map((p, idx) => {
+                const colors = {
+                  Completed: "bg-green-100 text-green-700 border-green-200",
+                  Ongoing: "bg-blue-100 text-blue-700 border-blue-200",
+                  "Not Started": "bg-gray-100 text-gray-600 border-gray-200",
+                  Pending: "bg-yellow-100 text-yellow-700 border-yellow-200",
+                };
+                const statusClass =
+                  colors[p.status] ||
+                  "bg-gray-100 text-gray-600 border-gray-200";
+                return `
+                <div class="project-item p-4 rounded-xl border ${statusClass.split(" ")[0]} bg-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm">
+                  <div class="flex-1 w-full">
+                    <div class="flex flex-wrap items-center gap-2 mb-2">
+                      <h3 class="font-bold text-gray-800 text-base">${escapeHtml(p.name)}</h3>
+                      <span class="text-xs font-bold px-2 py-1 rounded-full ${statusClass} uppercase">${p.status}</span>
+                    </div>
+                    <div class="text-sm text-gray-600 flex flex-wrap gap-x-4 gap-y-1">
+                      <span>💰 Budget: <strong class="text-gray-800">$${p.budget}</strong></span>
+                      <span>📅 Deadline: <strong class="text-gray-800">${p.deadline}</strong></span>
+                    </div>
+                    <div class="text-gray-500 italic text-sm mt-1">${escapeHtml(p.short_description) || "No description"}</div>
+                  </div>
+                  
+                  <div class="project-actions flex gap-2 flex-shrink-0 self-end sm:self-center">
+                    <button onclick="event.stopPropagation(); editSingleProject('${clientId}', ${idx})" 
+                      class="p-2 bg-gray-100 rounded-lg hover:bg-blue-100 text-gray-600 hover:text-blue-700 transition touch-manipulation">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                    </button>
+                    <button onclick="event.stopPropagation(); removeProject('${clientId}', ${idx})" 
+                      class="p-2 bg-gray-100 rounded-lg hover:bg-red-100 text-gray-600 hover:text-red-700 transition touch-manipulation">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                  </div>
+                </div>`;
+              })
+              .join("")
+          : `<p class="text-center text-gray-500 py-10">✨ No projects yet for this client. Click "+ New Project" to start.</p>`;
 
         document.getElementById("viewModal").classList.remove("hidden");
       }
@@ -519,25 +724,24 @@
         clearForm();
         document.getElementById("formModal").classList.remove("hidden");
       }
-       function editClientDetails() {
-         const c = clients.find((cl) => cl.id === currentClientId);
-          if (!c) return;
 
-          document.getElementById("modalTitle").textContent = "Edit Client";
+      function editClientDetails() {
+        const c = clients.find((cl) => cl.id === currentClientId);
+        if (!c) return;
+        document.getElementById("modalTitle").textContent = "Edit Client";
+        document.getElementById("targetClientId").value = currentClientId;
+        document.getElementById("clientInfoFields").classList.remove("hidden");
+        document.getElementById("projectFields").classList.add("hidden");
+        document.getElementById("clientId").value = c.id;
+        document.getElementById("clientName").value = c.name;
+        document.getElementById("company").value = c.company;
+        document.getElementById("location").value = c.location;
+        document.getElementById("email").value = c.email;
+        document.getElementById("phone").value = c.phone;
+        closeView();
+        document.getElementById("formModal").classList.remove("hidden");
+      }
 
-          document.getElementById("targetClientId").value = currentClientId;
-          document.getElementById("clientInfoFields").classList.remove("hidden");
-          document.getElementById("projectFields").classList.add("hidden");
-          document.getElementById("clientId").value = c.id;
-          document.getElementById("clientName").value = c.name;
-          document.getElementById("company").value = c.company;
-          document.getElementById("location").value = c.location;
-          document.getElementById("email").value = c.email;
-          document.getElementById("phone").value = c.phone;
-
-          closeView();
-          document.getElementById("formModal").classList.remove("hidden");
-        }
       function openAddProjectOnly(clientId) {
         document.getElementById("modalTitle").textContent =
           `New Project – ${clientId}`;
@@ -561,101 +765,88 @@
         document.getElementById("startDate").value = p.start;
         document.getElementById("deadline").value = p.deadline;
         document.getElementById("budget").value = p.budget;
-        document.getElementById("shortDescription").value = p.short_description || "";
+        document.getElementById("shortDescription").value =
+          p.short_description || "";
         document.getElementById("formModal").classList.remove("hidden");
       }
+
       async function saveData() {
-  const targetId = document.getElementById("targetClientId").value;
-  const pIdx = document.getElementById("editProjectIdx").value;
+        const targetId = document.getElementById("targetClientId").value;
+        const pIdx = document.getElementById("editProjectIdx").value;
 
-  const data = {
-    id: document.getElementById("clientId").value,
-    name: document.getElementById("clientName").value.trim(),
-    company: document.getElementById("company").value.trim(),
-    location: document.getElementById("location").value.trim(),
-    email: document.getElementById("email").value.trim(),
-    phone: document.getElementById("phone").value.trim(),
-    projectName: document.getElementById("projectName").value.trim(),
-    startDate: document.getElementById("startDate").value,
-    deadline: document.getElementById("deadline").value,
-    budget: document.getElementById("budget").value,
-    short_description: document.getElementById("shortDescription").value,
-    
-  };
+        const data = {
+          id: document.getElementById("clientId").value,
+          name: document.getElementById("clientName").value.trim(),
+          company: document.getElementById("company").value.trim(),
+          location: document.getElementById("location").value.trim(),
+          email: document.getElementById("email").value.trim(),
+          phone: document.getElementById("phone").value.trim(),
+          projectName: document.getElementById("projectName").value.trim(),
+          startDate: document.getElementById("startDate").value,
+          deadline: document.getElementById("deadline").value,
+          budget: document.getElementById("budget").value,
+          short_description: document.getElementById("shortDescription").value,
+        };
 
-  try {
-    if (targetId === "") {
-      // ✅ CREATE CLIENT + PROJECT
-      await fetch("/api/clients", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-    } else {
-      // ✅ UPDATE CLIENT / PROJECT
-      const client = clients.find((c) => c.id === targetId);
-
-      let project_id = null;
-
-      if (pIdx !== "" && client.projects[pIdx]) {
-        project_id = client.projects[pIdx].project_id;
+        try {
+          if (targetId === "") {
+            await fetch("/api/clients", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
+            });
+          } else {
+            const client = clients.find((c) => c.id === targetId);
+            let project_id = null;
+            if (pIdx !== "" && client.projects[pIdx]) {
+              project_id = client.projects[pIdx].project_id;
+            }
+            await fetch(`/api/clients/${targetId}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ ...data, project_id }),
+            });
+          }
+          await loadClients();
+          closeForm();
+          if (targetId) viewClientProjects(targetId);
+        } catch (err) {
+          console.error("Save error:", err);
+          alert("Operation failed");
+        }
       }
 
-      await fetch(`/api/clients/${targetId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...data,
-          project_id,
-          
-        }),
-      });
-    }
+      async function removeProject(cid, idx) {
+        if (!confirm("Delete this project?")) return;
+        const client = clients.find((c) => c.id === cid);
+        const project = client.projects[idx];
+        try {
+          await fetch(`/api/projects/${project.project_id}`, {
+            method: "DELETE",
+          });
+          await loadClients();
+          viewClientProjects(cid);
+        } catch (err) {
+          console.error(err);
+        }
+      }
 
-    await loadClients();
-    closeForm();
-    if (targetId) viewClientProjects(targetId);
-  } catch (err) {
-    console.error("Save error:", err);
-    alert("Operation failed");
-  }
-}
-
-     async function removeProject(cid, idx) {
-  if (!confirm("Delete this project?")) return;
-
-  const client = clients.find((c) => c.id === cid);
-  const project = client.projects[idx];
-
-  try {
-    await fetch(`/api/projects/${project.project_id}`, {
-      method: "DELETE",
-    });
-
-    await loadClients();
-    viewClientProjects(cid);
-  } catch (err) {
-    console.error(err);
-  }
-}
-async function deleteClient() {
-  if (!canDeleteClient()) {
-    alert("❌ You don't have permission to delete clients");
-    return;
-  }
-  if (!confirm("Delete this client?")) return;
-
-  try {
-    await fetch(`/api/clients/${currentClientId}`, {
-      method: "DELETE",
-    });
-
-    closeView();
-    await loadClients();
-  } catch (err) {
-    console.error(err);
-  }
-}
+      async function deleteClient() {
+        if (!canDeleteClient()) {
+          alert("❌ You don't have permission to delete clients");
+          return;
+        }
+        if (!confirm("⚠️ Delete this client and all associated projects?"))
+          return;
+        try {
+          await fetch(`/api/clients/${currentClientId}`, { method: "DELETE" });
+          closeView();
+          await loadClients();
+        } catch (err) {
+          console.error(err);
+          alert("Delete failed");
+        }
+      }
 
       function clearForm() {
         [
@@ -668,26 +859,35 @@ async function deleteClient() {
           "startDate",
           "deadline",
           "budget",
+          "shortDescription",
         ].forEach((id) => {
           const el = document.getElementById(id);
           if (el) el.value = "";
         });
-
       }
 
       function closeForm() {
         document.getElementById("formModal").classList.add("hidden");
       }
+
       function closeView() {
         document.getElementById("viewModal").classList.add("hidden");
       }
 
-      // ── Exact same reveal logic as Notice page ─────────────────────────────
-     async function initializePage() {
+      function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>]/g, function (m) {
+          if (m === "&") return "&amp;";
+          if (m === "<") return "&lt;";
+          if (m === ">") return "&gt;";
+          return m;
+        });
+      }
+
+      async function initializePage() {
         await loadCurrentUser();
         await loadClients();
         document.getElementById("main-content").classList.add("ready");
-
         setTimeout(() => {
           const link = document.querySelector('a[href="clients.html"]');
           if (link) {
